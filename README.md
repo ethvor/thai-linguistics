@@ -2,7 +2,7 @@
 
 Currently, this project is an attempt to formally label every grapheme in thai with properties like 'long vowel' and 'closed ending' for vowels or 'high class' for consonants. These tags will be used to
 read thai characters in the correct order, which will aid in evaluating AI inference in the thai language. This logic can be used both in determining the tone of an arbitrary (though orthographically correct) set of thai characters, and 
-also in the novel inference evaluation algorithm I indent to create.
+also in the novel inference evaluation algorithm I intend to create.
 
 
 ## Thai Grapheme Classification
