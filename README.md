@@ -21,9 +21,8 @@ Classifies Thai characters into four main categories:
 - `โxะ` - o vowel (e.g., โยะ)
 
 **Complex multi-part vowels:**
-- `เxียะ` - ia vowel complex (e.g., เปียะ)
-- `เxือะ` - uea vowel complex (e.g., เนือะ)
-- `แx็f` - short ae with final consonant (e.g., แยค)
+- `เxียะ` - short open diphthong ia (e.g., เปียะ)
+- `เxือะ` - short open diphthong uea (e.g., เนือะ)
 
 **Foundation consonants:**
 - 42 of the thai consonants, without those listed in exceptions.
