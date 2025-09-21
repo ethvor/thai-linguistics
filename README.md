@@ -1,116 +1,75 @@
-# 🇹🇭 Thai Algorithm Development
+# Thai Algorithm Development
 
-A comprehensive toolkit for Thai language processing, focusing on grapheme classification and reading order algorithms.
+Development towards making an inference evaluation algorithm that respects Thai's nonlinear reading order and the properties of the Thai abugida. Future goals are to generalize to all abugidas. This is just one part of a larger project.
 
-## 🚀 Quick Start
+## Quick Start
 
-### Launch Character Classifier
-**Windows Users:**
+Launch the interactive character classifier:
+
+**Windows:**
 ```bash
-# Double-click one of these files:
-launcher/open_classifier.bat    # Recommended (starts HTTP server)
-launcher/simple_open.bat       # Simple file opening
+launcher/open_classifier.bat     # Recommended (Flask server)
+launcher/simple_open.bat        # Direct file opening
 ```
 
-**Python Users:**
+**Python:**
 ```bash
-python launcher/open_classifier.py    # With HTTP server
-python launcher/simple_open.py       # Direct file opening
+python launcher/open_classifier.py    # Flask server
+python launcher/simple_open.py       # Direct file
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 Thai Algorithm Development/
-├── 🚀 launcher/              # Application launchers
-│   ├── open_classifier.bat       # Windows launcher (HTTP server)
-│   ├── simple_open.bat          # Windows launcher (direct)
-│   ├── open_classifier.py       # Python launcher (HTTP server)
-│   └── simple_open.py           # Python launcher (direct)
-│
-├── 🛠️ tools/                 # Interactive tools
-│   └── thai_classifier_improved.html  # Character classification web app
-│
-├── 📊 script/                # Data processing utilities
-│   ├── convertToJson.py         # Convert text mappings to JSON
-│   ├── make_foundation_json.py   # Generate foundation character data
-│   ├── flatten_sara_combos.py    # Flatten vowel combinations
-│   └── unique_start_chars.py     # Extract unique starting characters
-│
-├── 📂 res/                   # Processed Thai language data
-│   ├── foundation/              # Foundation consonant data
-│   └── sara/                   # Vowel combination data
-│
-├── 📓 notebook.ipynb         # Main research notebook
-├── 📋 CLAUDE.md             # Detailed technical documentation
-└── 📖 README.md             # This file
+├── launcher/              # Application launchers
+├── tools/                # Interactive classification web app
+├── script/               # Data processing utilities
+├── res/                  # Thai language data (JSON)
+├── notebook.ipynb        # Main research notebook
+└── CLAUDE.md            # Technical documentation
 ```
 
-## 🎯 Features
+## Features
 
-### Thai Grapheme Classification Algorithm
-- Classifies Thai characters into 4 main categories:
-  - **ฐาน (tan)** - Foundation consonants
-  - **สระ (sara)** - Vowel patterns
-  - **ยุกต์ (yuk)** - Dependent marks
-  - **ข้อยกเว้น (kho yok waen)** - Exception characters (อ, ว)
+### Thai Grapheme Classification
+Classifies Thai characters into four main categories:
+- **ฐาน (tan)** - Foundation consonants that serve as bases
+- **สระ (sara)** - Vowel patterns that attach to foundations
+- **ยุกต์ (yuk)** - Dependent marks (tone marks, diacritics)
+- **ข้อยกเว้น (exceptions)** - Special case characters like อ
 
-### Interactive Classification Tool
-- 🎨 **Font customization** - Multiple Thai fonts with size/weight controls
-- 🖱️ **Drag-and-drop interface** - Easy pattern organization
-- 💾 **Save/Load progress** - Browser-based persistence
-- 📤 **JSON export** - Export classifications for analysis
-- 📊 **Real-time statistics** - Track classification progress
+### Interactive Web Tool
+- Drag-and-drop pattern organization with grid-based positioning
+- Font customization for Thai text display
+- Pattern creation with validation and dual save modes
+- Session persistence through server restarts
+- JSON export for further analysis
 
 ### Data Processing Pipeline
-- Convert plain text mappings to structured JSON
-- Process vowel combinations and consonant patterns
-- Extract unique character sets and starting patterns
+- Convert plain text vowel mappings to structured JSON
+- Process foundation consonants and vowel combinations
+- Extract unique character patterns and starting sequences
 
-## 🔬 Research Focus
+## Research Focus
 
-The project explores Thai reading order algorithms, particularly handling:
-- **Non-linear reading** - Vowels that appear before but read after consonants
-- **Consonant clusters** - Multiple foundations acting as units
-- **Multi-part vowels** - Complex vowel patterns spanning characters
-- **Special cases** - อ and ว dual-role characters
+The project explores algorithms for handling Thai's complex orthography:
+- **Nonlinear reading order** - vowels that appear before but read after consonants
+- **Consonant clusters** - multiple foundations acting as single units
+- **Multi-part vowels** - complex patterns spanning multiple character positions
+- **Special cases** - dual-role characters and exceptions
 
-## 📚 Usage Examples
+## Technical Details
 
-### Simple Classification
-```python
-result = classifyThaiGraphemes("ยา")
-# Returns: [{'grapheme': 'ย', 'class': 'foundation', 'read_order': 0},
-#           {'grapheme': 'xา', 'class': 'vowel', 'read_order': 1}]
-```
+- **Language**: Python 3.13+ with Jupyter for research
+- **Web Interface**: HTML/CSS/JavaScript with Flask backend
+- **Data Format**: UTF-8 encoded JSON with template patterns
+- **Pattern Matching**: Template-based using x/f placeholders for consonants
 
-### Complex Patterns
-```python
-result = classifyThaiGraphemes("เด็ก")
-# Handles leading vowel "เ" that reads after foundation "ด"
-```
+## Requirements
 
-## 🛠️ Technical Details
-
-- **Language**: Python 3.13+ with Jupyter notebooks
-- **Web Interface**: HTML/CSS/JavaScript (no external dependencies)
-- **Data Format**: UTF-8 encoded JSON files
-- **Pattern Matching**: Template-based with x/f placeholders
-
-## 📋 Requirements
-
-- Python 3.13+ (for scripts and launchers)
-- Modern web browser (for classification tool)
-- UTF-8 support for Thai characters
-
-## 🎓 Academic Context
-
-This research supports understanding of:
-- Thai orthographic complexity
-- Reading order determination algorithms
-- Grapheme-to-phoneme correspondence
-- Tone rule applications in Thai
-
----
+- Python 3.13+ (for scripts and server)
+- Modern web browser with JavaScript enabled
+- UTF-8 support for Thai character display
 
 For detailed technical documentation, see [CLAUDE.md](CLAUDE.md)
