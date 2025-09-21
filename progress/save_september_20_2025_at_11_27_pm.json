@@ -1,0 +1,267 @@
+{
+  "templates": {
+    "xะ": {
+      "tags": [
+        "sound_a",
+        "syllable_open",
+        "length_short",
+        "monophthong"
+      ],
+      "metadata": {}
+    },
+    "xัวะ": {
+      "tags": [],
+      "metadata": {}
+    },
+    "เxะ": {
+      "tags": [],
+      "metadata": {}
+    },
+    "เxอะ": {
+      "tags": [],
+      "metadata": {}
+    },
+    "เxาะ": {
+      "tags": [],
+      "metadata": {}
+    },
+    "เxียะ": {
+      "tags": [],
+      "metadata": {}
+    },
+    "เxือะ": {
+      "tags": [],
+      "metadata": {}
+    },
+    "แxะ": {
+      "tags": [
+        "sound_ae"
+      ],
+      "metadata": {}
+    },
+    "โxะ": {
+      "tags": [],
+      "metadata": {}
+    },
+    "xัf": {
+      "tags": [
+        "sound_a",
+        "length_short",
+        "syllable_closed",
+        "monophthong"
+      ],
+      "metadata": {}
+    },
+    "xัว": {
+      "tags": [],
+      "metadata": {}
+    },
+    "x็": {
+      "tags": [],
+      "metadata": {}
+    },
+    "x็อf": {
+      "tags": [],
+      "metadata": {}
+    },
+    "เx็f": {
+      "tags": [],
+      "metadata": {}
+    },
+    "แx็f": {
+      "tags": [
+        "sound_ae"
+      ],
+      "metadata": {}
+    },
+    "xา": {
+      "tags": [
+        "sound_a",
+        "syllable_open",
+        "length_long",
+        "monophthong"
+      ],
+      "metadata": {}
+    },
+    "xาf": {
+      "tags": [
+        "sound_a",
+        "length_long",
+        "syllable_closed",
+        "monophthong"
+      ],
+      "metadata": {}
+    },
+    "xํา": {
+      "tags": [],
+      "metadata": {}
+    },
+    "เxา": {
+      "tags": [],
+      "metadata": {}
+    },
+    "xิ": {
+      "tags": [],
+      "metadata": {}
+    },
+    "เxิf": {
+      "tags": [],
+      "metadata": {}
+    },
+    "xี": {
+      "tags": [],
+      "metadata": {}
+    },
+    "xีf": {
+      "tags": [],
+      "metadata": {}
+    },
+    "เxีย": {
+      "tags": [],
+      "metadata": {}
+    },
+    "xืf": {
+      "tags": [],
+      "metadata": {}
+    },
+    "xือ": {
+      "tags": [],
+      "metadata": {}
+    },
+    "เxือ": {
+      "tags": [],
+      "metadata": {}
+    },
+    "xึ": {
+      "tags": [],
+      "metadata": {}
+    },
+    "xึf": {
+      "tags": [],
+      "metadata": {}
+    },
+    "xุ": {
+      "tags": [],
+      "metadata": {}
+    },
+    "xุf": {
+      "tags": [],
+      "metadata": {}
+    },
+    "xู": {
+      "tags": [],
+      "metadata": {}
+    },
+    "xูf": {
+      "tags": [],
+      "metadata": {}
+    },
+    "เx": {
+      "tags": [],
+      "metadata": {}
+    },
+    "เxf": {
+      "tags": [],
+      "metadata": {}
+    },
+    "เxอ": {
+      "tags": [],
+      "metadata": {}
+    },
+    "เxอf": {
+      "tags": [],
+      "metadata": {}
+    },
+    "เxียf": {
+      "tags": [],
+      "metadata": {}
+    },
+    "เxือf": {
+      "tags": [],
+      "metadata": {}
+    },
+    "แf": {
+      "tags": [
+        "sound_ae"
+      ],
+      "metadata": {}
+    },
+    "แxf": {
+      "tags": [
+        "sound_ae",
+        "length_ambiguous",
+        "syllable_closed"
+      ],
+      "metadata": {}
+    },
+    "โx": {
+      "tags": [],
+      "metadata": {}
+    },
+    "โxf": {
+      "tags": [],
+      "metadata": {}
+    },
+    "ใx": {
+      "tags": [],
+      "metadata": {}
+    },
+    "ไx": {
+      "tags": [],
+      "metadata": {}
+    },
+    "xอ": {
+      "tags": [],
+      "metadata": {}
+    },
+    "ฤ": {
+      "tags": [],
+      "metadata": {}
+    },
+    "ฤๅ": {
+      "tags": [],
+      "metadata": {}
+    },
+    "ฦ": {
+      "tags": [],
+      "metadata": {}
+    },
+    "ฦๅ": {
+      "tags": [],
+      "metadata": {}
+    }
+  },
+  "dataType": "vowels",
+  "availableTags": [
+    "sound_a",
+    "sound_ae",
+    "syllable_open",
+    "length_short",
+    "length_long",
+    "syllable_closed",
+    "length_ambiguous",
+    "monophthong",
+    "diphthong",
+    "glide",
+    "special"
+  ],
+  "tagPositions": {
+    "diphthong": 3,
+    "glide": 9,
+    "monophthong": 2,
+    "length_short": 6,
+    "sound_a": 0,
+    "sound_ae": 1,
+    "length_long": 7,
+    "length_ambiguous": 10,
+    "syllable_closed": 5,
+    "syllable_open": 4,
+    "special": 8
+  },
+  "fontSettings": {
+    "family": "thai-sarabun",
+    "size": "26",
+    "weight": 500
+  },
+  "timestamp": "2025-09-21T04:27:46.489Z"
+}

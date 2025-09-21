@@ -1,0 +1,2669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thai Character Pattern Classifier</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;700&family=Sarabun:wght@300;400;500;700&family=Prompt:wght@300;400;500;700&family=Kanit:wght@300;400;500;700&family=Noto+Sans:wght@300;400;500;700&family=Tahoma&family=Arial+Unicode+MS&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .font-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .font-controls label {
+            font-weight: 500;
+            color: #333;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        select, input[type="range"] {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+
+        .source-panel {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .source-section {
+            margin-bottom: 20px;
+        }
+
+        .source-section h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 16px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+
+        .pattern-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            min-height: 40px;
+            padding: 10px;
+            background: #f7f7f7;
+            border-radius: 5px;
+        }
+
+        .pattern-item {
+            background: white;
+            border: 2px solid #ddd;
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 18px;
+            font-weight: 500;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            /* Ensure Thai characters render properly with fallback fonts */
+            font-family: 'Noto Sans Thai', 'Sarabun', 'Prompt', 'Kanit', 'Tahoma', 'Arial Unicode MS', 'Segoe UI', sans-serif;
+            unicode-bidi: embed;
+            direction: ltr;
+            position: relative;
+            /* Will be set dynamically based on font selection */
+        }
+
+        .pattern-item.selected {
+            background: #667eea;
+            color: white;
+            border-color: #5a67d8;
+        }
+
+        .pattern-item .pattern-tags {
+            display: flex;
+            gap: 4px;
+            margin-top: 4px;
+            flex-wrap: wrap;
+        }
+
+        .pattern-item .mini-tag {
+            background: rgba(102, 126, 234, 0.2);
+            color: #333;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 400;
+        }
+
+        .pattern-item.selected .mini-tag {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        .pattern-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .pattern-item.dragging {
+            opacity: 0.5;
+        }
+
+        .tags-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .tag-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .tag-controls input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .tag-controls button {
+            padding: 8px 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .tag-controls button:hover {
+            background: #5a67d8;
+        }
+
+        .available-tags {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-height: 150px;
+        }
+
+        .tag-container {
+            background: #f8f9fa;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 10px;
+            min-height: 120px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tag-container.drag-over {
+            border-color: #667eea;
+            background: #e6f3ff;
+            transform: scale(1.02);
+        }
+
+        .tag-container.filter-active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .tag-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .tag-name {
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .tag-count {
+            background: rgba(102, 126, 234, 0.2);
+            color: #333;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 11px;
+        }
+
+        .tag-container.filter-active .tag-count {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        /* Enhanced Grid Layout for Tags */
+        .available-tags {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(6, 200px);
+            gap: 10px;
+            min-height: 500px;
+            padding: 20px;
+            background: #f8f9fa;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            position: relative;
+            overflow: visible;
+        }
+
+        .available-tags::before {
+            content: "📋 Tag Organization Grid - Drag tags to arrange";
+            position: absolute;
+            top: -25px;
+            left: 0;
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .grid-slot {
+            background: #ffffff;
+            border: 2px dashed #e0e0e0;
+            border-radius: 8px;
+            min-height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .grid-slot.occupied {
+            border: none;
+            background: none;
+        }
+
+        .grid-slot.drag-over {
+            border-color: #667eea;
+            background: #f0f4ff;
+            transform: scale(1.02);
+        }
+
+        .grid-slot.empty::before {
+            content: "Drop tag here";
+            color: #999;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .grid-slot.empty:hover::before {
+            opacity: 1;
+        }
+
+        .tag-container {
+            cursor: move;
+            transition: transform 0.2s ease;
+            position: relative;
+        }
+
+        .tag-container:hover {
+            transform: scale(1.02);
+            z-index: 10;
+        }
+
+        .tag-container.dragging {
+            transform: rotate(5deg) scale(1.05);
+            opacity: 0.8;
+            z-index: 100;
+        }
+
+        .delete-tag {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+
+        .delete-tag:hover {
+            background: #dc2626;
+        }
+
+        .tag-patterns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            min-height: 60px;
+        }
+
+        .tag-patterns .mini-pattern {
+            background: #667eea;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .tag-patterns .mini-pattern:hover {
+            background: #5a67d8;
+        }
+
+        .pattern-details {
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-height: 200px;
+        }
+
+        .category-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            min-height: 200px;
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .category-name {
+            font-weight: bold;
+            color: #333;
+            font-size: 16px;
+            padding: 5px;
+            border: 1px solid transparent;
+            border-radius: 3px;
+            background: #f9f9f9;
+            min-width: 150px;
+        }
+
+        .category-name:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+        }
+
+        .delete-category {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .delete-category:hover {
+            background: #dc2626;
+        }
+
+        .category-items {
+            min-height: 100px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border: 2px dashed #ddd;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .category-items.drag-over {
+            background: #e0e7ff;
+            border-color: #667eea;
+        }
+
+        .category-items .pattern-item {
+            background: #667eea;
+            color: white;
+            border-color: #5a67d8;
+        }
+
+        .add-category {
+            background: white;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-category:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .add-category-text {
+            font-size: 24px;
+            color: #999;
+        }
+
+        .stats {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .modal pre {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .modal-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .close-modal {
+            background: #6b7280;
+        }
+
+        .copy-json {
+            background: #10b981;
+        }
+
+        #messageArea {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 400px;
+            pointer-events: none;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid #fecaca;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            pointer-events: auto;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid #a7f3d0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            pointer-events: auto;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Font families for Thai text */
+        .thai-noto { font-family: 'Noto Sans Thai', 'Tahoma', 'Arial Unicode MS', 'Segoe UI', sans-serif; }
+        .thai-sarabun { font-family: 'Sarabun', 'Noto Sans Thai', 'Tahoma', 'Arial Unicode MS', sans-serif; }
+        .thai-prompt { font-family: 'Prompt', 'Noto Sans Thai', 'Tahoma', 'Arial Unicode MS', sans-serif; }
+        .thai-kanit { font-family: 'Kanit', 'Noto Sans Thai', 'Tahoma', 'Arial Unicode MS', sans-serif; }
+
+        /* Ensure proper rendering of Thai Unicode characters (U+0E00-U+0E7F) */
+        @font-face {
+            font-family: 'ThaiDefaultFallback';
+            src: local('Noto Sans Thai'), local('Sarabun'), local('Tahoma'), local('Arial Unicode MS');
+            unicode-range: U+0E00-0E7F;
+        }
+
+        /* Apply to all elements that might contain Thai text */
+        .pattern-item, .category-name {
+            font-feature-settings: "liga" 1, "kern" 1;
+            text-rendering: optimizeLegibility;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .categories-panel {
+                grid-template-columns: 1fr;
+            }
+
+            .font-controls {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🇹🇭 Thai Character Pattern Classifier</h1>
+            <p>Drag and drop patterns into categories for classification</p>
+            <p style="font-size: 12px; color: #666;">Version: NO-FALLBACK-2024 (No sample data fallback)</p>
+            <div class="controls">
+                <select id="dataTypeSelect">
+                    <option value="vowels">Vowels (Sara)</option>
+                    <option value="foundations">Foundations</option>
+                    <option value="exceptions">Exceptions</option>
+                </select>
+                <button onclick="loadDataFromFiles()">📂 Load from JSON</button>
+                <button onclick="saveProgress()">💾 Save Progress</button>
+                <button onclick="loadProgress()">📂 Load Progress</button>
+                <button onclick="exportJSON()">📤 Export JSON</button>
+                <button onclick="clearAll()">🗑️ Clear All</button>
+                <button onclick="resetServer()" style="background: #e74c3c; color: white;">🔄 Reset Server</button>
+            </div>
+
+            <div class="font-controls">
+                <label for="fontSelect">Thai Font:</label>
+                <select id="fontSelect" onchange="changeThaiFontFamily()">
+                    <option value="thai-noto">Noto Sans Thai</option>
+                    <option value="thai-sarabun">Sarabun</option>
+                    <option value="thai-prompt">Prompt</option>
+                    <option value="thai-kanit">Kanit</option>
+                </select>
+
+                <label for="fontSizeSlider">Size:</label>
+                <input type="range" id="fontSizeSlider" min="12" max="32" value="18" onchange="changeFontSize()">
+                <span id="fontSizeDisplay">18px</span>
+
+                <label for="fontWeightSelect">Weight:</label>
+                <select id="fontWeightSelect" onchange="changeFontWeight()">
+                    <option value="300">Light</option>
+                    <option value="400">Normal</option>
+                    <option value="500" selected>Medium</option>
+                    <option value="700">Bold</option>
+                </select>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="source-panel">
+                <div class="source-section">
+                    <h3 id="patternsHeading">Patterns</h3>
+                    <div class="search-controls" style="margin-bottom: 15px;">
+                        <input type="text" id="searchInput" placeholder="🔍 Search patterns (contains characters)..." onkeyup="handleSearchInput(event)" style="width: 250px; padding: 8px; display: block; margin-bottom: 8px;">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button onclick="clearSearch()">Clear Search</button>
+                            <button onclick="showAddPatternModal()" style="background: #28a745; color: white;">+ Add Pattern</button>
+                            <span id="searchResults" style="font-size: 12px; color: #666;"></span>
+                        </div>
+                    </div>
+                    <div class="pattern-list" id="sourceList">
+                        <div style="color: #dc2626; font-weight: bold; padding: 20px; text-align: center; border: 2px solid #dc2626; border-radius: 10px; background: #fee2e2;">
+                            <div style="font-size: 18px; margin-bottom: 10px;">⚠️ NO DATA LOADED</div>
+                            <div style="font-size: 14px;">Click "📂 Load from JSON" to load Thai pattern data</div>
+                            <div style="font-size: 12px; margin-top: 10px; color: #991b1b;">Choose vowels, foundations, or exceptions from the dropdown</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="stats">
+                    <h3>Statistics</h3>
+                    <div class="stat-item">
+                        <span>Total Patterns:</span>
+                        <span id="totalPatterns">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Classified:</span>
+                        <span id="classifiedPatterns">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Unclassified:</span>
+                        <span id="unclassifiedPatterns">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Tags:</span>
+                        <span id="totalCategories">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tags-panel" id="tagsPanel">
+                <!-- Tags will be added here -->
+                <div class="tag-controls">
+                    <input type="text" id="newTagInput" placeholder="Enter new tag..." onkeyup="handleTagInputKeyup(event)">
+                    <button onclick="createEmptyTag()">+ Create Tag</button>
+                    <button onclick="addTagToSelected()" id="addToSelectedBtn" disabled>+ Add to Selected (<span id="selectedCount">0</span>)</button>
+                    <button onclick="showBulkMoveModal()">📦 Bulk Move Tags</button>
+                    <button onclick="removeTagsFromSelected()" id="removeTagsBtn" disabled>🗑️ Remove Tags from Selected</button>
+                    <input type="text" id="renameTagInput" placeholder="Rename selected tag to..." style="margin-left: 10px;">
+                    <button onclick="renameSelectedTag()" id="renameTagBtn" disabled>🏷️ Rename Tag</button>
+                    <button onclick="undo()" id="undoBtn" disabled>↶ Undo</button>
+                    <button onclick="redo()" id="redoBtn" disabled>↷ Redo</button>
+                    <button onclick="clearTagFilters()">Clear Filters</button>
+                    <button onclick="selectAllPatterns()">Select All</button>
+                    <button onclick="clearSelection()">Clear Selection</button>
+                </div>
+                <div class="available-tags" id="availableTagsList">
+                    <!-- Available tags will be displayed here -->
+                </div>
+                <div class="pattern-details" id="patternDetails">
+                    <!-- Selected pattern details will show here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <h2>Exported JSON</h2>
+            <pre id="jsonOutput"></pre>
+            <div class="modal-buttons">
+                <button class="copy-json" onclick="copyJSON()">📋 Copy to Clipboard</button>
+                <button class="download-json" onclick="downloadJSON()">💾 Download JSON</button>
+                <button class="close-modal" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Pattern Modal -->
+    <div class="modal" id="addPatternModal" style="display: none;">
+        <div class="modal-content">
+            <h2>➕ Add New Pattern</h2>
+
+            <div style="margin-bottom: 20px;">
+                <label for="newPatternInput">New Pattern:</label>
+                <input type="text" id="newPatternInput" placeholder="Enter Thai pattern (e.g., เxยะ, ก, อ)..." style="width: 300px; margin-left: 10px; padding: 8px; font-size: 16px;">
+            </div>
+
+            <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                <h3 style="margin-top: 0; color: #495057;">Preview:</h3>
+                <div id="patternPreview" style="font-size: 24px; font-weight: bold; color: #28a745; min-height: 30px;">
+                    Enter a pattern to see preview...
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; border: 1px solid #ffc107;">
+                <strong>Choose where to save:</strong>
+                <div style="margin-top: 10px;">
+                    <button onclick="addPatternToSession()" style="background: #17a2b8; color: white; margin-right: 10px; padding: 10px 15px;">
+                        📝 Add to Session Only
+                    </button>
+                    <button onclick="addPatternToJSON()" style="background: #dc3545; color: white; padding: 10px 15px;">
+                        💾 Save to Original JSON
+                    </button>
+                </div>
+                <div style="font-size: 12px; color: #856404; margin-top: 8px;">
+                    <strong>Session Only:</strong> Pattern available until page reload<br>
+                    <strong>Save to JSON:</strong> Permanently adds to source file
+                </div>
+            </div>
+
+            <div style="text-align: center;">
+                <button onclick="closeAddPatternModal()" style="background: #6c757d; color: white; padding: 10px 20px;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Move Modal -->
+    <div class="modal" id="bulkMoveModal" style="display: none;">
+        <div class="modal-content">
+            <h2>📦 Bulk Move Patterns Between Tags</h2>
+
+            <div style="margin-bottom: 20px;">
+                <label for="newBulkTagName">New Tag Name:</label>
+                <input type="text" id="newBulkTagName" placeholder="Enter name for new tag..." style="width: 200px; margin-left: 10px;">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <h3>Select Source Tags (patterns will be moved FROM these tags):</h3>
+                <div id="sourceTagsList" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background: #f9f9f9;">
+                    <!-- Source tags will be populated here -->
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label>
+                    <input type="checkbox" id="removeFromSource"> Remove patterns from source tags after moving
+                </label>
+            </div>
+
+            <div style="text-align: center;">
+                <button onclick="executeBulkMove()" style="background: #667eea; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Execute Bulk Move</button>
+                <button onclick="closeBulkMoveModal()" style="background: #ccc; color: black; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // New tag-based data structure: templates[pattern] = { tags: Set, metadata: {} }
+        let templates = {};
+        let availableTags = new Set();
+        let currentDataType = 'vowels';
+        let allPatterns = [];
+        let draggedElement = null;
+        let selectedTags = new Set(); // For filtering
+
+        // Font settings
+        let currentFontFamily = 'thai-noto';
+        let currentFontSize = 18;
+        let currentFontWeight = 500;
+
+        function showMessage(text, isError = false) {
+            const messageArea = document.getElementById('messageArea');
+            messageArea.innerHTML = `<div class="${isError ? 'error-message' : 'success-message'}">${text}</div>`;
+            setTimeout(() => {
+                messageArea.innerHTML = '';
+            }, 5000);
+        }
+
+        async function loadDataFromFiles() {
+            const dataType = document.getElementById('dataTypeSelect').value;
+
+            // Clear existing data first
+            allPatterns = [];
+            renderSourceList();
+            updateStats();
+
+            try {
+                let data = [];
+                let url = '';
+
+                if (dataType === 'vowels') {
+                    url = '../res/sara/sara_combos.json';  // Go up one level from tools/
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText} - Cannot fetch ${url}`);
+                    }
+                    data = await response.json();
+                    if (!Array.isArray(data)) {
+                        throw new Error(`Invalid data format in ${url} - expected array, got ${typeof data}`);
+                    }
+                } else if (dataType === 'foundations') {
+                    url = '../res/foundation/foundation.json';  // Go up one level from tools/
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText} - Cannot fetch ${url}`);
+                    }
+                    const foundationData = await response.json();
+                    if (!foundationData.foundation || !Array.isArray(foundationData.foundation)) {
+                        throw new Error(`Invalid data format in ${url} - expected {foundation: array}, got ${typeof foundationData}`);
+                    }
+                    data = foundationData.foundation;
+                } else if (dataType === 'exceptions') {
+                    // Exceptions are hardcoded as per the notebook
+                    data = ["อ", "ว"];
+                }
+
+                if (data.length === 0) {
+                    throw new Error(`No ${dataType} data found - empty dataset`);
+                }
+
+                currentDataType = dataType;
+                allPatterns = [...data];
+
+                // Initialize templates with empty tag sets
+                templates = {};
+                data.forEach(pattern => {
+                    templates[pattern] = { tags: new Set(), metadata: {} };
+                });
+
+                updatePatternsHeading();
+                renderTagsPanel();
+                renderSourceList();
+                updateStats();
+                showMessage(`✅ SUCCESS: Loaded ${data.length} ${dataType} patterns from JSON files`);
+
+            } catch (error) {
+                console.error('❌ CRITICAL ERROR loading data:', error);
+
+                // FAIL LOUDLY - NO FALLBACK
+                const errorMsg = `🚨 CRITICAL FAILURE: Cannot load ${dataType} data!
+
+${error.message}
+
+🔧 TROUBLESHOOTING:
+1. Are you using the HTTP server? (launcher/open_classifier.bat)
+2. Check if files exist: ../res/${dataType === 'vowels' ? 'sara/sara_combos.json' : 'foundation/foundation.json'}
+3. Check browser console (F12) for detailed errors
+4. Verify you're running from project root directory
+5. Server should be serving from project root, not tools/ directory
+
+📛 NO SAMPLE DATA FALLBACK - FIX THE REAL ISSUE!`;
+
+                showMessage(errorMsg, true);
+
+                // Clear the source list and show error
+                const sourceList = document.getElementById('sourceList');
+                sourceList.innerHTML = `
+                    <div style="color: #dc2626; font-weight: bold; padding: 20px; text-align: center; border: 3px solid #dc2626; border-radius: 10px; background: #fee2e2;">
+                        <div style="font-size: 24px; margin-bottom: 10px;">🚨 CRITICAL ERROR</div>
+                        <div style="font-size: 16px; margin-bottom: 10px;">Cannot load ${dataType} data!</div>
+                        <div style="font-size: 14px; color: #991b1b;">Fix the JSON loading issue - no fallback available</div>
+                    </div>
+                `;
+
+                // Also alert the user
+                alert(`🚨 CRITICAL ERROR: Cannot load ${dataType} data!\n\n${error.message}\n\nCheck the console and ensure you're using the HTTP server version.`);
+            }
+        }
+
+        function changeThaiFontFamily() {
+            currentFontFamily = document.getElementById('fontSelect').value;
+            applyFontSettings();
+        }
+
+        function changeFontSize() {
+            currentFontSize = document.getElementById('fontSizeSlider').value;
+            document.getElementById('fontSizeDisplay').textContent = currentFontSize + 'px';
+            applyFontSettings();
+        }
+
+        function changeFontWeight() {
+            currentFontWeight = document.getElementById('fontWeightSelect').value;
+            applyFontSettings();
+        }
+
+        function updatePatternsHeading() {
+            const heading = document.getElementById('patternsHeading');
+            if (currentDataType) {
+                // Capitalize first letter and make it readable
+                const readableType = currentDataType === 'vowels' ? 'vowels' :
+                                   currentDataType === 'foundations' ? 'foundations' :
+                                   currentDataType === 'exceptions' ? 'exceptions' :
+                                   currentDataType;
+                heading.textContent = `Patterns (${readableType})`;
+            } else {
+                heading.textContent = 'Patterns';
+            }
+        }
+
+        function applyFontSettings() {
+            const patterns = document.querySelectorAll('.pattern-item');
+            patterns.forEach(item => {
+                item.className = `pattern-item ${currentFontFamily}`;
+                item.style.fontSize = currentFontSize + 'px';
+                item.style.fontWeight = currentFontWeight;
+            });
+        }
+
+        function renderSourceList() {
+            const sourceList = document.getElementById('sourceList');
+            sourceList.innerHTML = '';
+
+            // Filter patterns based on selected tags
+            let filteredPatterns = allPatterns;
+
+            if (selectedTags.size > 0) {
+                filteredPatterns = filteredPatterns.filter(pattern => {
+                    const patternTags = templates[pattern]?.tags || new Set();
+                    // Show patterns that have ALL selected tags
+                    return Array.from(selectedTags).every(tag => patternTags.has(tag));
+                });
+            }
+
+            // Filter patterns based on search term
+            if (currentSearchTerm) {
+                filteredPatterns = filteredPatterns.filter(pattern =>
+                    pattern.includes(currentSearchTerm)
+                );
+            }
+
+            // Update search results display
+            updateSearchResults(filteredPatterns.length);
+
+            if (filteredPatterns.length === 0) {
+                let message = 'No patterns match the current filters.';
+                if (currentSearchTerm) {
+                    message = `No patterns contain "${currentSearchTerm}".`;
+                }
+                if (selectedTags.size > 0 && currentSearchTerm) {
+                    message = `No patterns contain "${currentSearchTerm}" and have the selected tags.`;
+                }
+                sourceList.innerHTML = `<div style="color: #666; padding: 10px;">${message}</div>`;
+                return;
+            }
+
+            filteredPatterns.forEach((pattern, index) => {
+                const item = createPatternItem(pattern, index + 1);
+                sourceList.appendChild(item);
+            });
+        }
+
+        function convertTemplateToThai(template) {
+            // Replace placeholders with actual Thai consonants for proper rendering
+            // x = initial consonant (ก), f = final consonant (ง)
+            return template.replace(/x/g, 'ก').replace(/f/g, 'ง');
+        }
+
+        function createPatternItem(pattern, index) {
+            const item = document.createElement('div');
+            item.className = `pattern-item ${currentFontFamily}`;
+            item.style.fontSize = currentFontSize + 'px';
+            item.style.fontWeight = currentFontWeight;
+            item.dataset.pattern = pattern;
+            item.dataset.index = index;
+
+            // Create main content container
+            const contentContainer = document.createElement('div');
+            contentContainer.style.display = 'flex';
+            contentContainer.style.alignItems = 'center';
+            contentContainer.style.gap = '10px';
+
+            // Pattern number
+            const numberSpan = document.createElement('span');
+            numberSpan.className = 'pattern-number';
+            numberSpan.textContent = `${index}.`;
+            numberSpan.style.minWidth = '30px';
+            numberSpan.style.fontWeight = 'bold';
+            numberSpan.style.color = '#666';
+            contentContainer.appendChild(numberSpan);
+
+            // Pattern text container
+            const patternContainer = document.createElement('div');
+            patternContainer.style.flex = '1';
+
+            // Main pattern display
+            const patternText = document.createElement('div');
+            patternText.textContent = convertTemplateToThai(pattern);
+            patternContainer.appendChild(patternText);
+
+            // Tags display
+            const tagsContainer = document.createElement('div');
+            tagsContainer.className = 'pattern-tags';
+            tagsContainer.style.marginTop = '4px';
+            patternContainer.appendChild(tagsContainer);
+
+            contentContainer.appendChild(patternContainer);
+            item.appendChild(contentContainer);
+
+            // Update tags display
+            updatePatternTags(item, pattern);
+
+            item.title = `Template: ${pattern} | Display: ${convertTemplateToThai(pattern)}`;
+
+            // Click to select/deselect for tagging
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                togglePatternSelection(pattern);
+            });
+
+            // Make draggable for drag-to-tag functionality
+            item.draggable = true;
+            item.addEventListener('dragstart', handlePatternDragStart);
+            item.addEventListener('dragend', handlePatternDragEnd);
+
+            return item;
+        }
+
+        function updatePatternTags(itemElement, pattern) {
+            const tagsContainer = itemElement.querySelector('.pattern-tags');
+            tagsContainer.innerHTML = '';
+
+            if (templates[pattern] && templates[pattern].tags.size > 0) {
+                const tagsText = document.createElement('span');
+                tagsText.style.fontSize = '12px';
+                tagsText.style.color = '#666';
+                const tagArray = Array.from(templates[pattern].tags);
+                tagsText.textContent = `tags (${tagArray.length}): ${tagArray.join(', ')}`;
+                tagsContainer.appendChild(tagsText);
+            }
+        }
+
+        function updateAllPatternTags() {
+            // Update tags display for all currently visible patterns without reordering
+            const sourceList = document.getElementById('sourceList');
+            const patternItems = sourceList.querySelectorAll('.pattern-item');
+
+            patternItems.forEach(item => {
+                const pattern = item.dataset.pattern;
+                if (pattern) {
+                    updatePatternTags(item, pattern);
+                }
+            });
+        }
+
+        // New tag-based functions
+        let selectedPatterns = new Set();
+        let currentSearchTerm = '';
+        let tagPositions = {}; // Store custom tag positions for organization
+
+        // Undo/Redo system
+        let undoStack = [];
+        let redoStack = [];
+        const MAX_UNDO_STEPS = 20;
+
+        function togglePatternSelection(pattern) {
+            if (selectedPatterns.has(pattern)) {
+                selectedPatterns.delete(pattern);
+            } else {
+                selectedPatterns.add(pattern);
+            }
+            updatePatternSelectionDisplay();
+            updateSelectedCount();
+            showPatternDetails();
+        }
+
+        function updatePatternSelectionDisplay() {
+            document.querySelectorAll('.pattern-item').forEach(item => {
+                const pattern = item.dataset.pattern;
+                if (selectedPatterns.has(pattern)) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+
+        function updateSelectedCount() {
+            const count = selectedPatterns.size;
+            document.getElementById('selectedCount').textContent = count;
+            document.getElementById('addToSelectedBtn').disabled = count === 0;
+            document.getElementById('removeTagsBtn').disabled = count === 0;
+        }
+
+        // Undo/Redo functions
+        function saveState(action) {
+            // Create a deep copy of current state
+            const state = {
+                action: action,
+                templates: {},
+                availableTags: new Set(availableTags),
+                tagPositions: { ...tagPositions },
+                timestamp: Date.now()
+            };
+
+            // Deep copy templates with Set conversion
+            Object.keys(templates).forEach(pattern => {
+                state.templates[pattern] = {
+                    tags: new Set(templates[pattern].tags),
+                    metadata: { ...templates[pattern].metadata }
+                };
+            });
+
+            undoStack.push(state);
+
+            // Limit undo stack size
+            if (undoStack.length > MAX_UNDO_STEPS) {
+                undoStack.shift();
+            }
+
+            // Clear redo stack when new action is performed
+            redoStack = [];
+
+            updateUndoRedoButtons();
+        }
+
+        function undo() {
+            if (undoStack.length === 0) return;
+
+            // Save current state to redo stack
+            const currentState = {
+                templates: {},
+                availableTags: new Set(availableTags),
+                tagPositions: { ...tagPositions }
+            };
+
+            Object.keys(templates).forEach(pattern => {
+                currentState.templates[pattern] = {
+                    tags: new Set(templates[pattern].tags),
+                    metadata: { ...templates[pattern].metadata }
+                };
+            });
+
+            redoStack.push(currentState);
+            if (redoStack.length > MAX_UNDO_STEPS) {
+                redoStack.shift();
+            }
+
+            // Restore previous state
+            const previousState = undoStack.pop();
+            templates = {};
+            Object.keys(previousState.templates).forEach(pattern => {
+                templates[pattern] = {
+                    tags: new Set(previousState.templates[pattern].tags),
+                    metadata: { ...previousState.templates[pattern].metadata }
+                };
+            });
+
+            availableTags = new Set(previousState.availableTags);
+            tagPositions = { ...previousState.tagPositions } || {};
+
+            // Update UI
+            renderTagsPanel();
+            renderSourceList();
+            updateStats();
+            updateUndoRedoButtons();
+            showMessage(`Undid: ${previousState.action}`);
+        }
+
+        function redo() {
+            if (redoStack.length === 0) return;
+
+            // Save current state to undo stack
+            saveState("Redo");
+            undoStack.pop(); // Remove the "Redo" action we just added
+
+            // Restore redo state
+            const redoState = redoStack.pop();
+            templates = {};
+            Object.keys(redoState.templates).forEach(pattern => {
+                templates[pattern] = {
+                    tags: new Set(redoState.templates[pattern].tags),
+                    metadata: { ...redoState.templates[pattern].metadata }
+                };
+            });
+
+            availableTags = new Set(redoState.availableTags);
+            tagPositions = { ...redoState.tagPositions } || {};
+
+            // Update UI
+            renderTagsPanel();
+            renderSourceList();
+            updateStats();
+            updateUndoRedoButtons();
+            showMessage("Redid action");
+        }
+
+        function updateUndoRedoButtons() {
+            document.getElementById('undoBtn').disabled = undoStack.length === 0;
+            document.getElementById('redoBtn').disabled = redoStack.length === 0;
+            document.getElementById('renameTagBtn').disabled = selectedTags.size !== 1;
+        }
+
+        function renameSelectedTag() {
+            const newName = document.getElementById('renameTagInput').value.trim();
+            if (!newName) {
+                alert('Please enter a new tag name!');
+                return;
+            }
+
+            if (selectedTags.size !== 1) {
+                alert('Please select exactly one tag to rename!');
+                return;
+            }
+
+            const oldName = Array.from(selectedTags)[0];
+
+            if (oldName === newName) {
+                alert('New name must be different from current name!');
+                return;
+            }
+
+            if (availableTags.has(newName)) {
+                alert('A tag with this name already exists!');
+                return;
+            }
+
+            if (!confirm(`Rename tag "${oldName}" to "${newName}"?`)) {
+                return;
+            }
+
+            // Save state for undo
+            saveState(`Rename tag "${oldName}" to "${newName}"`);
+
+            // Update tag in availableTags
+            availableTags.delete(oldName);
+            availableTags.add(newName);
+
+            // Update tag in all patterns
+            Object.keys(templates).forEach(pattern => {
+                if (templates[pattern].tags.has(oldName)) {
+                    templates[pattern].tags.delete(oldName);
+                    templates[pattern].tags.add(newName);
+                }
+            });
+
+            // Update selection
+            selectedTags.delete(oldName);
+            selectedTags.add(newName);
+
+            // Clear rename input
+            document.getElementById('renameTagInput').value = '';
+
+            // Update UI
+            renderTagsPanel();
+            updateAllPatternTags();
+            updateStats();
+            updateUndoRedoButtons();
+
+            showMessage(`Successfully renamed tag "${oldName}" to "${newName}"`);
+        }
+
+        function createEmptyTag() {
+            const input = document.getElementById('newTagInput');
+            const tagName = input.value.trim();
+            if (!tagName) return;
+
+            if (availableTags.has(tagName)) {
+                showMessage('Tag already exists!', true);
+                return;
+            }
+
+            saveState(`Create empty tag "${tagName}"`);
+            availableTags.add(tagName);
+            input.value = '';
+
+            renderTagsPanel();
+            showMessage(`Created tag: ${tagName}`);
+        }
+
+        function removeTagsFromSelected() {
+            if (selectedPatterns.size === 0) return;
+
+            // Get all tags from selected patterns
+            const allTagsFromSelected = new Set();
+            selectedPatterns.forEach(pattern => {
+                if (templates[pattern]) {
+                    templates[pattern].tags.forEach(tag => allTagsFromSelected.add(tag));
+                }
+            });
+
+            if (allTagsFromSelected.size === 0) {
+                showMessage('Selected patterns have no tags to remove', true);
+                return;
+            }
+
+            const tagsList = Array.from(allTagsFromSelected).join(', ');
+            if (!confirm(`Remove ALL tags (${tagsList}) from ${selectedPatterns.size} selected patterns?`)) {
+                return;
+            }
+
+            saveState(`Remove all tags from ${selectedPatterns.size} selected patterns`);
+
+            // Remove all tags from selected patterns
+            selectedPatterns.forEach(pattern => {
+                if (templates[pattern]) {
+                    templates[pattern].tags.clear();
+                }
+            });
+
+            renderTagsPanel();
+            updateAllPatternTags();
+            updateStats();
+            showMessage(`Removed all tags from ${selectedPatterns.size} patterns`);
+        }
+
+        function addTagToSelected() {
+            const input = document.getElementById('newTagInput');
+            const tagName = input.value.trim();
+            if (!tagName) return;
+            if (selectedPatterns.size === 0) return;
+
+            saveState(`Add tag "${tagName}" to ${selectedPatterns.size} selected patterns`);
+
+            // Add tag to selected patterns
+            selectedPatterns.forEach(pattern => {
+                if (templates[pattern]) {
+                    templates[pattern].tags.add(tagName);
+                }
+            });
+
+            availableTags.add(tagName);
+            input.value = '';
+
+            renderTagsPanel();
+            updateAllPatternTags();
+            showPatternDetails();
+            showMessage(`Added "${tagName}" to ${selectedPatterns.size} patterns`);
+        }
+
+        function removeTagFromSelectedPatterns(tag) {
+            selectedPatterns.forEach(pattern => {
+                if (templates[pattern]) {
+                    templates[pattern].tags.delete(tag);
+                }
+            });
+
+            renderTagsPanel();
+            renderSourceList();
+            showPatternDetails();
+        }
+
+        function renderTagsPanel() {
+            const tagsList = document.getElementById('availableTagsList');
+            tagsList.innerHTML = '';
+
+            // Create 24 grid slots (4 columns x 6 rows)
+            const totalSlots = 24;
+            const gridSlots = [];
+
+            // Initialize all slots as empty
+            for (let i = 0; i < totalSlots; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'grid-slot empty';
+                slot.dataset.slotIndex = i;
+
+                // Add drop handlers to each slot
+                slot.addEventListener('dragover', handleSlotDragOver);
+                slot.addEventListener('drop', handleSlotDrop);
+                slot.addEventListener('dragleave', handleSlotDragLeave);
+
+                gridSlots.push(slot);
+                tagsList.appendChild(slot);
+            }
+
+            // Build current available tags from templates (assigned tags)
+            const assignedTags = new Set();
+            Object.values(templates).forEach(template => {
+                template.tags.forEach(tag => assignedTags.add(tag));
+            });
+
+            // Merge assigned tags with empty tags in availableTags
+            const allTags = new Set([...availableTags, ...assignedTags]);
+
+            // Place tags in their assigned positions
+            Array.from(allTags).forEach(tag => {
+                const position = tagPositions[tag];
+                if (position !== undefined && position < totalSlots) {
+                    // Place tag in specific slot
+                    const slot = gridSlots[position];
+                    slot.className = 'grid-slot occupied';
+                    const tagContainer = createTagContainer(tag);
+                    slot.appendChild(tagContainer);
+                } else {
+                    // Find first empty slot for unpositioned tags
+                    const emptySlot = gridSlots.find(slot => slot.classList.contains('empty'));
+                    if (emptySlot) {
+                        const slotIndex = parseInt(emptySlot.dataset.slotIndex);
+                        tagPositions[tag] = slotIndex; // Assign position
+                        emptySlot.className = 'grid-slot occupied';
+                        const tagContainer = createTagContainer(tag);
+                        emptySlot.appendChild(tagContainer);
+                    }
+                }
+            });
+
+            console.log('Tag positions after render:', tagPositions);
+        }
+
+        function createTagContainer(tag) {
+            const container = document.createElement('div');
+            container.className = `tag-container ${selectedTags.has(tag) ? 'filter-active' : ''}`;
+            container.dataset.tag = tag;
+
+            // Make tag container draggable for organization
+            container.draggable = true;
+            container.addEventListener('dragstart', handleTagDragStart);
+            container.addEventListener('dragend', handleTagDragEnd);
+
+            // Tag header
+            const header = document.createElement('div');
+            header.className = 'tag-header';
+            header.onclick = () => toggleTagFilter(tag);
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'tag-name';
+            nameSpan.textContent = tag;
+
+            const countSpan = document.createElement('span');
+            countSpan.className = 'tag-count';
+            const patternCount = Object.keys(templates).filter(pattern =>
+                templates[pattern].tags.has(tag)
+            ).length;
+            countSpan.textContent = patternCount;
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-tag';
+            deleteBtn.textContent = '✕';
+            deleteBtn.onclick = (e) => {
+                e.stopPropagation();
+                deleteTag(tag);
+            };
+
+            header.appendChild(nameSpan);
+            header.appendChild(countSpan);
+            header.appendChild(deleteBtn);
+
+            // Patterns in this tag
+            const patternsDiv = document.createElement('div');
+            patternsDiv.className = 'tag-patterns';
+
+            Object.keys(templates).forEach(pattern => {
+                if (templates[pattern].tags.has(tag)) {
+                    const miniPattern = document.createElement('span');
+                    miniPattern.className = 'mini-pattern';
+                    miniPattern.textContent = convertTemplateToThai(pattern);
+                    miniPattern.title = pattern;
+                    miniPattern.onclick = () => highlightPattern(pattern);
+                    patternsDiv.appendChild(miniPattern);
+                }
+            });
+
+            container.appendChild(header);
+            container.appendChild(patternsDiv);
+
+            // Add drag and drop event listeners
+            container.addEventListener('dragover', handleTagDragOver);
+            container.addEventListener('drop', handleTagDrop);
+            container.addEventListener('dragleave', handleTagDragLeave);
+
+            return container;
+        }
+
+        // Tag drag and drop handlers for organization
+        let draggedTag = null;
+
+        function handleTagDragStart(e) {
+            draggedTag = e.target.dataset.tag;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', e.target.outerHTML);
+        }
+
+        function handleTagDragEnd(e) {
+            e.target.classList.remove('dragging');
+            draggedTag = null;
+        }
+
+        function handleTagDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+
+            const container = e.currentTarget;
+            if (!container.classList.contains('dragging')) {
+                container.style.transform = 'scale(1.05)';
+                container.style.borderColor = '#667eea';
+            }
+        }
+
+        function handleTagDragLeave(e) {
+            const container = e.currentTarget;
+            if (!container.classList.contains('dragging')) {
+                container.style.transform = '';
+                container.style.borderColor = '';
+            }
+        }
+
+
+        function getTagVisualPosition(tag) {
+            const container = document.querySelector(`.tag-container[data-tag="${tag}"]`);
+            if (container) {
+                const parent = container.parentElement;
+                return Array.from(parent.children).indexOf(container);
+            }
+            return 0;
+        }
+
+        // New slot-based drag handlers
+        function handleSlotDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+
+            if (draggedTag && e.currentTarget.classList.contains('empty')) {
+                e.currentTarget.classList.add('drag-over');
+            }
+        }
+
+        function handleSlotDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleSlotDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+
+            // Only handle if we're dropping a tag (not a pattern)
+            if (!draggedTag) return;
+
+            const targetSlot = e.currentTarget;
+            const newSlotIndex = parseInt(targetSlot.dataset.slotIndex);
+
+            // Save state for undo
+            saveState(`Move tag "${draggedTag}" to slot ${newSlotIndex}`);
+
+            // If target slot is occupied, swap positions
+            if (targetSlot.classList.contains('occupied')) {
+                const targetTag = targetSlot.querySelector('.tag-container')?.dataset.tag;
+                if (targetTag && targetTag !== draggedTag) {
+                    const draggedPos = tagPositions[draggedTag];
+                    tagPositions[draggedTag] = newSlotIndex;
+                    tagPositions[targetTag] = draggedPos;
+                    showMessage(`Swapped "${draggedTag}" with "${targetTag}"`);
+                }
+            } else {
+                // Move to empty slot
+                tagPositions[draggedTag] = newSlotIndex;
+                showMessage(`Moved "${draggedTag}" to slot ${newSlotIndex}`);
+            }
+
+            // Re-render to show new position
+            renderTagsPanel();
+        }
+
+        function toggleTagFilter(tag) {
+            if (selectedTags.has(tag)) {
+                selectedTags.delete(tag);
+            } else {
+                selectedTags.add(tag);
+            }
+            renderTagsPanel();
+            renderSourceList();
+            updateUndoRedoButtons();
+        }
+
+        function clearTagFilters() {
+            selectedTags.clear();
+            renderTagsPanel();
+            renderSourceList();
+            updateUndoRedoButtons();
+        }
+
+        function showPatternDetails() {
+            const detailsPanel = document.getElementById('patternDetails');
+
+            if (selectedPatterns.size === 0) {
+                detailsPanel.innerHTML = '<p>Select patterns to view details and manage tags.</p>';
+                return;
+            }
+
+            let html = `<h3>Selected Patterns (${selectedPatterns.size})</h3>`;
+            html += '<div style="margin: 10px 0;">';
+
+            selectedPatterns.forEach(pattern => {
+                const tags = Array.from(templates[pattern]?.tags || []);
+                html += `<div style="margin: 5px 0; padding: 5px; border: 1px solid #ddd; border-radius: 3px;">`;
+                html += `<strong>${convertTemplateToThai(pattern)}</strong> (${pattern})`;
+                if (tags.length > 0) {
+                    html += `<br><small>Tags: ${tags.join(', ')}</small>`;
+                }
+                html += '</div>';
+            });
+
+            html += '</div>';
+
+            // Tag management for selected patterns
+            html += '<div style="margin-top: 15px;">';
+            html += '<h4>Manage Tags for Selected Patterns:</h4>';
+
+            // Show common tags that can be removed
+            const commonTags = getCommonTags();
+            if (commonTags.length > 0) {
+                html += '<p><strong>Common tags:</strong></p>';
+                commonTags.forEach(tag => {
+                    html += `<button onclick="removeTagFromSelectedPatterns('${tag}')" style="margin: 2px; padding: 4px 8px; background: #ef4444; color: white; border: none; border-radius: 3px; cursor: pointer;">Remove "${tag}"</button>`;
+                });
+            }
+
+            html += '</div>';
+
+            detailsPanel.innerHTML = html;
+        }
+
+        function getCommonTags() {
+            if (selectedPatterns.size === 0) return [];
+
+            const patternArrays = Array.from(selectedPatterns).map(pattern =>
+                Array.from(templates[pattern]?.tags || [])
+            );
+
+            if (patternArrays.length === 0) return [];
+
+            return patternArrays[0].filter(tag =>
+                patternArrays.every(tags => tags.includes(tag))
+            );
+        }
+
+        function handleTagInputKeyup(event) {
+            if (event.key === 'Enter') {
+                if (selectedPatterns.size > 0) {
+                    addTagToSelected();
+                } else {
+                    createEmptyTag();
+                }
+            }
+        }
+
+        function selectAllPatterns() {
+            const visiblePatterns = document.querySelectorAll('.pattern-item');
+            visiblePatterns.forEach(item => {
+                selectedPatterns.add(item.dataset.pattern);
+            });
+            updatePatternSelectionDisplay();
+            showPatternDetails();
+        }
+
+        function clearSelection() {
+            selectedPatterns.clear();
+            updatePatternSelectionDisplay();
+            updateSelectedCount();
+            showPatternDetails();
+        }
+
+        // Search functions
+        function handleSearchInput(event) {
+            currentSearchTerm = event.target.value.trim();
+            renderSourceList();
+        }
+
+        function clearSearch() {
+            currentSearchTerm = '';
+            document.getElementById('searchInput').value = '';
+            renderSourceList();
+        }
+
+        function updateSearchResults(count) {
+            const resultsSpan = document.getElementById('searchResults');
+            if (currentSearchTerm) {
+                resultsSpan.textContent = `Found ${count} patterns containing "${currentSearchTerm}"`;
+                resultsSpan.style.color = count > 0 ? '#666' : '#dc2626';
+            } else {
+                resultsSpan.textContent = '';
+            }
+        }
+
+        // Drag and drop functions
+        let draggedPattern = null;
+
+        function handlePatternDragStart(e) {
+            draggedPattern = e.target.dataset.pattern;
+            e.target.classList.add('dragging');
+        }
+
+        function handlePatternDragEnd(e) {
+            draggedPattern = null;
+            e.target.classList.remove('dragging');
+        }
+
+        function handleTagDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function handleTagDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleTagDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+
+            if (!draggedPattern) return;
+
+            const tag = e.currentTarget.dataset.tag;
+            if (templates[draggedPattern]) {
+                saveState(`Drag pattern "${draggedPattern}" to tag "${tag}"`);
+                templates[draggedPattern].tags.add(tag);
+                renderTagsPanel();
+                updateAllPatternTags();
+                showMessage(`Added "${draggedPattern}" to tag "${tag}"`);
+            }
+        }
+
+        function deleteTag(tag) {
+            if (confirm(`Delete tag "${tag}" from all patterns?`)) {
+                saveState(`Delete tag "${tag}"`);
+                // Remove from all patterns
+                Object.keys(templates).forEach(pattern => {
+                    templates[pattern].tags.delete(tag);
+                });
+                // Remove from available tags (including empty tags)
+                availableTags.delete(tag);
+                selectedTags.delete(tag);
+                renderTagsPanel();
+                renderSourceList();
+                showMessage(`Deleted tag: ${tag}`);
+            }
+        }
+
+        function highlightPattern(pattern) {
+            // Highlight patterns in the source list that have this pattern
+            document.querySelectorAll('.pattern-item').forEach(item => {
+                if (item.dataset.pattern === pattern) {
+                    item.style.boxShadow = '0 0 10px #667eea';
+                    setTimeout(() => {
+                        item.style.boxShadow = '';
+                    }, 2000);
+                }
+            });
+        }
+
+        function handleDragStart(e) {
+            draggedElement = e.target;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', e.target.innerHTML);
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            draggedElement = null;
+        }
+
+        function addCategory() {
+            const categoryName = prompt('Enter category name:');
+            if (!categoryName) return;
+
+            categories[categoryName] = [];
+            renderCategories();
+            updateStats();
+        }
+
+        function renderCategories() {
+            const panel = document.getElementById('categoriesPanel');
+            // Clear existing categories but keep the add button
+            const addButton = panel.querySelector('.add-category');
+            panel.innerHTML = '';
+
+            Object.keys(categories).forEach(categoryName => {
+                const card = createCategoryCard(categoryName);
+                panel.appendChild(card);
+            });
+
+            panel.appendChild(addButton);
+        }
+
+        function createCategoryCard(categoryName) {
+            const card = document.createElement('div');
+            card.className = 'category-card';
+
+            const header = document.createElement('div');
+            header.className = 'category-header';
+
+            const nameInput = document.createElement('input');
+            nameInput.className = 'category-name';
+            nameInput.value = categoryName;
+            nameInput.addEventListener('change', (e) => {
+                const newName = e.target.value;
+                if (newName && newName !== categoryName) {
+                    categories[newName] = categories[categoryName];
+                    delete categories[categoryName];
+                    renderCategories();
+                }
+            });
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-category';
+            deleteBtn.textContent = '✕';
+            deleteBtn.onclick = () => {
+                if (confirm(`Delete category "${categoryName}"?`)) {
+                    // Move items back to source
+                    allPatterns.push(...categories[categoryName]);
+                    delete categories[categoryName];
+                    renderCategories();
+                    renderSourceList();
+                    updateStats();
+                }
+            };
+
+            header.appendChild(nameInput);
+            header.appendChild(deleteBtn);
+
+            const itemsContainer = document.createElement('div');
+            itemsContainer.className = 'category-items';
+            itemsContainer.dataset.category = categoryName;
+
+            // Add existing items
+            categories[categoryName].forEach(pattern => {
+                const item = createPatternItem(pattern);
+                itemsContainer.appendChild(item);
+            });
+
+            // Add drop zone events
+            itemsContainer.addEventListener('dragover', handleDragOver);
+            itemsContainer.addEventListener('drop', handleDrop);
+            itemsContainer.addEventListener('dragleave', handleDragLeave);
+
+            card.appendChild(header);
+            card.appendChild(itemsContainer);
+
+            return card;
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            e.dataTransfer.dropEffect = 'move';
+            e.currentTarget.classList.add('drag-over');
+            return false;
+        }
+
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+            e.preventDefault();
+
+            e.currentTarget.classList.remove('drag-over');
+
+            if (draggedElement) {
+                const pattern = draggedElement.dataset.pattern;
+                const targetCategory = e.currentTarget.dataset.category;
+
+                // Remove from previous location
+                Object.keys(categories).forEach(cat => {
+                    categories[cat] = categories[cat].filter(p => p !== pattern);
+                });
+
+                // Add to new category if it's not the source list
+                if (targetCategory) {
+                    categories[targetCategory].push(pattern);
+                }
+
+                // Remove from DOM and re-render
+                draggedElement.remove();
+                renderCategories();
+                renderSourceList();
+                updateStats();
+            }
+
+            return false;
+        }
+
+        // Also make source list a drop zone to move items back
+        document.addEventListener('DOMContentLoaded', () => {
+            const sourceList = document.getElementById('sourceList');
+            sourceList.addEventListener('dragover', handleDragOver);
+            sourceList.addEventListener('drop', (e) => {
+                handleDrop(e);
+                renderSourceList();
+            });
+            sourceList.addEventListener('dragleave', handleDragLeave);
+        });
+
+        function updateStats() {
+            const total = allPatterns.length;
+            const tagged = Object.values(templates).filter(t => t.tags.size > 0).length;
+            const untagged = total - tagged;
+            const tagCount = availableTags.size;
+
+            document.getElementById('totalPatterns').textContent = total;
+            document.getElementById('classifiedPatterns').textContent = tagged;
+            document.getElementById('unclassifiedPatterns').textContent = untagged;
+            document.getElementById('totalCategories').textContent = tagCount;
+        }
+
+        async function saveProgress() {
+            try {
+                // Convert templates to serializable format
+                const serializedTemplates = {};
+                Object.keys(templates).forEach(pattern => {
+                    serializedTemplates[pattern] = {
+                        tags: Array.from(templates[pattern].tags),
+                        metadata: templates[pattern].metadata
+                    };
+                });
+
+                const data = {
+                    templates: serializedTemplates,
+                    dataType: currentDataType,
+                    availableTags: Array.from(availableTags),
+                    tagPositions: tagPositions,
+                    fontSettings: {
+                        family: currentFontFamily,
+                        size: currentFontSize,
+                        weight: currentFontWeight
+                    },
+                    timestamp: new Date().toISOString()
+                };
+
+                showMessage('Saving progress to server...', false);
+
+                // Try to save to server first
+                try {
+                    const response = await fetch('/api/save-progress', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        showMessage(`✅ Progress saved to: progress/${result.filename}`);
+                        return;
+                    }
+                } catch (serverError) {
+                    console.log('Server save failed, falling back to download:', serverError);
+                }
+
+                // Fallback to download if server save fails
+                const now = new Date();
+                const months = ['january', 'february', 'march', 'april', 'may', 'june',
+                               'july', 'august', 'september', 'october', 'november', 'december'];
+                const month = months[now.getMonth()];
+                const day = now.getDate();
+                const year = now.getFullYear();
+                const hour = now.getHours();
+                const minute = now.getMinutes().toString().padStart(2, '0');
+                const ampm = hour >= 12 ? 'pm' : 'am';
+                const hour12 = hour % 12 || 12;
+
+                const readableTimestamp = `${month}_${day}_${year}_at_${hour12}_${minute}_${ampm}`;
+                const filename = `save_${readableTimestamp}.json`;
+
+                const jsonString = JSON.stringify(data, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showMessage(`📥 Progress downloaded as ${filename} - move from Downloads to the 'progress/' directory!`);
+
+            } catch (error) {
+                showMessage(`❌ Save failed: ${error.message}`, true);
+            }
+        }
+
+        function loadProgress() {
+            // Create file input element
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.json';
+            fileInput.style.display = 'none';
+
+            fileInput.onchange = function(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+
+                        // Validate data structure
+                        if (!data.templates || !data.dataType) {
+                            throw new Error('Invalid progress file format');
+                        }
+
+                        currentDataType = data.dataType;
+
+                        // Restore templates (convert arrays back to Sets)
+                        templates = {};
+                        Object.keys(data.templates).forEach(pattern => {
+                            templates[pattern] = {
+                                tags: new Set(data.templates[pattern].tags || []),
+                                metadata: data.templates[pattern].metadata || {}
+                            };
+                        });
+
+                        // Restore available tags
+                        if (data.availableTags) {
+                            availableTags = new Set(data.availableTags);
+                        }
+
+                        // Restore font settings
+                        if (data.fontSettings) {
+                            currentFontFamily = data.fontSettings.family || 'thai-noto';
+                            currentFontSize = data.fontSettings.size || 18;
+                            currentFontWeight = data.fontSettings.weight || 500;
+
+                            document.getElementById('fontSelect').value = currentFontFamily;
+                            document.getElementById('fontSizeSlider').value = currentFontSize;
+                            document.getElementById('fontSizeDisplay').textContent = currentFontSize + 'px';
+                            document.getElementById('fontWeightSelect').value = currentFontWeight;
+                        }
+
+                        // Restore tag positions
+                        if (data.tagPositions) {
+                            tagPositions = { ...data.tagPositions };
+                        } else {
+                            tagPositions = {};
+                        }
+
+                        // Update UI - but preserve the loaded templates
+                        document.getElementById('dataTypeSelect').value = currentDataType;
+
+                        // Save the loaded templates before loadDataFromFiles overwrites them
+                        const savedTemplates = { ...templates };
+                        const savedAvailableTags = new Set(availableTags);
+
+                        // Wait for data to load, then restore the loaded templates
+                        loadDataFromFiles().then(() => {
+                            // Restore the saved templates
+                            templates = savedTemplates;
+                            availableTags = savedAvailableTags;
+
+                            // Ensure any new patterns in the data get empty template entries
+                            allPatterns.forEach(pattern => {
+                                if (!templates[pattern]) {
+                                    templates[pattern] = { tags: new Set(), metadata: {} };
+                                }
+                            });
+
+                            updatePatternsHeading();
+                            renderTagsPanel();
+                            renderSourceList();
+                            updateStats();
+                            showMessage(`Progress loaded from ${file.name} (saved ${new Date(data.timestamp).toLocaleString()})`);
+                        });
+
+                    } catch (error) {
+                        showMessage(`Error loading progress file: ${error.message}`, true);
+                    }
+                };
+                reader.readAsText(file);
+            };
+
+            // Trigger file selection
+            document.body.appendChild(fileInput);
+            fileInput.click();
+            document.body.removeChild(fileInput);
+        }
+
+        function exportJSON() {
+            // Convert templates to exportable format
+            const exportData = {};
+            Object.keys(templates).forEach(pattern => {
+                exportData[pattern] = {
+                    tags: Array.from(templates[pattern].tags),
+                    metadata: templates[pattern].metadata
+                };
+            });
+
+            const output = {
+                dataType: currentDataType,
+                patterns: exportData,
+                availableTags: Array.from(availableTags),
+                exportTimestamp: new Date().toISOString()
+            };
+
+            const jsonString = JSON.stringify(output, null, 2);
+            document.getElementById('jsonOutput').textContent = jsonString;
+            document.getElementById('exportModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('exportModal').style.display = 'none';
+        }
+
+        function copyJSON() {
+            const json = document.getElementById('jsonOutput').textContent;
+            navigator.clipboard.writeText(json).then(() => {
+                showMessage('JSON copied to clipboard!');
+            });
+        }
+
+        function downloadJSON() {
+            const json = document.getElementById('jsonOutput').textContent;
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `thai_${currentDataType}_classified.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function clearAll() {
+            if (confirm('Clear all tags and pattern assignments?')) {
+                Object.keys(templates).forEach(pattern => {
+                    templates[pattern].tags.clear();
+                });
+                availableTags.clear();
+                selectedPatterns.clear();
+                selectedTags.clear();
+                renderTagsPanel();
+                renderSourceList();
+                updateStats();
+                showPatternDetails();
+                showMessage('All tags cleared!');
+            }
+        }
+
+        async function resetServer() {
+            if (!confirm("Restart server? This will kill and restart the Flask server process.")) {
+                return;
+            }
+
+            showMessage('Saving session and restarting server...', false);
+
+            try {
+                // Auto-save current session to temp file before restart
+                await saveTemporarySession();
+
+                showMessage('Session saved. Restarting server...', false);
+                // Call the restart API endpoint
+                const response = await fetch('/api/restart-server', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    showMessage('Server restart initiated. Reconnecting...', false);
+
+                    // Wait a moment for the server to shut down, then start polling for it to come back up
+                    setTimeout(pollForServerRestart, 2000);
+                } else {
+                    showMessage('Failed to restart server', true);
+                }
+            } catch (error) {
+                console.log('Server restart initiated (connection lost as expected)');
+                showMessage('Server restarting. Reconnecting...', false);
+                setTimeout(pollForServerRestart, 2000);
+            }
+        }
+
+        function pollForServerRestart() {
+            let attempts = 0;
+            const maxAttempts = 30; // 30 seconds max
+
+            const checkServer = async () => {
+                attempts++;
+                try {
+                    const response = await fetch('/', { method: 'HEAD' });
+                    if (response.ok) {
+                        showMessage('Server restarted successfully! Reloading page...', false);
+                        setTimeout(() => {
+                            const timestamp = new Date().getTime();
+                            const currentUrl = new URL(window.location.href);
+                            currentUrl.searchParams.set('v', timestamp);
+                            window.location.href = currentUrl.toString();
+                        }, 1000);
+                        return;
+                    }
+                } catch (error) {
+                    // Server still down, continue polling
+                }
+
+                if (attempts < maxAttempts) {
+                    setTimeout(checkServer, 1000);
+                } else {
+                    showMessage('Server restart timed out. Please refresh manually.', true);
+                }
+            };
+
+            checkServer();
+        }
+
+        // Bulk Move Functions
+        function showBulkMoveModal() {
+            // Populate source tags list
+            const sourceTagsList = document.getElementById('sourceTagsList');
+            sourceTagsList.innerHTML = '';
+
+            // Get all available tags
+            const assignedTags = new Set();
+            Object.values(templates).forEach(template => {
+                template.tags.forEach(tag => assignedTags.add(tag));
+            });
+
+            const allTags = new Set([...availableTags, ...assignedTags]);
+
+            if (allTags.size === 0) {
+                sourceTagsList.innerHTML = '<p>No tags available. Create some tags first!</p>';
+            } else {
+                allTags.forEach(tag => {
+                    const patternCount = Object.keys(templates).filter(pattern =>
+                        templates[pattern].tags.has(tag)
+                    ).length;
+
+                    const checkbox = document.createElement('label');
+                    checkbox.style.display = 'block';
+                    checkbox.style.marginBottom = '5px';
+                    checkbox.innerHTML = `
+                        <input type="checkbox" value="${tag}" class="source-tag-checkbox">
+                        ${tag} (${patternCount} patterns)
+                    `;
+                    sourceTagsList.appendChild(checkbox);
+                });
+            }
+
+            document.getElementById('bulkMoveModal').style.display = 'block';
+        }
+
+        function closeBulkMoveModal() {
+            document.getElementById('bulkMoveModal').style.display = 'none';
+            document.getElementById('newBulkTagName').value = '';
+            document.getElementById('removeFromSource').checked = false;
+        }
+
+        function executeBulkMove() {
+            const newTagName = document.getElementById('newBulkTagName').value.trim();
+            const removeFromSource = document.getElementById('removeFromSource').checked;
+
+            if (!newTagName) {
+                alert('Please enter a name for the new tag!');
+                return;
+            }
+
+            // Get selected source tags
+            const selectedSourceTags = [];
+            document.querySelectorAll('.source-tag-checkbox:checked').forEach(checkbox => {
+                selectedSourceTags.push(checkbox.value);
+            });
+
+            if (selectedSourceTags.length === 0) {
+                alert('Please select at least one source tag!');
+                return;
+            }
+
+            // Collect all patterns from selected source tags
+            const patternsToMove = new Set();
+            selectedSourceTags.forEach(sourceTag => {
+                Object.keys(templates).forEach(pattern => {
+                    if (templates[pattern].tags.has(sourceTag)) {
+                        patternsToMove.add(pattern);
+                    }
+                });
+            });
+
+            if (patternsToMove.size === 0) {
+                alert('No patterns found in the selected source tags!');
+                return;
+            }
+
+            // Confirm the operation
+            const sourceTagsStr = selectedSourceTags.join(', ');
+            const actionStr = removeFromSource ? 'move' : 'copy';
+            const confirmMsg = `${actionStr.toUpperCase()} ${patternsToMove.size} patterns from [${sourceTagsStr}] to new tag "${newTagName}"?`;
+
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+
+            // Save state for undo
+            saveState(`Bulk ${actionStr} ${patternsToMove.size} patterns to "${newTagName}"`);
+
+            // Add new tag to system
+            availableTags.add(newTagName);
+
+            // Move/copy patterns to new tag
+            patternsToMove.forEach(pattern => {
+                templates[pattern].tags.add(newTagName);
+
+                // Remove from source tags if requested
+                if (removeFromSource) {
+                    selectedSourceTags.forEach(sourceTag => {
+                        templates[pattern].tags.delete(sourceTag);
+                    });
+                }
+            });
+
+            // Clean up empty tags if patterns were moved (not copied)
+            if (removeFromSource) {
+                selectedSourceTags.forEach(sourceTag => {
+                    const hasPatterns = Object.keys(templates).some(pattern =>
+                        templates[pattern].tags.has(sourceTag)
+                    );
+                    if (!hasPatterns) {
+                        availableTags.delete(sourceTag);
+                    }
+                });
+            }
+
+            // Update UI
+            renderTagsPanel();
+            renderSourceList();
+            updateStats();
+            closeBulkMoveModal();
+
+            const actionPast = removeFromSource ? 'moved' : 'copied';
+            showMessage(`Successfully ${actionPast} ${patternsToMove.size} patterns to "${newTagName}"`);
+        }
+
+        // Add Pattern Functions
+        function showAddPatternModal() {
+            document.getElementById('addPatternModal').style.display = 'block';
+            document.getElementById('newPatternInput').focus();
+
+            // Add real-time preview
+            const input = document.getElementById('newPatternInput');
+            input.addEventListener('input', updatePatternPreview);
+            updatePatternPreview(); // Initial call
+        }
+
+        function closeAddPatternModal() {
+            document.getElementById('addPatternModal').style.display = 'none';
+            document.getElementById('newPatternInput').value = '';
+            document.getElementById('patternPreview').textContent = 'Enter a pattern to see preview...';
+        }
+
+        function updatePatternPreview() {
+            const input = document.getElementById('newPatternInput');
+            const preview = document.getElementById('patternPreview');
+            const pattern = input.value.trim();
+
+            if (pattern) {
+                // Convert template to Thai for preview
+                const thaiPattern = convertTemplateToThai(pattern);
+                preview.textContent = thaiPattern;
+                preview.style.color = '#28a745';
+            } else {
+                preview.textContent = 'Enter a pattern to see preview...';
+                preview.style.color = '#6c757d';
+            }
+        }
+
+        function validatePattern(pattern) {
+            if (!pattern || pattern.trim().length === 0) {
+                return { valid: false, error: 'Pattern cannot be empty' };
+            }
+
+            // Check if pattern already exists
+            if (allPatterns.includes(pattern)) {
+                return { valid: false, error: 'Pattern already exists' };
+            }
+
+            // Basic Thai character validation (allow common template chars x, f)
+            const thaiRegex = /^[\u0E00-\u0E7Fxf]+$/;
+            if (!thaiRegex.test(pattern)) {
+                return { valid: false, error: 'Pattern contains invalid characters' };
+            }
+
+            return { valid: true };
+        }
+
+        function addPatternToSession() {
+            const pattern = document.getElementById('newPatternInput').value.trim();
+            const validation = validatePattern(pattern);
+
+            if (!validation.valid) {
+                alert(`Error: ${validation.error}`);
+                return;
+            }
+
+            // Save state for undo
+            saveState(`Add pattern "${pattern}" to session`);
+
+            // Add to current session
+            allPatterns.push(pattern);
+            templates[pattern] = { tags: new Set(), metadata: { source: 'session', added: new Date().toISOString() } };
+
+            // Update UI
+            renderSourceList();
+            updateStats();
+            closeAddPatternModal();
+
+            showMessage(`✅ Added "${pattern}" to current session`);
+        }
+
+        async function addPatternToJSON() {
+            const pattern = document.getElementById('newPatternInput').value.trim();
+            const validation = validatePattern(pattern);
+
+            if (!validation.valid) {
+                alert(`Error: ${validation.error}`);
+                return;
+            }
+
+            if (!confirm(`Save "${pattern}" to the original ${currentDataType} JSON file?\n\nThis will permanently modify the source file.`)) {
+                return;
+            }
+
+            try {
+                // Add to current session first
+                allPatterns.push(pattern);
+                templates[pattern] = { tags: new Set(), metadata: { source: 'json', added: new Date().toISOString() } };
+
+                // Prepare data for saving to JSON
+                const updatedData = [...allPatterns];
+
+                // Send to server to update the JSON file
+                const response = await fetch('/api/update-source-json', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        dataType: currentDataType,
+                        patterns: updatedData
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    saveState(`Add pattern "${pattern}" to JSON file`);
+
+                    // Update UI
+                    renderSourceList();
+                    updateStats();
+                    closeAddPatternModal();
+
+                    showMessage(`✅ Added "${pattern}" to ${result.filename}`);
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to update JSON file');
+                }
+
+            } catch (error) {
+                // Remove from session if JSON save failed
+                const index = allPatterns.indexOf(pattern);
+                if (index > -1) {
+                    allPatterns.splice(index, 1);
+                    delete templates[pattern];
+                }
+
+                alert(`Failed to save to JSON file: ${error.message}`);
+                showMessage(`❌ Failed to save "${pattern}" to JSON file`, true);
+            }
+        }
+
+        // Temporary session save/restore functions
+        async function saveTemporarySession() {
+            try {
+                // Convert templates to serializable format
+                const serializedTemplates = {};
+                Object.keys(templates).forEach(pattern => {
+                    serializedTemplates[pattern] = {
+                        tags: Array.from(templates[pattern].tags),
+                        metadata: templates[pattern].metadata
+                    };
+                });
+
+                const tempData = {
+                    templates: serializedTemplates,
+                    dataType: currentDataType,
+                    availableTags: Array.from(availableTags),
+                    tagPositions: tagPositions,
+                    fontSettings: {
+                        family: currentFontFamily,
+                        size: currentFontSize,
+                        weight: currentFontWeight
+                    },
+                    allPatterns: [...allPatterns],
+                    timestamp: new Date().toISOString(),
+                    isTemporarySession: true
+                };
+
+                // Save to server temp folder
+                const response = await fetch('/api/save-temp-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(tempData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save temp session');
+                }
+
+                return true;
+            } catch (error) {
+                console.error('Failed to save temporary session:', error);
+                return false;
+            }
+        }
+
+        async function restoreTemporarySession() {
+            try {
+                const response = await fetch('/api/get-temp-session');
+                if (!response.ok) {
+                    return false; // No temp session available
+                }
+
+                const tempData = await response.json();
+                if (!tempData.isTemporarySession) {
+                    return false;
+                }
+
+                // Restore the session data
+                currentDataType = tempData.dataType;
+                allPatterns = [...tempData.allPatterns];
+
+                // Restore templates
+                templates = {};
+                Object.keys(tempData.templates).forEach(pattern => {
+                    templates[pattern] = {
+                        tags: new Set(tempData.templates[pattern].tags || []),
+                        metadata: tempData.templates[pattern].metadata || {}
+                    };
+                });
+
+                // Restore other state
+                availableTags = new Set(tempData.availableTags || []);
+                tagPositions = { ...tempData.tagPositions } || {};
+
+                // Restore font settings
+                if (tempData.fontSettings) {
+                    currentFontFamily = tempData.fontSettings.family || 'thai-noto';
+                    currentFontSize = tempData.fontSettings.size || 18;
+                    currentFontWeight = tempData.fontSettings.weight || 500;
+
+                    document.getElementById('fontSelect').value = currentFontFamily;
+                    document.getElementById('fontSizeSlider').value = currentFontSize;
+                    document.getElementById('fontSizeDisplay').textContent = currentFontSize + 'px';
+                    document.getElementById('fontWeightSelect').value = currentFontWeight;
+                }
+
+                // Update UI
+                document.getElementById('dataTypeSelect').value = currentDataType;
+                updatePatternsHeading();
+                renderTagsPanel();
+                renderSourceList();
+                updateStats();
+
+                showMessage(`🔄 Restored previous session (${allPatterns.length} patterns, saved ${new Date(tempData.timestamp).toLocaleString()})`);
+                return true;
+
+            } catch (error) {
+                console.error('Failed to restore temporary session:', error);
+                return false;
+            }
+        }
+
+        // Initialize font settings and check for temp session on load
+        window.addEventListener('load', async () => {
+            document.getElementById('fontSizeDisplay').textContent = currentFontSize + 'px';
+
+            // Try to restore temporary session after a short delay
+            setTimeout(async () => {
+                const restored = await restoreTemporarySession();
+                if (!restored) {
+                    console.log('No temporary session to restore');
+                }
+            }, 500);
+        });
+    </script>
+
+    <!-- Toast Messages - Fixed positioned overlay -->
+    <div id="messageArea"></div>
+</body>
+</html>

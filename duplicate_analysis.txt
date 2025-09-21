@@ -1,0 +1,136 @@
+THAI VOWEL PATTERN DUPLICATE ANALYSIS
+=====================================
+Generated: 2025-09-20
+
+WITHIN-CLASS DUPLICATES (Same pattern appears multiple times in one class):
+=============================================================================
+
+Class "ะ": No duplicates ✓
+Class "xั": No duplicates ✓
+Class "x็": No duplicates ✓
+Class "า": No duplicates ✓
+Class "xิ": No duplicates ✓
+Class "xํ": No duplicates ✓
+Class "xุ": No duplicates ✓
+Class "xู": No duplicates ✓
+Class "เ": No duplicates ✓
+Class "โ": No duplicates ✓
+Class "ใ": No duplicates ✓
+Class "ไ": No duplicates ✓
+Class "อ": No duplicates ✓
+Class "ย": No duplicates ✓
+Class "ว": No duplicates ✓
+Class "ฤ": No duplicates ✓
+Class "ฤๅ": No duplicates ✓
+Class "ฦ": No duplicates ✓
+Class "ฦๅ": No duplicates ✓
+RESULT: No patterns appear multiple times within the same class
+
+CROSS-CLASS DUPLICATES (Same pattern appears in different classes):
+======================================================================
+
+Pattern: "xัวะ"
+  Classes: ['ะ', 'xั', 'ว']
+
+Pattern: "เxอะ"
+  Classes: ['ะ', 'เ', 'อ']
+
+Pattern: "เxาะ"
+  Classes: ['ะ', 'า', 'เ']
+
+Pattern: "เxียะ"
+  Classes: ['ะ', 'xิ', 'เ', 'ย']
+
+Pattern: "เxือะ"
+  Classes: ['ะ', 'xิ', 'เ', 'อ']
+
+Pattern: "แxะ"
+  Classes: ['ะ', 'เ']
+
+Pattern: "โxะ"
+  Classes: ['ะ', 'โ']
+
+Pattern: "xัว"
+  Classes: ['xั', 'ว']
+
+Pattern: "x็อf"
+  Classes: ['x็', 'อ']
+
+Pattern: "เx็f"
+  Classes: ['x็', 'เ']
+
+Pattern: "แx็f"
+  Classes: ['x็', 'เ']
+
+Pattern: "xํา"
+  Classes: ['า', 'xํ']
+
+Pattern: "เxา"
+  Classes: ['า', 'เ']
+
+Pattern: "เxิf"
+  Classes: ['xิ', 'เ']
+
+Pattern: "เxีย"
+  Classes: ['xิ', 'เ', 'ย']
+
+Pattern: "xือ"
+  Classes: ['xิ', 'อ']
+
+Pattern: "เxือ"
+  Classes: ['xิ', 'เ', 'อ']
+
+Pattern: "เxอ"
+  Classes: ['เ', 'อ']
+
+Pattern: "เxอf"
+  Classes: ['เ', 'อ']
+
+Pattern: "เxียf"
+  Classes: ['เ', 'ย']
+
+SARA_COMBOS.JSON LINEAR DUPLICATES (same pattern appears multiple times in the list):
+========================================================================================
+
+Pattern: "xัวะ" - Lines: 2, 12, 75 (3 occurrences)
+Pattern: "เxาะ" - Lines: 5, 21, 46 (3 occurrences)
+Pattern: "เxียะ" - Lines: 6, 27, 50, 73 (4 occurrences)
+Pattern: "เxือะ" - Lines: 7, 31, 53, 70 (4 occurrences)
+Pattern: "xํา" - Lines: 19, 34 (2 occurrences)
+Pattern: "เx็f" - Lines: 15, 41 (2 occurrences)
+Pattern: "เxอะ" - Lines: 4, 44, 68 (3 occurrences)
+Pattern: "เxา" - Lines: 20, 45 (2 occurrences)
+Pattern: "เxิf" - Lines: 23, 47 (2 occurrences)
+Pattern: "เxีย" - Lines: 26, 48, 71 (3 occurrences)
+Pattern: "เxือ" - Lines: 30, 51, 69 (3 occurrences)
+Pattern: "แx็f" - Lines: 16, 56 (2 occurrences)
+Pattern: "แxะ" - Lines: 8, 57 (2 occurrences)
+Pattern: "โxะ" - Lines: 9, 60 (2 occurrences)
+Pattern: "x็อf" - Lines: 14, 64 (2 occurrences)
+Pattern: "xือ" - Lines: 29, 65 (2 occurrences)
+Pattern: "เxอ" - Lines: 42, 66 (2 occurrences)
+Pattern: "เxอf" - Lines: 43, 67 (2 occurrences)
+Pattern: "เxียf" - Lines: 49, 72 (2 occurrences)
+Pattern: "xัว" - Lines: 11, 74 (2 occurrences)
+
+SUMMARY STATISTICS:
+==================
+- Total patterns in sara_combos.json: 79
+- Unique patterns in sara_combos.json: 50
+- Patterns with cross-class classification: 20
+- Patterns with linear duplicates: 20
+- Total duplicate entries to remove: 29
+- Final unique count after deduplication: 50
+
+RECOMMENDATIONS:
+===============
+1. The classified_sara_combos.json shows no within-class duplicates ✓
+2. Cross-class duplicates are CORRECT - patterns can belong to multiple categories
+3. The sara_combos.json linear duplicates should be removed to create a clean unique list
+4. The tag-based system is perfect for handling multi-class patterns
+5. Consider using classified_sara_combos.json as source for tags
+
+CONCLUSION:
+==========
+The duplicates represent linguistic reality - Thai vowel patterns
+can be classified multiple ways. The tag-based system handles this complexity.

@@ -1,0 +1,10 @@
+thai1 = "ยา" # simple case: foundation no attachments, atomic vowel. read LTR.
+thai2 = "เด็ก" # foundation + vowel + final. a little harder bc vowel linearly appears first.
+thai3 = "คน" #foundation + final (hidden vowel)
+thai4 = "เลว" # foundation + vowel + ว, with atomic vowel coming first, but read after ล
+
+thaihard1 = "เกรียน" # cluster, multi-part vowel
+thaihard2 = "เอา" # simple อ stress test with multi-part vowel, อ acts as a silent foundation.
+thaihard3 = "อย่า" # อ stress test with simple atomic vowel. อ is silent here, and contributes nothing.
+thaihard4 = "เอือม" # complex อ stress test with consecutive อ acting as first a silent foundation, then part of a multi-part vowel. real word btw, means 'to be fed up with, or weary of'
+thaihard5 = "ไกล" # difficult caese - atomic vowel, ไ is actually read AFTER both กล, which act as a true cluster. in this case, they are "both" the foundation.
