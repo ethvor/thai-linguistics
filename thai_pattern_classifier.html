@@ -39,6 +39,9 @@
             --input-bg: white;
             --input-border: #ddd;
             --modal-bg: white;
+            --pre-bg: #f5f5f5;
+            --warning-text: #856404;
+            --success-text: #28a745;
         }
 
         /* Dark mode variables */
@@ -62,6 +65,9 @@
             --input-bg: #2a3441;
             --input-border: #4f5b69;
             --modal-bg: #1e2a3a;
+            --pre-bg: #2d3748;
+            --warning-text: #fbbf24;
+            --success-text: #22c55e;
         }
 
         /* Dark mode global text color */
@@ -184,6 +190,12 @@
         .main-content {
             display: grid;
             grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
             gap: 20px;
         }
 
@@ -336,7 +348,7 @@
         }
 
         [data-theme="dark"] .tag-controls button:hover {
-            background: #1a1a1a;
+            background: #667eea !important;
         }
 
         [data-theme="dark"] .tag-controls button:disabled {
@@ -378,8 +390,25 @@
             color: white !important;
         }
 
-        [data-theme="dark"] #searchResults {
+
+        [data-theme="dark"] .stats h3 {
             color: white !important;
+        }
+
+        [data-theme="dark"] input[type="range"],
+        [data-theme="dark"] #fontSizeSlider {
+            accent-color: #000000 !important;
+            background: #000000 !important;
+        }
+
+        [data-theme="dark"] input[type="range"]::-webkit-slider-track,
+        [data-theme="dark"] #fontSizeSlider::-webkit-slider-track {
+            background: #000000 !important;
+        }
+
+        [data-theme="dark"] input[type="range"]::-moz-range-track,
+        [data-theme="dark"] #fontSizeSlider::-moz-range-track {
+            background: #000000 !important;
         }
 
         .available-tags {
@@ -450,14 +479,14 @@
             grid-template-columns: repeat(4, 1fr);
             grid-template-rows: repeat(6, 200px);
             gap: 10px;
-            min-height: 500px;
+            max-height: 1400px; /* 6 rows * 200px + gaps + padding */
+            overflow-y: auto;
             padding: 20px;
             background: var(--panel-bg);
             color: var(--panel-text);
             border: 2px solid var(--tag-border);
             border-radius: 10px;
             position: relative;
-            overflow: visible;
             transition: all 0.3s ease;
         }
 
@@ -556,6 +585,17 @@
         .tag-patterns .mini-pattern:hover {
             background: var(--pattern-hover-bg);
             border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .pattern-tag-manager {
+            padding: 15px;
+            background: var(--panel-bg);
+            color: var(--panel-text);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 10px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
         }
 
         .pattern-details {
@@ -662,13 +702,19 @@
             color: white;
         }
 
-        .stats {
+        .stats-panel {
             background: var(--panel-bg);
             color: var(--panel-text);
             border-radius: 10px;
-            padding: 15px;
-            margin-top: 20px;
+            padding: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            flex: none;
+        }
+
+        .stats {
+            margin: 0;
         }
 
         .stats h3 {
@@ -712,11 +758,12 @@
 
         .modal h2 {
             margin-bottom: 20px;
-            color: #333;
+            color: var(--panel-text);
         }
 
         .modal pre {
-            background: #f5f5f5;
+            background: var(--pre-bg);
+            color: var(--panel-text);
             padding: 15px;
             border-radius: 5px;
             overflow-x: auto;
@@ -768,6 +815,19 @@
             margin-bottom: 10px;
             border-radius: 8px;
             border: 1px solid #a7f3d0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            pointer-events: auto;
+            animation: slideInRight 0.3s ease-out;
+            font-family: 'Noto Sans Thai', 'Sarabun', 'Prompt', 'Kanit', 'Tahoma', 'Arial Unicode MS', 'Segoe UI', sans-serif;
+        }
+
+        .warning-message {
+            background: #fef3c7;
+            color: #d97706;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid #fbbf24;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             pointer-events: auto;
             animation: slideInRight 0.3s ease-out;
@@ -842,7 +902,6 @@
                 <button onclick="saveProgress()" title="Save current classification progress to a timestamped file">💾 Save Progress</button>
                 <button onclick="loadProgress()" title="Load previously saved classification progress">📂 Load Progress</button>
                 <button onclick="exportJSON()" title="Export current classifications as JSON data">📤 Export JSON</button>
-                <button onclick="clearAll()" title="Clear all tags and patterns (cannot be undone)">🗑️ Clear All</button>
                 <button onclick="resetServer()" style="background: #e74c3c; color: white;" title="Restart the Flask server">🔄 Reset Server</button>
             </div>
 
@@ -870,15 +929,26 @@
         </header>
 
         <div class="main-content">
-            <div class="source-panel">
+            <div class="left-column">
+                <div class="source-panel">
                 <div class="source-section">
                     <h3 id="patternsHeading">Patterns</h3>
                     <div class="search-controls" style="margin-bottom: 15px;">
-                        <input type="text" id="searchInput" placeholder="🔍 Search patterns (contains characters)..." onkeyup="handleSearchInput(event)" style="width: 250px; padding: 8px; display: block; margin-bottom: 8px;">
+                        <input type="text" id="searchInput" placeholder="Search patterns..." onkeyup="handleSearchInput(event)" style="width: 250px; padding: 8px; display: block; margin-bottom: 8px;">
                         <div style="display: flex; gap: 10px; align-items: center;">
-                            <button onclick="clearSearch()" title="Clear the search filter to show all patterns">Clear Search</button>
+                            <button onclick="clearSearch()" title="Clear the search filter to show all patterns">Clear Filters</button>
                             <button onclick="showAddPatternModal()" style="background: #28a745; color: white;" title="Add a new Thai pattern to the classification system">+ Add Pattern</button>
-                            <span id="searchResults" style="font-size: 12px;"></span>
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <button onclick="showUnclassifiedOnly()" id="unclassifiedFilterBtn" style="width: 160px; text-align: center;" title="Show only patterns that have no tags">Show Untagged</button>
+                        </div>
+                        <div style="margin-top: 12px; border-top: 1px solid var(--tag-border); padding-top: 10px;">
+                            <div style="font-weight: bold; font-size: 12px; margin-bottom: 6px; color: var(--panel-text);">Tag Selection Behavior:</div>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button onclick="toggleLogicalOperator('NOT')" id="notOperatorBtn" style="width: 60px; font-size: 11px; padding: 4px 6px;" title="Negate selected tags (show patterns WITHOUT these tags)">! NOT</button>
+                                <button onclick="toggleLogicalOperator('AND')" id="andOperatorBtn" style="width: 60px; font-size: 11px; padding: 4px 6px;" title="Require ALL selected tags (show patterns with ALL these tags)">& AND</button>
+                                <button onclick="toggleLogicalOperator('OR')" id="orOperatorBtn" style="width: 60px; font-size: 11px; padding: 4px 6px;" title="Allow ANY selected tags (show patterns with ANY of these tags)">| OR</button>
+                            </div>
                         </div>
                     </div>
                     <div class="pattern-list" id="sourceList">
@@ -889,23 +959,34 @@
                         </div>
                     </div>
                 </div>
-                <div class="stats">
-                    <h3>Statistics</h3>
-                    <div class="stat-item">
-                        <span>Total Patterns:</span>
-                        <span id="totalPatterns">0</span>
+                </div>
+
+                <div class="stats-panel">
+                    <div class="stats">
+                        <h3>Statistics</h3>
+                        <div class="stat-item">
+                            <span>Total Patterns:</span>
+                            <span id="totalPatterns">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>Tagged:</span>
+                            <span id="classifiedPatterns">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>Untagged:</span>
+                            <span id="unclassifiedPatterns">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>Tags:</span>
+                            <span id="totalCategories">0</span>
+                        </div>
                     </div>
-                    <div class="stat-item">
-                        <span>Classified:</span>
-                        <span id="classifiedPatterns">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span>Unclassified:</span>
-                        <span id="unclassifiedPatterns">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span>Tags:</span>
-                        <span id="totalCategories">0</span>
+                </div>
+
+                <!-- Pattern Tag Manager -->
+                <div class="pattern-tag-manager">
+                    <div class="pattern-details" id="patternDetails">
+                        <p>Select patterns to view details and manage tags.</p>
                     </div>
                 </div>
             </div>
@@ -915,22 +996,19 @@
                 <div class="tag-controls">
                     <input type="text" id="newTagInput" placeholder="Enter new tag..." onkeyup="handleTagInputKeyup(event)">
                     <button onclick="createEmptyTag()" title="Create a new empty tag category">+ Create Tag</button>
-                    <button onclick="addTagToSelected()" id="addToSelectedBtn" disabled title="Add the new tag to the currently selected patterns">+ Add to Selected (<span id="selectedCount">0</span>)</button>
-                    <button id="bulkMoveToggle" onclick="toggleBulkMoveMode()" title="Toggle bulk move mode - when enabled, dragging tags will merge their patterns additively">📦 Bulk Move Mode: OFF</button>
+                    <button onclick="addTagToSelected()" id="addToSelectedBtn" disabled title="Create the new tag and add it to the currently selected patterns">Create and Add (<span id="selectedCount">0</span>)</button>
+                    <button id="bulkMoveToggle" onclick="toggleBulkMoveMode()" style="width: 200px; text-align: center;" title="Toggle bulk move mode - when enabled, dragging tags will merge their patterns additively">📦 Bulk Move Mode: OFF</button>
                     <button onclick="removeTagsFromSelected()" id="removeTagsBtn" disabled title="Remove selected tag(s) from the currently displayed patterns">🗑️ Remove Tags from Selected</button>
                     <input type="text" id="renameTagInput" placeholder="Rename selected tag to..." style="margin-left: 10px;" title="Enter new name for the selected tag">
                     <button onclick="renameSelectedTag()" id="renameTagBtn" disabled title="Rename the selected tag to the name entered in the text field">🏷️ Rename Tag</button>
                     <button onclick="undo()" id="undoBtn" disabled title="Undo the last action">↶ Undo</button>
                     <button onclick="redo()" id="redoBtn" disabled title="Redo the last undone action">↷ Redo</button>
-                    <button onclick="clearTagFilters()" title="Clear all tag filters to show all patterns">Clear Filters</button>
-                    <button onclick="selectAllPatterns()" title="Select all visible patterns for bulk operations">Select All</button>
-                    <button onclick="clearSelection()" title="Clear the current pattern selection">Clear Selection</button>
+                    <button onclick="clearTagFilters()" title="Clear all tag filters to show all patterns">Unselect All</button>
+                    <button onclick="addTagRow()" title="Add a new row to the tag grid">+ Add Row</button>
+                    <button onclick="removeTagRow()" title="Remove the last row from the tag grid">- Remove Row</button>
                 </div>
                 <div class="available-tags" id="availableTagsList">
                     <!-- Available tags will be displayed here -->
-                </div>
-                <div class="pattern-details" id="patternDetails">
-                    <p>Select patterns to view details and manage tags.</p>
                 </div>
             </div>
         </div>
@@ -961,7 +1039,7 @@
 
             <div style="margin-bottom: 20px; padding: 15px; background: var(--tag-bg); border-radius: 8px;">
                 <h3 style="margin-top: 0; color: var(--panel-text);">Preview:</h3>
-                <div id="patternPreview" style="font-size: 24px; font-weight: bold; color: #28a745; min-height: 30px;">
+                <div id="patternPreview" style="font-size: 24px; font-weight: bold; color: var(--success-text); min-height: 30px;">
                     Enter a pattern to see preview...
                 </div>
             </div>
@@ -976,7 +1054,7 @@
                         💾 Save to Original JSON
                     </button>
                 </div>
-                <div style="font-size: 12px; color: #856404; margin-top: 8px;">
+                <div style="font-size: 12px; color: var(--warning-text); margin-top: 8px;">
                     <strong>Session Only:</strong> Pattern available until page reload<br>
                     <strong>Save to JSON:</strong> Permanently adds to source file
                 </div>
@@ -996,14 +1074,26 @@
         let currentDataType = 'vowels';
         let allPatterns = [];
         let draggedElement = null;
+        let autoScrollInterval = null;
         let selectedTags = new Set(); // For filtering
+
+        // Logical operators for tag filtering
+        let logicalOperators = {
+            NOT: false,
+            AND: false,
+            OR: false
+        };
+
+        // Grid management
+        let gridRows = 6;
+        let gridCols = 4;
 
         // Font settings
         let currentFontFamily = 'thai-noto';
         let currentFontSize = 18;
         let currentFontWeight = 500;
 
-        function showMessage(text, isError = false) {
+        function showMessage(text, messageType = 'success') {
             const messageArea = document.getElementById('messageArea');
 
             // Convert any quoted patterns in the message to Thai display
@@ -1015,7 +1105,17 @@
                 return match;
             });
 
-            messageArea.innerHTML = `<div class="${isError ? 'error-message' : 'success-message'}">${displayText}</div>`;
+            // Support legacy boolean parameter for isError
+            let className;
+            if (typeof messageType === 'boolean') {
+                className = messageType ? 'error-message' : 'success-message';
+            } else {
+                className = messageType === 'error' ? 'error-message' :
+                           messageType === 'warning' ? 'warning-message' :
+                           'success-message';
+            }
+
+            messageArea.innerHTML = `<div class="${className}">${displayText}</div>`;
             setTimeout(() => {
                 messageArea.innerHTML = '';
             }, 5000);
@@ -1026,6 +1126,17 @@
 
             // Clear existing data first
             allPatterns = [];
+
+            // Reset filters when changing data types
+            isShowingUnclassifiedOnly = false;
+            const unclassifiedBtn = document.getElementById('unclassifiedFilterBtn');
+            if (unclassifiedBtn) {
+                unclassifiedBtn.style.backgroundColor = '';
+                unclassifiedBtn.style.color = '';
+                unclassifiedBtn.textContent = 'Show Untagged';
+                unclassifiedBtn.title = 'Show only patterns that have no tags';
+            }
+
             renderSourceList();
             updateStats();
 
@@ -1161,8 +1272,26 @@ ${error.message}
             if (selectedTags.size > 0) {
                 filteredPatterns = filteredPatterns.filter(pattern => {
                     const patternTags = templates[pattern]?.tags || new Set();
-                    // Show patterns that have ALL selected tags
-                    return Array.from(selectedTags).every(tag => patternTags.has(tag));
+                    let matches = false;
+
+                    // Determine base match behavior
+                    if (logicalOperators.AND) {
+                        // ALL selected tags must be present
+                        matches = Array.from(selectedTags).every(tag => patternTags.has(tag));
+                    } else if (logicalOperators.OR) {
+                        // ANY selected tag must be present
+                        matches = Array.from(selectedTags).some(tag => patternTags.has(tag));
+                    } else {
+                        // Default behavior: AND (all selected tags)
+                        matches = Array.from(selectedTags).every(tag => patternTags.has(tag));
+                    }
+
+                    // Apply NOT operator if enabled
+                    if (logicalOperators.NOT) {
+                        matches = !matches;
+                    }
+
+                    return matches;
                 });
             }
 
@@ -1173,16 +1302,27 @@ ${error.message}
                 );
             }
 
-            // Update search results display
-            updateSearchResults(filteredPatterns.length);
+            // Filter patterns to show only untagged ones
+            if (isShowingUnclassifiedOnly) {
+                filteredPatterns = filteredPatterns.filter(pattern => {
+                    const patternTags = templates[pattern]?.tags || new Set();
+                    return patternTags.size === 0;
+                });
+            }
+
 
             if (filteredPatterns.length === 0) {
                 let message = 'No patterns match the current filters.';
-                if (currentSearchTerm) {
+                if (isShowingUnclassifiedOnly && !currentSearchTerm && selectedTags.size === 0) {
+                    message = 'No untagged patterns found. All patterns have tags assigned.';
+                } else if (currentSearchTerm && !isShowingUnclassifiedOnly && selectedTags.size === 0) {
                     message = `No patterns contain "${currentSearchTerm}".`;
-                }
-                if (selectedTags.size > 0 && currentSearchTerm) {
+                } else if (selectedTags.size > 0 && currentSearchTerm && !isShowingUnclassifiedOnly) {
                     message = `No patterns contain "${currentSearchTerm}" and have the selected tags.`;
+                } else if (isShowingUnclassifiedOnly && currentSearchTerm) {
+                    message = `No untagged patterns contain "${currentSearchTerm}".`;
+                } else if (isShowingUnclassifiedOnly && selectedTags.size > 0) {
+                    message = 'No untagged patterns match the selected tags.';
                 }
                 const textColor = document.body.getAttribute('data-theme') === 'dark' ? 'white' : '#666';
                 sourceList.innerHTML = `<div style="color: ${textColor}; padding: 10px;">${message}</div>`;
@@ -1294,6 +1434,7 @@ ${error.message}
         // New tag-based functions
         let selectedPatterns = new Set();
         let currentSearchTerm = '';
+        let isShowingUnclassifiedOnly = false;
         let tagPositions = {}; // Store custom tag positions for organization
 
         // Undo/Redo system
@@ -1482,6 +1623,12 @@ ${error.message}
                 }
             });
 
+            // Preserve tag position in grid
+            if (tagPositions[oldName]) {
+                tagPositions[newName] = tagPositions[oldName];
+                delete tagPositions[oldName];
+            }
+
             // Update selection
             selectedTags.delete(oldName);
             selectedTags.add(newName);
@@ -1588,12 +1735,72 @@ ${error.message}
             showPatternDetails();
         }
 
+        async function deleteSelectedPatterns() {
+            if (selectedPatterns.size === 0) {
+                showMessage('No patterns selected for deletion.', true);
+                return;
+            }
+
+            // Show confirmation dialog
+            const patternList = Array.from(selectedPatterns).map(p => convertTemplateToThai(p)).join(', ');
+            if (!confirm(`Are you sure you want to permanently delete ${selectedPatterns.size} pattern(s)?\n\n${patternList}\n\nThis will remove them from the source JSON and cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                // Remove patterns from allPatterns array
+                const patternsToDelete = Array.from(selectedPatterns);
+                patternsToDelete.forEach(pattern => {
+                    const index = allPatterns.indexOf(pattern);
+                    if (index > -1) {
+                        allPatterns.splice(index, 1);
+                    }
+                    // Remove from templates
+                    delete templates[pattern];
+                });
+
+                // Update the source JSON file via server API
+                const response = await fetch('/api/update-source-json', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        dataType: currentDataType,
+                        patterns: allPatterns
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update source JSON');
+                }
+
+                const result = await response.json();
+
+                // Clear selection and update UI
+                selectedPatterns.clear();
+                renderSourceList();
+                renderTagsPanel();
+                showPatternDetails();
+                updateStats();
+
+                showMessage(`✅ Deleted ${patternsToDelete.length} pattern(s) from ${result.filename}. Backup saved as ${result.backup}.`);
+
+            } catch (error) {
+                showMessage(`Error deleting patterns: ${error.message}`, true);
+                console.error('Delete error:', error);
+            }
+        }
+
         function renderTagsPanel() {
             const tagsList = document.getElementById('availableTagsList');
             tagsList.innerHTML = '';
 
-            // Create 24 grid slots (4 columns x 6 rows)
-            const totalSlots = 24;
+            // Create grid slots based on current dimensions
+            const totalSlots = gridRows * gridCols;
+
+            // Update grid layout
+            updateGridLayout();
             const gridSlots = [];
 
             // Initialize all slots as empty
@@ -1717,11 +1924,13 @@ ${error.message}
             e.target.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/html', e.target.outerHTML);
+            startAutoScroll();
         }
 
         function handleTagDragEnd(e) {
             e.target.classList.remove('dragging');
             draggedTag = null;
+            stopAutoScroll();
         }
 
         function handleTagDragOver(e) {
@@ -1805,6 +2014,12 @@ ${error.message}
         }
 
         function toggleTagFilter(tag) {
+            // Prevent tag selection when untagged filter is active
+            if (isShowingUnclassifiedOnly) {
+                showMessage('❌ Cannot select tags while showing untagged patterns only. Clear the untagged filter first.', true);
+                return;
+            }
+
             if (selectedTags.has(tag)) {
                 selectedTags.delete(tag);
             } else {
@@ -1826,7 +2041,7 @@ ${error.message}
             const detailsPanel = document.getElementById('patternDetails');
 
             if (selectedPatterns.size === 0) {
-                detailsPanel.innerHTML = '<p>Select patterns to view details and manage tags.</p>';
+                detailsPanel.innerHTML = '<div><h3>Pattern Selection</h3><p>Click on patterns in the list above to select them for management in this pane.</p></div>';
                 return;
             }
 
@@ -1858,6 +2073,13 @@ ${error.message}
                 });
             }
 
+            html += '</div>';
+
+            // Pattern deletion section
+            html += '<div style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 15px;">';
+            html += '<h4 style="color: #dc2626;">Delete Patterns:</h4>';
+            html += '<p style="color: #666; font-size: 12px;">Warning: This will permanently remove the selected patterns from the source data.</p>';
+            html += `<button onclick="deleteSelectedPatterns()" style="margin: 5px; padding: 8px 16px; background: #dc2626; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">Delete ${selectedPatterns.size} Pattern${selectedPatterns.size === 1 ? '' : 's'}</button>`;
             html += '</div>';
 
             detailsPanel.innerHTML = html;
@@ -1903,6 +2125,120 @@ ${error.message}
             showPatternDetails();
         }
 
+        function showUnclassifiedOnly() {
+            const button = document.getElementById('unclassifiedFilterBtn');
+
+            // Toggle the filter state
+            isShowingUnclassifiedOnly = !isShowingUnclassifiedOnly;
+
+            // Update button appearance
+            if (isShowingUnclassifiedOnly) {
+                button.style.backgroundColor = 'var(--tag-selected-bg)';
+                button.style.color = 'white';
+                button.textContent = 'Show All';
+                button.title = 'Show all patterns (clear untagged filter)';
+            } else {
+                button.style.backgroundColor = '';
+                button.style.color = '';
+                button.textContent = 'Show Untagged';
+                button.title = 'Show only patterns that have no tags';
+            }
+
+            // Clear any tag selections when switching to untagged view
+            if (isShowingUnclassifiedOnly) {
+                selectedTags.clear();
+                renderTagsPanel();
+            }
+
+            // Re-render the pattern list with the new filter
+            renderSourceList();
+        }
+
+        function toggleLogicalOperator(operator) {
+            const button = document.getElementById(operator.toLowerCase() + 'OperatorBtn');
+
+            // Handle mutual exclusivity of AND/OR
+            if (operator === 'AND' || operator === 'OR') {
+                const otherOperator = operator === 'AND' ? 'OR' : 'AND';
+                const otherButton = document.getElementById(otherOperator.toLowerCase() + 'OperatorBtn');
+
+                if (logicalOperators[operator]) {
+                    // Turn off this operator
+                    logicalOperators[operator] = false;
+                    button.style.backgroundColor = '';
+                    button.style.color = '';
+                } else {
+                    // Turn on this operator and turn off the other
+                    logicalOperators[operator] = true;
+                    logicalOperators[otherOperator] = false;
+
+                    button.style.backgroundColor = 'var(--tag-selected-bg)';
+                    button.style.color = 'white';
+
+                    otherButton.style.backgroundColor = '';
+                    otherButton.style.color = '';
+                }
+            } else if (operator === 'NOT') {
+                // NOT can be combined with AND/OR
+                logicalOperators[operator] = !logicalOperators[operator];
+
+                if (logicalOperators[operator]) {
+                    button.style.backgroundColor = 'var(--tag-selected-bg)';
+                    button.style.color = 'white';
+                } else {
+                    button.style.backgroundColor = '';
+                    button.style.color = '';
+                }
+            }
+
+            // Re-render patterns with new logical behavior
+            renderSourceList();
+        }
+
+        function addTagRow() {
+            gridRows++;
+            updateGridLayout();
+            renderTagsPanel();
+            showMessage(`Added row ${gridRows}. Grid is now ${gridRows}x${gridCols} (${gridRows * gridCols} slots).`);
+        }
+
+        function removeTagRow() {
+            if (gridRows <= 1) {
+                showMessage('Cannot remove row. Minimum grid size is 1 row.', 'warning');
+                return;
+            }
+
+            // Check if the last row has any tags (this is safe - just changes visual layout)
+            const tagsArray = Array.from(availableTags);
+            const lastRowStartIndex = (gridRows - 1) * gridCols;
+            const hasTagsInLastRow = tagsArray.some((tag, index) => index >= lastRowStartIndex);
+
+            if (hasTagsInLastRow) {
+                if (!confirm(`The last row contains tags. Removing the row will only change the layout, not delete any tags. Continue?`)) {
+                    return;
+                }
+            }
+
+            gridRows--;
+            updateGridLayout();
+            renderTagsPanel();
+            showMessage(`Removed row. Grid is now ${gridRows}x${gridCols} (${gridRows * gridCols} slots).`);
+        }
+
+        function updateGridLayout() {
+            const availableTagsElement = document.getElementById('availableTagsList');
+            if (availableTagsElement) {
+                availableTagsElement.style.gridTemplateRows = `repeat(${gridRows}, 200px)`;
+
+                // Update max height based on row count, with scrolling after 6 rows
+                if (gridRows > 6) {
+                    availableTagsElement.style.maxHeight = '1400px'; // 6 rows max visible
+                } else {
+                    availableTagsElement.style.maxHeight = `${gridRows * 200 + (gridRows - 1) * 10 + 40}px`; // Dynamic height for ≤6 rows
+                }
+            }
+        }
+
         // Search functions
         function handleSearchInput(event) {
             currentSearchTerm = event.target.value.trim();
@@ -1913,21 +2249,35 @@ ${error.message}
             currentSearchTerm = '';
             document.getElementById('searchInput').value = '';
             selectedPatterns.clear();
+
+            // Also reset the "Show Untagged" filter if it's active
+            if (isShowingUnclassifiedOnly) {
+                const button = document.getElementById('unclassifiedFilterBtn');
+                isShowingUnclassifiedOnly = false;
+                button.style.backgroundColor = '';
+                button.style.color = '';
+                button.textContent = 'Show Untagged';
+                button.title = 'Show only patterns that have no tags assigned';
+            }
+
+            // Reset logical operators
+            logicalOperators.NOT = false;
+            logicalOperators.AND = false;
+            logicalOperators.OR = false;
+
+            // Update operator button states
+            ['not', 'and', 'or'].forEach(op => {
+                const button = document.getElementById(op + 'OperatorBtn');
+                if (button) {
+                    button.classList.remove('active');
+                }
+            });
+
             updateSelectedCount();
             renderSourceList();
             showPatternDetails();
         }
 
-        function updateSearchResults(count) {
-            const resultsSpan = document.getElementById('searchResults');
-            if (currentSearchTerm) {
-                resultsSpan.textContent = `Found ${count} patterns containing "${currentSearchTerm}"`;
-                const isDark = document.body.getAttribute('data-theme') === 'dark';
-                resultsSpan.style.color = count > 0 ? (isDark ? 'white' : '#666') : '#dc2626';
-            } else {
-                resultsSpan.textContent = '';
-            }
-        }
 
         // Drag and drop functions
         let draggedPattern = null;
@@ -1935,11 +2285,13 @@ ${error.message}
         function handlePatternDragStart(e) {
             draggedPattern = e.target.dataset.pattern;
             e.target.classList.add('dragging');
+            startAutoScroll();
         }
 
         function handlePatternDragEnd(e) {
             draggedPattern = null;
             e.target.classList.remove('dragging');
+            stopAutoScroll();
         }
 
         function handleTagDragOver(e) {
@@ -1959,11 +2311,17 @@ ${error.message}
 
             const tag = e.currentTarget.dataset.tag;
             if (templates[draggedPattern]) {
+                const wasAlreadyTagged = templates[draggedPattern].tags.has(tag);
                 saveState(`Drag pattern "${draggedPattern}" to tag "${tag}"`);
                 templates[draggedPattern].tags.add(tag);
                 renderTagsPanel();
                 updateAllPatternTags();
-                showMessage(`Added "${draggedPattern}" to tag "${tag}"`);
+
+                if (wasAlreadyTagged) {
+                    showMessage(`"${draggedPattern}" already has tag "${tag}"`, 'warning');
+                } else {
+                    showMessage(`Added "${draggedPattern}" to tag "${tag}"`);
+                }
             }
         }
 
@@ -2000,11 +2358,13 @@ ${error.message}
             e.target.classList.add('dragging');
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/html', e.target.innerHTML);
+            startAutoScroll();
         }
 
         function handleDragEnd(e) {
             e.target.classList.remove('dragging');
             draggedElement = null;
+            stopAutoScroll();
         }
 
         function addCategory() {
@@ -2100,6 +2460,63 @@ ${error.message}
             e.currentTarget.classList.remove('drag-over');
         }
 
+        function startAutoScroll() {
+            if (autoScrollInterval) return;
+
+            autoScrollInterval = setInterval(() => {
+                // Only auto-scroll when dragging
+                if (!draggedTag && !draggedPattern && !draggedElement) {
+                    stopAutoScroll();
+                    return;
+                }
+
+                // Get current mouse position from the last drag event
+                const lastEvent = window.lastDragEvent;
+                if (!lastEvent) return;
+
+                // Get the grid container
+                const gridContainer = document.getElementById('availableTagsList');
+                if (!gridContainer) return;
+
+                const gridRect = gridContainer.getBoundingClientRect();
+                const mouseY = lastEvent.clientY;
+                const windowHeight = window.innerHeight;
+                const scrollThreshold = 100; // pixels from viewport edge to trigger scroll
+                const scrollSpeed = 15; // pixels per interval
+
+                // Check if we're dragging over the grid area (horizontally)
+                const mouseX = lastEvent.clientX;
+                const isOverGrid = mouseX >= gridRect.left && mouseX <= gridRect.right;
+
+                // Only auto-scroll if we're over the grid horizontally and the grid has scrollable content
+                if (isOverGrid && gridContainer.scrollHeight > gridContainer.clientHeight) {
+                    // Scroll up if near top of viewport AND grid can scroll up
+                    if (mouseY < scrollThreshold && gridContainer.scrollTop > 0) {
+                        gridContainer.scrollBy(0, -scrollSpeed);
+                    }
+                    // Scroll down if near bottom of viewport AND grid can scroll down
+                    else if (mouseY > windowHeight - scrollThreshold) {
+                        const maxScroll = gridContainer.scrollHeight - gridContainer.clientHeight;
+                        if (gridContainer.scrollTop < maxScroll) {
+                            gridContainer.scrollBy(0, scrollSpeed);
+                        }
+                    }
+                }
+            }, 50); // 50ms interval for smooth scrolling
+        }
+
+        function stopAutoScroll() {
+            if (autoScrollInterval) {
+                clearInterval(autoScrollInterval);
+                autoScrollInterval = null;
+            }
+        }
+
+        // Track mouse position during drag for auto-scroll
+        document.addEventListener('dragover', (e) => {
+            window.lastDragEvent = e;
+        });
+
         function handleDrop(e) {
             if (e.stopPropagation) {
                 e.stopPropagation();
@@ -2171,11 +2588,16 @@ ${error.message}
                     dataType: currentDataType,
                     availableTags: Array.from(availableTags),
                     tagPositions: tagPositions,
+                    gridLayout: {
+                        rows: gridRows,
+                        cols: gridCols
+                    },
                     fontSettings: {
                         family: currentFontFamily,
                         size: currentFontSize,
                         weight: currentFontWeight
                     },
+                    logicalOperators: { ...logicalOperators },
                     timestamp: new Date().toISOString()
                 };
 
@@ -2284,11 +2706,42 @@ ${error.message}
                             document.getElementById('fontWeightSelect').value = currentFontWeight;
                         }
 
+                        // Restore grid layout
+                        if (data.gridLayout) {
+                            gridRows = data.gridLayout.rows || 6;
+                            gridCols = data.gridLayout.cols || 4;
+                            updateGridLayout();
+                        }
+
                         // Restore tag positions
                         if (data.tagPositions) {
                             tagPositions = { ...data.tagPositions };
                         } else {
                             tagPositions = {};
+                        }
+
+                        // Restore logical operators
+                        if (data.logicalOperators) {
+                            logicalOperators.NOT = data.logicalOperators.NOT || false;
+                            logicalOperators.AND = data.logicalOperators.AND || false;
+                            logicalOperators.OR = data.logicalOperators.OR || false;
+
+                            // Update button states
+                            ['not', 'and', 'or'].forEach(op => {
+                                const button = document.getElementById(op + 'OperatorBtn');
+                                if (button) {
+                                    if (logicalOperators[op.toUpperCase()]) {
+                                        button.classList.add('active');
+                                    } else {
+                                        button.classList.remove('active');
+                                    }
+                                }
+                            });
+                        } else {
+                            // Default to all false if not in saved data
+                            logicalOperators.NOT = false;
+                            logicalOperators.AND = false;
+                            logicalOperators.OR = false;
                         }
 
                         // Update UI - but preserve the loaded templates
@@ -2345,6 +2798,10 @@ ${error.message}
                 dataType: currentDataType,
                 patterns: exportData,
                 availableTags: Array.from(availableTags),
+                gridLayout: {
+                    rows: gridRows,
+                    cols: gridCols
+                },
                 exportTimestamp: new Date().toISOString()
             };
 
@@ -2375,21 +2832,6 @@ ${error.message}
             URL.revokeObjectURL(url);
         }
 
-        function clearAll() {
-            if (confirm('Clear all tags and pattern assignments?')) {
-                Object.keys(templates).forEach(pattern => {
-                    templates[pattern].tags.clear();
-                });
-                availableTags.clear();
-                selectedPatterns.clear();
-                selectedTags.clear();
-                renderTagsPanel();
-                renderSourceList();
-                updateStats();
-                showPatternDetails();
-                showMessage('All tags cleared!');
-            }
-        }
 
         async function resetServer() {
             if (!confirm("Restart server? This will kill and restart the Flask server process.")) {
@@ -2670,11 +3112,16 @@ ${error.message}
                     dataType: currentDataType,
                     availableTags: Array.from(availableTags),
                     tagPositions: tagPositions,
+                    gridLayout: {
+                        rows: gridRows,
+                        cols: gridCols
+                    },
                     fontSettings: {
                         family: currentFontFamily,
                         size: currentFontSize,
                         weight: currentFontWeight
                     },
+                    logicalOperators: { ...logicalOperators },
                     allPatterns: [...allPatterns],
                     timestamp: new Date().toISOString(),
                     isTemporarySession: true
@@ -2729,6 +3176,13 @@ ${error.message}
                 availableTags = new Set(tempData.availableTags || []);
                 tagPositions = { ...tempData.tagPositions } || {};
 
+                // Restore grid layout
+                if (tempData.gridLayout) {
+                    gridRows = tempData.gridLayout.rows || 6;
+                    gridCols = tempData.gridLayout.cols || 4;
+                    updateGridLayout();
+                }
+
                 // Restore font settings
                 if (tempData.fontSettings) {
                     currentFontFamily = tempData.fontSettings.family || 'thai-noto';
@@ -2739,6 +3193,25 @@ ${error.message}
                     document.getElementById('fontSizeSlider').value = currentFontSize;
                     document.getElementById('fontSizeDisplay').textContent = currentFontSize + 'px';
                     document.getElementById('fontWeightSelect').value = currentFontWeight;
+                }
+
+                // Restore logical operators
+                if (tempData.logicalOperators) {
+                    logicalOperators.NOT = tempData.logicalOperators.NOT || false;
+                    logicalOperators.AND = tempData.logicalOperators.AND || false;
+                    logicalOperators.OR = tempData.logicalOperators.OR || false;
+
+                    // Update button states
+                    ['not', 'and', 'or'].forEach(op => {
+                        const button = document.getElementById(op + 'OperatorBtn');
+                        if (button) {
+                            if (logicalOperators[op.toUpperCase()]) {
+                                button.classList.add('active');
+                            } else {
+                                button.classList.remove('active');
+                            }
+                        }
+                    });
                 }
 
                 // Update UI

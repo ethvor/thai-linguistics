@@ -38,11 +38,13 @@ Classifies Thai characters into four main categories:
 ## Features
 
 ### Interactive Web Tool
-- Drag-and-drop pattern organization with grid-based positioning
-- Font customization for Thai text display
-- Pattern creation with validation and dual save modes
-- Session persistence through server restarts
-- JSON export for further analysis
+- Drag-and-drop pattern organization with customizable grid layout
+- Advanced tag filtering with logical operators (NOT, AND, OR)
+- Pattern deletion with automatic backup creation
+- Font customization for optimal Thai text display
+- Session persistence and automatic restoration through server restarts
+- 24-hour time file naming for chronological organization
+- JSON export and source file updating capabilities
 
 ### Data Processing Pipeline
 - Convert plain text vowel mappings to structured JSON

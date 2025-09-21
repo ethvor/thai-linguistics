@@ -37,12 +37,8 @@ def create_app():
     @app.route('/')
     def index():
         """Redirect to classifier"""
-        return send_file(project_root / 'tools' / 'thai_classifier_improved.html')
+        return send_file(project_root / 'thai_pattern_classifier.html')
 
-    @app.route('/tools/<path:filename>')
-    def tools(filename):
-        """Serve files from tools directory"""
-        return send_from_directory(project_root / 'tools', filename)
 
     @app.route('/res/<path:filename>')
     def resources(filename):
@@ -69,20 +65,12 @@ def create_app():
             progress_dir = project_root / 'progress'
             progress_dir.mkdir(exist_ok=True)
 
-            # Generate readable filename
+            # Generate sortable filename with military time
             import datetime
             now = datetime.datetime.now()
-            months = ['january', 'february', 'march', 'april', 'may', 'june',
-                     'july', 'august', 'september', 'october', 'november', 'december']
-            month = months[now.month - 1]
-            day = now.day
-            year = now.year
-            hour = now.hour
-            minute = f"{now.minute:02d}"
-            ampm = 'pm' if hour >= 12 else 'am'
-            hour12 = hour % 12 or 12
 
-            readable_timestamp = f"{month}_{day}_{year}_at_{hour12}_{minute}_{ampm}"
+            # Format: YYYY-MM-DD_HHMM (military time for proper sorting)
+            readable_timestamp = f"{now.year:04d}-{now.month:02d}-{now.day:02d}_{now.hour:02d}{now.minute:02d}"
             filename = f"save_{readable_timestamp}.json"
             filepath = progress_dir / filename
 
@@ -263,7 +251,7 @@ def main():
         return
 
     # Check required files
-    html_file = project_root / 'tools' / 'thai_classifier_improved.html'
+    html_file = project_root / 'thai_pattern_classifier.html'
     if not html_file.exists():
         print(f"ERROR: {html_file} not found!")
         return

@@ -57,7 +57,7 @@ The `res/` directory contains processed Thai language data:
 2. **Data processing** uses the scripts in `script/` directory to transform raw Thai language data
 3. **Processed data** is stored in JSON format in the `res/` directory
 4. **Testing** is done interactively in the Jupyter notebook with various Thai text examples
-5. **Character classification** can be done using the web app in `tools/` directory
+5. **Character classification** is done using the `thai_pattern_classifier.html` web application
 
 ## Project Structure
 
@@ -65,11 +65,11 @@ The `res/` directory contains processed Thai language data:
 ├── launcher/              # Application launchers
 │   ├── flask_classifier.bat      # Windows launcher (Flask server)
 │   └── flask_server.py          # Python Flask server
-├── tools/                # Interactive tools
-│   └── thai_classifier_improved.html  # Character classification web app
+├── thai_pattern_classifier.html  # Main character classification web app
 ├── script/               # Data processing utilities
 ├── res/                  # Processed Thai language data
 ├── progress/             # Saved classification progress (auto-created)
+│   └── temp/            # Temporary session files for auto-restore
 ├── notebook.ipynb        # Main research notebook
 └── CLAUDE.md            # This file
 ```
@@ -84,21 +84,29 @@ The server will show you a link to open in your browser (no auto-opening).
 
 ## Character Classification Tool
 
-The `tools/thai_classifier_improved.html` provides an interactive interface for:
+The `thai_pattern_classifier.html` provides an interactive interface for:
 - **Tag-based classification**: Patterns can have multiple tags simultaneously
-- **Drag-and-drop tagging**: Drag patterns to tag containers
+- **Drag-and-drop tagging**: Drag patterns to tag containers with auto-scroll for large grids
 - **Selection-based tagging**: Select multiple patterns and assign tags
-- **Search functionality**: Find patterns containing specific characters
-- **Bulk operations**: Move/copy patterns between tags
-- **Font customization**: Better Thai text readability
-- **File-based progress**: Save/load progress as JSON files
+- **Advanced search functionality**: Find patterns containing specific characters
+- **Logical operators**: NOT, AND, OR filtering for complex tag queries (mutually exclusive AND/OR, combinable NOT)
+- **Pattern deletion**: Remove patterns from source JSON files with automatic backups
+- **Bulk operations**: Move/copy patterns between tags with position preservation
+- **Dynamic grid layout**: Customizable tag grid with persistent row/column configuration
+- **Font customization**: Multiple Thai fonts with size and weight controls
+- **File-based progress**: Save/load progress as JSON files with 24-hour time naming
+- **Session persistence**: Automatic temporary session saves that restore through server restarts
 - **Export functionality**: Export classifications as JSON for analysis
+- **Data integrity**: Automatic backup creation before source file modifications
 
 ### Save/Load Workflow
-- **Save Progress**: Automatically saves to `progress/` directory (with graceful fallback to Downloads)
+- **Save Progress**: Automatically saves to `progress/` directory using 24-hour time format for chronological sorting
 - **Load Progress**: Click Load Progress → select file from `progress/` directory
-- **Progress files**: Named `thai_classifier_progress_[timestamp].json`
-- **Server Features**: Flask server handles direct file saving, auto-creates directories
+- **Progress files**: Named `save_YYYY-MM-DD_HHMM.json` (e.g., `save_2024-01-15_1430.json`)
+- **Session persistence**: Automatic temporary saves in `progress/temp/` that restore through server restarts
+- **Pattern deletion**: Updates source JSON files with automatic backup creation (timestamped .backup files)
+- **Server Features**: Flask server handles direct file saving, source file updates, and auto-creates directories
+- **API endpoints**: `/api/save-progress`, `/api/update-source-json`, `/api/save-temp-session`, `/api/get-temp-session`
 
 ## Key Files
 

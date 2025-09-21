@@ -20,10 +20,10 @@ if errorlevel 1 (
 )
 
 REM Check if the HTML file exists
-if not exist "tools\thai_classifier_improved.html" (
-    echo ERROR: thai_classifier_improved.html not found!
-    echo Expected location: %CD%\tools\
-    echo Please make sure the file exists in the tools directory.
+if not exist "thai_pattern_classifier.html" (
+    echo ERROR: thai_pattern_classifier.html not found!
+    echo Expected location: %CD%\
+    echo Please make sure the file exists in the project root.
     echo.
     pause
     exit /b 1
