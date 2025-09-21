@@ -12,11 +12,76 @@
             padding: 0;
         }
 
+        /* Prevent layout shift from scrollbars */
+        html {
+            overflow-y: scroll;
+        }
+
+        /* CSS Variables for theming */
+        :root {
+            /* Light mode variables */
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --header-bg: white;
+            --header-text: #333;
+            --panel-bg: white;
+            --panel-text: #333;
+            --tag-bg: #f8f9fa;
+            --tag-border: #ddd;
+            --tag-text: #333;
+            --tag-selected-bg: #7dd3fc;
+            --tag-count-bg: rgba(102, 126, 234, 0.2);
+            --tag-count-text: #333;
+            --pattern-bg: #1e1b4b;
+            --pattern-text: white;
+            --pattern-hover-bg: #312e81;
+            --button-bg: #667eea;
+            --button-text: white;
+            --input-bg: white;
+            --input-border: #ddd;
+            --modal-bg: white;
+        }
+
+        /* Dark mode variables */
+        [data-theme="dark"] {
+            --bg-gradient: linear-gradient(135deg, #1a1b2e 0%, #16213e 100%);
+            --header-bg: #1e2a3a;
+            --header-text: white;
+            --panel-bg: #1e2a3a;
+            --panel-text: white;
+            --tag-bg: #2a3441;
+            --tag-border: #4f5b69;
+            --tag-text: white;
+            --tag-selected-bg: #0066cc;
+            --tag-count-bg: rgba(0, 102, 204, 0.25);
+            --tag-count-text: white;
+            --pattern-bg: #000000;
+            --pattern-text: white;
+            --pattern-hover-bg: #1a1a1a;
+            --button-bg: #000000;
+            --button-text: white;
+            --input-bg: #2a3441;
+            --input-border: #4f5b69;
+            --modal-bg: #1e2a3a;
+        }
+
+        /* Dark mode global text color */
+        [data-theme="dark"] * {
+            color: white;
+        }
+
+        /* Keep input text readable */
+        [data-theme="dark"] input,
+        [data-theme="dark"] select,
+        [data-theme="dark"] textarea {
+            color: #333;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--bg-gradient);
             min-height: 100vh;
             padding: 20px;
+            transition: all 0.3s ease;
         }
 
         .container {
@@ -25,11 +90,41 @@
         }
 
         header {
-            background: white;
+            background: var(--header-bg);
+            color: var(--header-text);
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .header-content {
+            flex: 1;
+        }
+
+        .theme-toggle {
+            background: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            margin-left: 20px;
+        }
+
+        .theme-toggle:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
         }
 
         h1 {
@@ -48,20 +143,21 @@
             display: flex;
             gap: 10px;
             align-items: center;
-            background: #f8f9fa;
+            background: var(--tag-bg);
             padding: 10px;
             border-radius: 5px;
             margin-top: 10px;
+            transition: all 0.3s ease;
         }
 
         .font-controls label {
             font-weight: 500;
-            color: #333;
+            color: var(--header-text);
         }
 
         button {
-            background: #667eea;
-            color: white;
+            background: var(--button-bg);
+            color: var(--button-text);
             border: none;
             padding: 10px 20px;
             border-radius: 5px;
@@ -79,7 +175,9 @@
         select, input[type="range"] {
             padding: 10px;
             border-radius: 5px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--panel-text);
             font-size: 14px;
         }
 
@@ -90,12 +188,14 @@
         }
 
         .source-panel {
-            background: white;
+            background: var(--panel-bg);
+            color: var(--panel-text);
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             max-height: 80vh;
-            overflow-y: auto;
+            overflow-y: scroll;
+            transition: all 0.3s ease;
         }
 
         .source-section {
@@ -116,13 +216,15 @@
             gap: 5px;
             min-height: 40px;
             padding: 10px;
-            background: #f7f7f7;
+            background: var(--tag-bg);
             border-radius: 5px;
+            transition: all 0.3s ease;
         }
 
         .pattern-item {
-            background: white;
-            border: 2px solid #ddd;
+            background: var(--panel-bg);
+            color: var(--panel-text);
+            border: 2px solid var(--tag-border);
             padding: 8px 12px;
             margin: 5px 0;
             border-radius: 5px;
@@ -181,6 +283,12 @@
             display: flex;
             flex-direction: column;
             gap: 20px;
+            background: var(--panel-bg);
+            color: var(--panel-text);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
         }
 
         .tag-controls {
@@ -188,9 +296,11 @@
             gap: 10px;
             align-items: center;
             padding: 15px;
-            background: white;
+            background: var(--panel-bg);
+            color: var(--panel-text);
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
         }
 
         .tag-controls input {
@@ -215,20 +325,80 @@
             background: #5a67d8;
         }
 
+        .tag-controls button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #9ca3af;
+        }
+
+        [data-theme="dark"] .tag-controls button {
+            background: #000000;
+        }
+
+        [data-theme="dark"] .tag-controls button:hover {
+            background: #1a1a1a;
+        }
+
+        [data-theme="dark"] .tag-controls button:disabled {
+            background: #4b5563;
+        }
+
+        /* Exceptions for specific buttons in dark mode */
+        [data-theme="dark"] button[onclick="showAddPatternModal()"] {
+            background: #28a745 !important;
+        }
+
+        [data-theme="dark"] button[onclick="resetServer()"] {
+            background: #e74c3c !important;
+        }
+
+        [data-theme="dark"] .theme-toggle {
+            background: #6b7280 !important;
+            color: white !important;
+        }
+
+        /* Fix Patterns heading and tag text colors in dark mode */
+        [data-theme="dark"] #patternsHeading {
+            color: white !important;
+        }
+
+        /* Fix remaining text colors in dark mode */
+        [data-theme="dark"] #dataTypeSelect,
+        [data-theme="dark"] #fontSelect,
+        [data-theme="dark"] #fontWeightSelect {
+            color: white !important;
+            background: var(--input-bg) !important;
+        }
+
+        [data-theme="dark"] .font-controls label {
+            color: white !important;
+        }
+
+        [data-theme="dark"] .pattern-number {
+            color: white !important;
+        }
+
+        [data-theme="dark"] #searchResults {
+            color: white !important;
+        }
+
         .available-tags {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 15px;
             padding: 15px;
-            background: white;
+            background: var(--panel-bg);
+            color: var(--panel-text);
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             min-height: 150px;
+            transition: all 0.3s ease;
         }
 
         .tag-container {
-            background: #f8f9fa;
-            border: 2px dashed #ddd;
+            background: var(--tag-bg);
+            color: var(--tag-text);
+            border: 2px dashed var(--tag-border);
             border-radius: 10px;
             padding: 10px;
             min-height: 120px;
@@ -237,14 +407,14 @@
         }
 
         .tag-container.drag-over {
-            border-color: #667eea;
-            background: #e6f3ff;
+            border-color: var(--tag-selected-bg);
+            background: var(--tag-selected-bg);
             transform: scale(1.02);
         }
 
         .tag-container.filter-active {
-            border-color: #667eea;
-            background: #667eea;
+            border-color: var(--tag-selected-bg);
+            background: var(--tag-selected-bg);
             color: white;
         }
 
@@ -262,8 +432,8 @@
         }
 
         .tag-count {
-            background: rgba(102, 126, 234, 0.2);
-            color: #333;
+            background: var(--tag-count-bg);
+            color: var(--tag-count-text);
             padding: 2px 6px;
             border-radius: 10px;
             font-size: 11px;
@@ -282,30 +452,19 @@
             gap: 10px;
             min-height: 500px;
             padding: 20px;
-            background: #f8f9fa;
-            border: 2px solid #ddd;
+            background: var(--panel-bg);
+            color: var(--panel-text);
+            border: 2px solid var(--tag-border);
             border-radius: 10px;
             position: relative;
             overflow: visible;
+            transition: all 0.3s ease;
         }
 
-        .available-tags::before {
-            content: "📋 Tag Organization Grid - Drag tags to arrange";
-            position: absolute;
-            top: -25px;
-            left: 0;
-            font-size: 12px;
-            color: #666;
-            font-weight: 500;
-            background: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
 
         .grid-slot {
-            background: #ffffff;
-            border: 2px dashed #e0e0e0;
+            background: var(--panel-bg);
+            border: 2px dashed var(--tag-border);
             border-radius: 8px;
             min-height: 180px;
             display: flex;
@@ -328,7 +487,7 @@
 
         .grid-slot.empty::before {
             content: "Drop tag here";
-            color: #999;
+            color: white;
             font-size: 12px;
             opacity: 0;
             transition: opacity 0.3s;
@@ -372,33 +531,46 @@
         .tag-patterns {
             display: flex;
             flex-wrap: wrap;
-            gap: 4px;
+            gap: 3px;
             min-height: 60px;
+            max-height: 120px;
+            overflow-y: scroll;
+            padding: 2px;
         }
 
         .tag-patterns .mini-pattern {
-            background: #667eea;
-            color: white;
+            background: var(--pattern-bg);
+            color: var(--pattern-text);
             padding: 2px 6px;
-            border-radius: 8px;
+            border-radius: 4px;
             font-size: 11px;
             cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            line-height: 1;
+            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
         }
 
         .tag-patterns .mini-pattern:hover {
-            background: #5a67d8;
+            background: var(--pattern-hover-bg);
+            border-color: rgba(255, 255, 255, 0.6);
         }
 
         .pattern-details {
             padding: 15px;
-            background: white;
+            background: var(--panel-bg);
+            color: var(--panel-text);
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             min-height: 200px;
+            transition: all 0.3s ease;
         }
 
         .category-card {
-            background: white;
+            background: var(--panel-bg);
+            color: var(--panel-text);
             border-radius: 10px;
             padding: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -416,12 +588,12 @@
 
         .category-name {
             font-weight: bold;
-            color: #333;
+            color: var(--panel-text);
             font-size: 16px;
             padding: 5px;
             border: 1px solid transparent;
             border-radius: 3px;
-            background: #f9f9f9;
+            background: var(--input-bg);
             min-width: 150px;
         }
 
@@ -487,11 +659,12 @@
 
         .add-category-text {
             font-size: 24px;
-            color: #999;
+            color: white;
         }
 
         .stats {
-            background: white;
+            background: var(--panel-bg);
+            color: var(--panel-text);
             border-radius: 10px;
             padding: 15px;
             margin-top: 20px;
@@ -526,13 +699,15 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: white;
+            background: var(--modal-bg);
+            color: var(--panel-text);
             padding: 30px;
             border-radius: 10px;
             max-width: 600px;
             width: 90%;
             max-height: 80vh;
             overflow-y: auto;
+            transition: all 0.3s ease;
         }
 
         .modal h2 {
@@ -583,6 +758,7 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             pointer-events: auto;
             animation: slideInRight 0.3s ease-out;
+            font-family: 'Noto Sans Thai', 'Sarabun', 'Prompt', 'Kanit', 'Tahoma', 'Arial Unicode MS', 'Segoe UI', sans-serif;
         }
 
         .success-message {
@@ -595,6 +771,7 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             pointer-events: auto;
             animation: slideInRight 0.3s ease-out;
+            font-family: 'Noto Sans Thai', 'Sarabun', 'Prompt', 'Kanit', 'Tahoma', 'Arial Unicode MS', 'Segoe UI', sans-serif;
         }
 
         @keyframes slideInRight {
@@ -647,21 +824,26 @@
 <body>
     <div class="container">
         <header>
-            <h1>🇹🇭 Thai Character Pattern Classifier</h1>
-            <p>Drag and drop patterns into categories for classification</p>
-            <p style="font-size: 12px; color: #666;">Version: NO-FALLBACK-2024 (No sample data fallback)</p>
+            <div class="header-top">
+                <div class="header-content">
+                    <h1>🇹🇭 Thai Character Pattern Classifier</h1>
+                    <p>Drag and drop patterns into categories for classification</p>
+                    <p style="font-size: 12px; opacity: 0.7;">Version: NO-FALLBACK-2024 (No sample data fallback)</p>
+                </div>
+                <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+            </div>
             <div class="controls">
                 <select id="dataTypeSelect">
                     <option value="vowels">Vowels (Sara)</option>
                     <option value="foundations">Foundations</option>
                     <option value="exceptions">Exceptions</option>
                 </select>
-                <button onclick="loadDataFromFiles()">📂 Load from JSON</button>
-                <button onclick="saveProgress()">💾 Save Progress</button>
-                <button onclick="loadProgress()">📂 Load Progress</button>
-                <button onclick="exportJSON()">📤 Export JSON</button>
-                <button onclick="clearAll()">🗑️ Clear All</button>
-                <button onclick="resetServer()" style="background: #e74c3c; color: white;">🔄 Reset Server</button>
+                <button onclick="loadDataFromFiles()" title="Load pattern data from JSON files in the res/ directory">📂 Load from JSON</button>
+                <button onclick="saveProgress()" title="Save current classification progress to a timestamped file">💾 Save Progress</button>
+                <button onclick="loadProgress()" title="Load previously saved classification progress">📂 Load Progress</button>
+                <button onclick="exportJSON()" title="Export current classifications as JSON data">📤 Export JSON</button>
+                <button onclick="clearAll()" title="Clear all tags and patterns (cannot be undone)">🗑️ Clear All</button>
+                <button onclick="resetServer()" style="background: #e74c3c; color: white;" title="Restart the Flask server">🔄 Reset Server</button>
             </div>
 
             <div class="font-controls">
@@ -694,9 +876,9 @@
                     <div class="search-controls" style="margin-bottom: 15px;">
                         <input type="text" id="searchInput" placeholder="🔍 Search patterns (contains characters)..." onkeyup="handleSearchInput(event)" style="width: 250px; padding: 8px; display: block; margin-bottom: 8px;">
                         <div style="display: flex; gap: 10px; align-items: center;">
-                            <button onclick="clearSearch()">Clear Search</button>
-                            <button onclick="showAddPatternModal()" style="background: #28a745; color: white;">+ Add Pattern</button>
-                            <span id="searchResults" style="font-size: 12px; color: #666;"></span>
+                            <button onclick="clearSearch()" title="Clear the search filter to show all patterns">Clear Search</button>
+                            <button onclick="showAddPatternModal()" style="background: #28a745; color: white;" title="Add a new Thai pattern to the classification system">+ Add Pattern</button>
+                            <span id="searchResults" style="font-size: 12px;"></span>
                         </div>
                     </div>
                     <div class="pattern-list" id="sourceList">
@@ -732,23 +914,23 @@
                 <!-- Tags will be added here -->
                 <div class="tag-controls">
                     <input type="text" id="newTagInput" placeholder="Enter new tag..." onkeyup="handleTagInputKeyup(event)">
-                    <button onclick="createEmptyTag()">+ Create Tag</button>
-                    <button onclick="addTagToSelected()" id="addToSelectedBtn" disabled>+ Add to Selected (<span id="selectedCount">0</span>)</button>
-                    <button onclick="showBulkMoveModal()">📦 Bulk Move Tags</button>
-                    <button onclick="removeTagsFromSelected()" id="removeTagsBtn" disabled>🗑️ Remove Tags from Selected</button>
-                    <input type="text" id="renameTagInput" placeholder="Rename selected tag to..." style="margin-left: 10px;">
-                    <button onclick="renameSelectedTag()" id="renameTagBtn" disabled>🏷️ Rename Tag</button>
-                    <button onclick="undo()" id="undoBtn" disabled>↶ Undo</button>
-                    <button onclick="redo()" id="redoBtn" disabled>↷ Redo</button>
-                    <button onclick="clearTagFilters()">Clear Filters</button>
-                    <button onclick="selectAllPatterns()">Select All</button>
-                    <button onclick="clearSelection()">Clear Selection</button>
+                    <button onclick="createEmptyTag()" title="Create a new empty tag category">+ Create Tag</button>
+                    <button onclick="addTagToSelected()" id="addToSelectedBtn" disabled title="Add the new tag to the currently selected patterns">+ Add to Selected (<span id="selectedCount">0</span>)</button>
+                    <button id="bulkMoveToggle" onclick="toggleBulkMoveMode()" title="Toggle bulk move mode - when enabled, dragging tags will merge their patterns additively">📦 Bulk Move Mode: OFF</button>
+                    <button onclick="removeTagsFromSelected()" id="removeTagsBtn" disabled title="Remove selected tag(s) from the currently displayed patterns">🗑️ Remove Tags from Selected</button>
+                    <input type="text" id="renameTagInput" placeholder="Rename selected tag to..." style="margin-left: 10px;" title="Enter new name for the selected tag">
+                    <button onclick="renameSelectedTag()" id="renameTagBtn" disabled title="Rename the selected tag to the name entered in the text field">🏷️ Rename Tag</button>
+                    <button onclick="undo()" id="undoBtn" disabled title="Undo the last action">↶ Undo</button>
+                    <button onclick="redo()" id="redoBtn" disabled title="Redo the last undone action">↷ Redo</button>
+                    <button onclick="clearTagFilters()" title="Clear all tag filters to show all patterns">Clear Filters</button>
+                    <button onclick="selectAllPatterns()" title="Select all visible patterns for bulk operations">Select All</button>
+                    <button onclick="clearSelection()" title="Clear the current pattern selection">Clear Selection</button>
                 </div>
                 <div class="available-tags" id="availableTagsList">
                     <!-- Available tags will be displayed here -->
                 </div>
                 <div class="pattern-details" id="patternDetails">
-                    <!-- Selected pattern details will show here -->
+                    <p>Select patterns to view details and manage tags.</p>
                 </div>
             </div>
         </div>
@@ -760,9 +942,9 @@
             <h2>Exported JSON</h2>
             <pre id="jsonOutput"></pre>
             <div class="modal-buttons">
-                <button class="copy-json" onclick="copyJSON()">📋 Copy to Clipboard</button>
-                <button class="download-json" onclick="downloadJSON()">💾 Download JSON</button>
-                <button class="close-modal" onclick="closeModal()">Close</button>
+                <button class="copy-json" onclick="copyJSON()" title="Copy the JSON data to your clipboard">📋 Copy to Clipboard</button>
+                <button class="download-json" onclick="downloadJSON()" title="Download the JSON data as a file">💾 Download JSON</button>
+                <button class="close-modal" onclick="closeModal()" title="Close this dialog">Close</button>
             </div>
         </div>
     </div>
@@ -777,20 +959,20 @@
                 <input type="text" id="newPatternInput" placeholder="Enter Thai pattern (e.g., เxยะ, ก, อ)..." style="width: 300px; margin-left: 10px; padding: 8px; font-size: 16px;">
             </div>
 
-            <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                <h3 style="margin-top: 0; color: #495057;">Preview:</h3>
+            <div style="margin-bottom: 20px; padding: 15px; background: var(--tag-bg); border-radius: 8px;">
+                <h3 style="margin-top: 0; color: var(--panel-text);">Preview:</h3>
                 <div id="patternPreview" style="font-size: 24px; font-weight: bold; color: #28a745; min-height: 30px;">
                     Enter a pattern to see preview...
                 </div>
             </div>
 
-            <div style="margin-bottom: 20px; padding: 15px; background: #fff3cd; border-radius: 8px; border: 1px solid #ffc107;">
+            <div style="margin-bottom: 20px; padding: 15px; background: var(--tag-count-bg); border-radius: 8px; border: 1px solid var(--tag-border); color: var(--panel-text);">
                 <strong>Choose where to save:</strong>
                 <div style="margin-top: 10px;">
-                    <button onclick="addPatternToSession()" style="background: #17a2b8; color: white; margin-right: 10px; padding: 10px 15px;">
+                    <button onclick="addPatternToSession()" style="background: #17a2b8; color: white; margin-right: 10px; padding: 10px 15px;" title="Add pattern to current session only - will be lost on page reload">
                         📝 Add to Session Only
                     </button>
-                    <button onclick="addPatternToJSON()" style="background: #dc3545; color: white; padding: 10px 15px;">
+                    <button onclick="addPatternToJSON()" style="background: #dc3545; color: white; padding: 10px 15px;" title="Permanently save pattern to the original JSON source file">
                         💾 Save to Original JSON
                     </button>
                 </div>
@@ -801,40 +983,11 @@
             </div>
 
             <div style="text-align: center;">
-                <button onclick="closeAddPatternModal()" style="background: #6c757d; color: white; padding: 10px 20px;">Cancel</button>
+                <button onclick="closeAddPatternModal()" style="background: #6c757d; color: white; padding: 10px 20px;" title="Cancel and close this dialog">Cancel</button>
             </div>
         </div>
     </div>
 
-    <!-- Bulk Move Modal -->
-    <div class="modal" id="bulkMoveModal" style="display: none;">
-        <div class="modal-content">
-            <h2>📦 Bulk Move Patterns Between Tags</h2>
-
-            <div style="margin-bottom: 20px;">
-                <label for="newBulkTagName">New Tag Name:</label>
-                <input type="text" id="newBulkTagName" placeholder="Enter name for new tag..." style="width: 200px; margin-left: 10px;">
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <h3>Select Source Tags (patterns will be moved FROM these tags):</h3>
-                <div id="sourceTagsList" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background: #f9f9f9;">
-                    <!-- Source tags will be populated here -->
-                </div>
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <label>
-                    <input type="checkbox" id="removeFromSource"> Remove patterns from source tags after moving
-                </label>
-            </div>
-
-            <div style="text-align: center;">
-                <button onclick="executeBulkMove()" style="background: #667eea; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Execute Bulk Move</button>
-                <button onclick="closeBulkMoveModal()" style="background: #ccc; color: black; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">Cancel</button>
-            </div>
-        </div>
-    </div>
 
     <script>
         // New tag-based data structure: templates[pattern] = { tags: Set, metadata: {} }
@@ -852,7 +1005,17 @@
 
         function showMessage(text, isError = false) {
             const messageArea = document.getElementById('messageArea');
-            messageArea.innerHTML = `<div class="${isError ? 'error-message' : 'success-message'}">${text}</div>`;
+
+            // Convert any quoted patterns in the message to Thai display
+            let displayText = text.replace(/"([^"]+)"/g, (match, pattern) => {
+                // Check if this looks like a Thai template pattern
+                if (pattern.includes('x') || pattern.includes('f') || /[เแโใไ]/.test(pattern)) {
+                    return `"${convertTemplateToThai(pattern)}"`;
+                }
+                return match;
+            });
+
+            messageArea.innerHTML = `<div class="${isError ? 'error-message' : 'success-message'}">${displayText}</div>`;
             setTimeout(() => {
                 messageArea.innerHTML = '';
             }, 5000);
@@ -1021,7 +1184,8 @@ ${error.message}
                 if (selectedTags.size > 0 && currentSearchTerm) {
                     message = `No patterns contain "${currentSearchTerm}" and have the selected tags.`;
                 }
-                sourceList.innerHTML = `<div style="color: #666; padding: 10px;">${message}</div>`;
+                const textColor = document.body.getAttribute('data-theme') === 'dark' ? 'white' : '#666';
+                sourceList.innerHTML = `<div style="color: ${textColor}; padding: 10px;">${message}</div>`;
                 return;
             }
 
@@ -1029,6 +1193,9 @@ ${error.message}
                 const item = createPatternItem(pattern, index + 1);
                 sourceList.appendChild(item);
             });
+
+            // Restore selection visual state after recreating DOM elements
+            updatePatternSelectionDisplay();
         }
 
         function convertTemplateToThai(template) {
@@ -1057,7 +1224,7 @@ ${error.message}
             numberSpan.textContent = `${index}.`;
             numberSpan.style.minWidth = '30px';
             numberSpan.style.fontWeight = 'bold';
-            numberSpan.style.color = '#666';
+            numberSpan.style.color = document.body.getAttribute('data-theme') === 'dark' ? 'white' : '#666';
             contentContainer.appendChild(numberSpan);
 
             // Pattern text container
@@ -1104,7 +1271,7 @@ ${error.message}
             if (templates[pattern] && templates[pattern].tags.size > 0) {
                 const tagsText = document.createElement('span');
                 tagsText.style.fontSize = '12px';
-                tagsText.style.color = '#666';
+                tagsText.style.color = document.body.getAttribute('data-theme') === 'dark' ? 'white' : '#666';
                 const tagArray = Array.from(templates[pattern].tags);
                 tagsText.textContent = `tags (${tagArray.length}): ${tagArray.join(', ')}`;
                 tagsContainer.appendChild(tagsText);
@@ -1610,26 +1777,31 @@ ${error.message}
             const targetSlot = e.currentTarget;
             const newSlotIndex = parseInt(targetSlot.dataset.slotIndex);
 
-            // Save state for undo
-            saveState(`Move tag "${draggedTag}" to slot ${newSlotIndex}`);
-
-            // If target slot is occupied, swap positions
+            // Check if target slot is occupied
             if (targetSlot.classList.contains('occupied')) {
                 const targetTag = targetSlot.querySelector('.tag-container')?.dataset.tag;
                 if (targetTag && targetTag !== draggedTag) {
-                    const draggedPos = tagPositions[draggedTag];
-                    tagPositions[draggedTag] = newSlotIndex;
-                    tagPositions[targetTag] = draggedPos;
-                    showMessage(`Swapped "${draggedTag}" with "${targetTag}"`);
+                    if (isBulkMoveMode) {
+                        // Bulk move mode: merge patterns additively
+                        saveState(`Bulk merge "${draggedTag}" patterns into "${targetTag}"`);
+                        mergePatternsAdditively(draggedTag, targetTag);
+                    } else {
+                        // Normal mode: swap positions
+                        saveState(`Swap tags "${draggedTag}" and "${targetTag}"`);
+                        const draggedPos = tagPositions[draggedTag];
+                        tagPositions[draggedTag] = newSlotIndex;
+                        tagPositions[targetTag] = draggedPos;
+                        showMessage(`🔄 Swapped "${draggedTag}" with "${targetTag}"`);
+                        renderTagsPanel();
+                    }
                 }
             } else {
-                // Move to empty slot
+                // Move to empty slot (same for both modes)
+                saveState(`Move tag "${draggedTag}" to slot ${newSlotIndex}`);
                 tagPositions[draggedTag] = newSlotIndex;
-                showMessage(`Moved "${draggedTag}" to slot ${newSlotIndex}`);
+                showMessage(`📍 Moved "${draggedTag}" to slot ${newSlotIndex}`);
+                renderTagsPanel();
             }
-
-            // Re-render to show new position
-            renderTagsPanel();
         }
 
         function toggleTagFilter(tag) {
@@ -1740,14 +1912,18 @@ ${error.message}
         function clearSearch() {
             currentSearchTerm = '';
             document.getElementById('searchInput').value = '';
+            selectedPatterns.clear();
+            updateSelectedCount();
             renderSourceList();
+            showPatternDetails();
         }
 
         function updateSearchResults(count) {
             const resultsSpan = document.getElementById('searchResults');
             if (currentSearchTerm) {
                 resultsSpan.textContent = `Found ${count} patterns containing "${currentSearchTerm}"`;
-                resultsSpan.style.color = count > 0 ? '#666' : '#dc2626';
+                const isDark = document.body.getAttribute('data-theme') === 'dark';
+                resultsSpan.style.color = count > 0 ? (isDark ? 'white' : '#666') : '#dc2626';
             } else {
                 resultsSpan.textContent = '';
             }
@@ -2282,130 +2458,62 @@ ${error.message}
             checkServer();
         }
 
-        // Bulk Move Functions
-        function showBulkMoveModal() {
-            // Populate source tags list
-            const sourceTagsList = document.getElementById('sourceTagsList');
-            sourceTagsList.innerHTML = '';
+        // Bulk Move Mode Functions
+        let isBulkMoveMode = false;
 
-            // Get all available tags
-            const assignedTags = new Set();
-            Object.values(templates).forEach(template => {
-                template.tags.forEach(tag => assignedTags.add(tag));
-            });
+        function toggleBulkMoveMode() {
+            isBulkMoveMode = !isBulkMoveMode;
+            const toggleButton = document.getElementById('bulkMoveToggle');
 
-            const allTags = new Set([...availableTags, ...assignedTags]);
-
-            if (allTags.size === 0) {
-                sourceTagsList.innerHTML = '<p>No tags available. Create some tags first!</p>';
+            if (isBulkMoveMode) {
+                toggleButton.textContent = '📦 Bulk Move Mode: ON';
+                toggleButton.style.background = 'var(--tag-selected-bg)';
+                toggleButton.style.color = 'white';
+                showMessage('🔄 Bulk Move Mode enabled - drag tags to merge patterns additively (no duplicates)');
             } else {
-                allTags.forEach(tag => {
-                    const patternCount = Object.keys(templates).filter(pattern =>
-                        templates[pattern].tags.has(tag)
-                    ).length;
-
-                    const checkbox = document.createElement('label');
-                    checkbox.style.display = 'block';
-                    checkbox.style.marginBottom = '5px';
-                    checkbox.innerHTML = `
-                        <input type="checkbox" value="${tag}" class="source-tag-checkbox">
-                        ${tag} (${patternCount} patterns)
-                    `;
-                    sourceTagsList.appendChild(checkbox);
-                });
+                toggleButton.textContent = '📦 Bulk Move Mode: OFF';
+                toggleButton.style.background = 'var(--button-bg)';
+                toggleButton.style.color = 'var(--button-text)';
+                showMessage('✅ Bulk Move Mode disabled - normal tag swapping restored');
             }
-
-            document.getElementById('bulkMoveModal').style.display = 'block';
         }
 
-        function closeBulkMoveModal() {
-            document.getElementById('bulkMoveModal').style.display = 'none';
-            document.getElementById('newBulkTagName').value = '';
-            document.getElementById('removeFromSource').checked = false;
-        }
-
-        function executeBulkMove() {
-            const newTagName = document.getElementById('newBulkTagName').value.trim();
-            const removeFromSource = document.getElementById('removeFromSource').checked;
-
-            if (!newTagName) {
-                alert('Please enter a name for the new tag!');
-                return;
-            }
-
-            // Get selected source tags
-            const selectedSourceTags = [];
-            document.querySelectorAll('.source-tag-checkbox:checked').forEach(checkbox => {
-                selectedSourceTags.push(checkbox.value);
-            });
-
-            if (selectedSourceTags.length === 0) {
-                alert('Please select at least one source tag!');
-                return;
-            }
-
-            // Collect all patterns from selected source tags
-            const patternsToMove = new Set();
-            selectedSourceTags.forEach(sourceTag => {
-                Object.keys(templates).forEach(pattern => {
-                    if (templates[pattern].tags.has(sourceTag)) {
-                        patternsToMove.add(pattern);
-                    }
-                });
-            });
-
-            if (patternsToMove.size === 0) {
-                alert('No patterns found in the selected source tags!');
-                return;
-            }
-
-            // Confirm the operation
-            const sourceTagsStr = selectedSourceTags.join(', ');
-            const actionStr = removeFromSource ? 'move' : 'copy';
-            const confirmMsg = `${actionStr.toUpperCase()} ${patternsToMove.size} patterns from [${sourceTagsStr}] to new tag "${newTagName}"?`;
-
-            if (!confirm(confirmMsg)) {
-                return;
-            }
-
-            // Save state for undo
-            saveState(`Bulk ${actionStr} ${patternsToMove.size} patterns to "${newTagName}"`);
-
-            // Add new tag to system
-            availableTags.add(newTagName);
-
-            // Move/copy patterns to new tag
-            patternsToMove.forEach(pattern => {
-                templates[pattern].tags.add(newTagName);
-
-                // Remove from source tags if requested
-                if (removeFromSource) {
-                    selectedSourceTags.forEach(sourceTag => {
-                        templates[pattern].tags.delete(sourceTag);
-                    });
+        function mergePatternsAdditively(sourceTag, targetTag) {
+            // Get all patterns from source tag
+            const patternsToAdd = new Set();
+            Object.keys(templates).forEach(pattern => {
+                if (templates[pattern].tags.has(sourceTag)) {
+                    patternsToAdd.add(pattern);
                 }
             });
 
-            // Clean up empty tags if patterns were moved (not copied)
-            if (removeFromSource) {
-                selectedSourceTags.forEach(sourceTag => {
-                    const hasPatterns = Object.keys(templates).some(pattern =>
-                        templates[pattern].tags.has(sourceTag)
-                    );
-                    if (!hasPatterns) {
-                        availableTags.delete(sourceTag);
-                    }
-                });
+            if (patternsToAdd.size === 0) {
+                showMessage(`⚠️ No patterns found in "${sourceTag}" tag`);
+                return;
             }
+
+            // Count existing patterns in target
+            const existingPatterns = Object.keys(templates).filter(pattern =>
+                templates[pattern].tags.has(targetTag)
+            ).length;
+
+            // Add patterns to target tag (automatically handles duplicates via Set)
+            let addedCount = 0;
+            patternsToAdd.forEach(pattern => {
+                if (!templates[pattern].tags.has(targetTag)) {
+                    templates[pattern].tags.add(targetTag);
+                    addedCount++;
+                }
+            });
+
+            const duplicateCount = patternsToAdd.size - addedCount;
+
+            showMessage(`✅ Merged ${addedCount} patterns from "${sourceTag}" into "${targetTag}" (${duplicateCount} duplicates skipped, ${existingPatterns + addedCount} total patterns)`);
 
             // Update UI
             renderTagsPanel();
             renderSourceList();
             updateStats();
-            closeBulkMoveModal();
-
-            const actionPast = removeFromSource ? 'moved' : 'copied';
-            showMessage(`Successfully ${actionPast} ${patternsToMove.size} patterns to "${newTagName}"`);
         }
 
         // Add Pattern Functions
@@ -2649,8 +2757,35 @@ ${error.message}
             }
         }
 
+        // Dark mode toggle functionality
+        let isDarkMode = localStorage.getItem('darkMode') === 'true';
+
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            localStorage.setItem('darkMode', isDarkMode);
+            applyTheme();
+        }
+
+        function applyTheme() {
+            const body = document.body;
+            const toggle = document.querySelector('.theme-toggle');
+
+            if (isDarkMode) {
+                body.setAttribute('data-theme', 'dark');
+                toggle.textContent = '☀️ Light Mode';
+            } else {
+                body.removeAttribute('data-theme');
+                toggle.textContent = '🌙 Dark Mode';
+            }
+
+            // Update pattern tags colors when theme changes
+            updateAllPatternTags();
+        }
+
         // Initialize font settings and check for temp session on load
         window.addEventListener('load', async () => {
+            // Apply saved theme on load
+            applyTheme();
             document.getElementById('fontSizeDisplay').textContent = currentFontSize + 'px';
 
             // Try to restore temporary session after a short delay
