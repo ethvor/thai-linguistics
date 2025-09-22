@@ -6,10 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Thai language processing project focused on developing algorithms for classifying Thai graphemes. The main research is conducted in `notebook.ipynb`, which explores a Thai grapheme classification system that categorizes characters into four main classes:
 
-1. **ฐาน (tan)** - Foundation class: Consonant letters that serve as the base for dependent marks
-2. **สระ (sara)** - Vowel class: Vowel graphemes (both independent and dependent) that attach to foundation consonants
+1. **ฐาน (tan)** - Foundation class: All 44 Thai consonants that serve as bases for vowel patterns
+2. **สระ (sara)** - Vowel class: Vowel patterns (72+) that attach to foundation consonants
 3. **ยุกต์ (yuk)** - Dependent class: Tone marks and diacritics that cannot exist without a foundation consonant
-4. **ข้อยกเว้น (kho yok waen)** - Exception class: The consonant **อ** which functions both as foundation and as part of vowel symbols
+4. **ข้อยกเว้น (kho yok waen)** - Exception class: Characters **อ** and **ว** which function both as foundation consonants and as parts of vowel patterns
 
 ## Environment Setup
 
@@ -33,7 +33,7 @@ The `script/` directory contains utilities for processing Thai language data:
 
 - **`make_foundation_json.py`** - Generates JSON file with Thai foundation consonants
   - Usage: `python script/make_foundation_json.py INPUT.txt OUTPUT.json`
-  - Contains hardcoded list of 43 Thai consonants
+  - Contains all 44 Thai consonants (including อ and ว)
 
 - **`flatten_sara_combos.py`** - Flattens vowel template dictionaries into single lists
   - Usage: `python script/flatten_sara_combos.py INPUT.json OUTPUT.json`
@@ -66,8 +66,11 @@ The `res/` directory contains processed Thai language data:
 │   ├── flask_classifier.bat      # Windows launcher (Flask server)
 │   └── flask_server.py          # Python Flask server
 ├── thai_pattern_classifier.html  # Main character classification web app
+├── thai_reading_order.py # Thai reading order algorithm with foundation containers
+├── run.py                # Test runner for the reading order algorithm
 ├── script/               # Data processing utilities
 ├── res/                  # Processed Thai language data
+│   └── foundation/       # Contains all 44 Thai consonants
 ├── progress/             # Saved classification progress (auto-created)
 │   └── temp/            # Temporary session files for auto-restore
 ├── notebook.ipynb        # Main research notebook
@@ -110,15 +113,18 @@ The `thai_pattern_classifier.html` provides an interactive interface for:
 
 ## Key Files
 
+- `thai_reading_order.py` - Core algorithm using foundation container model for reading order analysis
+- `run.py` - Test runner demonstrating the algorithm on sample Thai text
 - `notebook.ipynb` - Main research notebook with algorithm development and testing
 - `script/convertToJson.py` - Primary data processing utility for Thai text parsing
-- `res/foundation/foundation.json` - Contains the 43 Thai foundation consonants
-- `res/sara/sara_combos.json` - Contains 79 vowel combinations for classification
+- `res/foundation/foundation.json` - Contains all 44 Thai foundation consonants
+- `thai_vowels_tagged_9-21-2025-2-31-pm.json` - Contains 72+ tagged vowel patterns
 
 ## Thai Text Processing Notes
 
-The algorithm handles complex Thai text patterns including:
+The `findThaiGraphemeOrderDomain` algorithm handles complex Thai text patterns including:
 - Simple cases: foundation + atomic vowel (e.g., "ยา")
 - Complex cases: multi-part vowels that appear before their foundation consonant (e.g., "เด็ก")
-- Cluster cases: multiple consonants with shared vowels (e.g., "ไกล")
-- Special อ cases: where อ acts as silent foundation or vowel component (e.g., "เอือม")
+- Cluster cases: multiple consonants acting as a single foundation (e.g., "ไกล" with กล cluster)
+- Tone mark handling: foundations with attached tone marks (e.g., "อย่า" with tone on ย)
+- Ambiguous cases: characters that could serve multiple roles (e.g., "เลว" where ว could be cluster/final/vowel)

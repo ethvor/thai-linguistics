@@ -25,7 +25,7 @@ Classifies Thai characters into four main categories:
 - `เxือะ` - short open diphthong uea (e.g., เนือะ)
 
 **Foundation consonants:**
-- 42 of the thai consonants, without those listed in exceptions.
+- All 44 Thai consonants including อ and ว (now properly handled)
 
 **Dependent marks (yuk):**
 - Tone marks: ◌่ ◌้ ◌๊ ◌๋
@@ -33,6 +33,46 @@ Classifies Thai characters into four main categories:
 
 **Exceptions**
 - ว and อ, because they appear both as a foundation (ฐาน / tan) and a vowel (สระ / sara)
+
+## Thai Reading Order Algorithm
+
+The `findThaiGraphemeOrderDomain` algorithm determines all possible canonical reading orders for Thai text by treating consonants as **foundation containers** that can hold:
+- One or more consonants (clusters like กร, คล)
+- Tone marks (่ ้ ๊ ๋) attached to specific consonants
+- Position information for accurate text reconstruction
+
+### How It Works
+
+1. **Pattern Matching**: Uses 72+ vowel patterns (e.g., `xา`, `เxียf`) where:
+   - `x` = foundation container (initial consonant(s) + optional tone)
+   - `f` = final consonant (optional)
+   - Other characters = exact vowel marks
+
+2. **Foundation Containers**: When matching `x`, the algorithm builds a complete foundation object including all consonants and any attached tone marks. For example, "อย่า" matches as:
+   - Foundation: {consonants: ['อ','ย'], tone: '่', tone_owner: 1}
+   - Pattern: `xา`
+   - Reading order: อย่ า
+
+3. **Ambiguity Detection**: Generates multiple interpretations when characters like ว could be:
+   - Part of a consonant cluster (ลว)
+   - A final consonant (pattern `เxf`)
+   - Part of a vowel pattern (pattern `เxว`)
+
+4. **Output Domain**: Returns all possible readings as a structured domain that can be reduced later with linguistic rules (e.g., valid cluster rules, tone constraints).
+
+### Usage
+
+```python
+from thai_reading_order import ThaiReadingOrderAnalyzer
+
+analyzer = ThaiReadingOrderAnalyzer(foundation_file, patterns_file)
+result = analyzer.findThaiGraphemeOrderDomain("เลว")
+
+# Returns all possible interpretations:
+# 1. ลว + เx (cluster interpretation)
+# 2. ล + เxf (ว as final consonant)
+# 3. ล + เxว (ว as part of vowel)
+```
 
 ## Features
 
