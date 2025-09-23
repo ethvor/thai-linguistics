@@ -128,3 +128,5 @@ The `findThaiGraphemeOrderDomain` algorithm handles complex Thai text patterns i
 - Cluster cases: multiple consonants acting as a single foundation (e.g., "ไกล" with กล cluster)
 - Tone mark handling: foundations with attached tone marks (e.g., "อย่า" with tone on ย)
 - Ambiguous cases: characters that could serve multiple roles (e.g., "เลว" where ว could be cluster/final/vowel)
+- always use descriptive variable names
+- always correct the user AND ask for confirmation if they make an error in their prompt (ie, using sin instead of tan when tan is appropriate).
