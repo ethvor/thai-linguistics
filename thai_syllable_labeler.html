@@ -1,0 +1,1871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thai Syllable Labeling System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;500;700&family=Sarabun:wght@300;400;500;700&family=Prompt:wght@300;400;500;700&family=Kanit:wght@300;400;500;700&family=Noto+Sans:wght@300;400;500;700&family=Tahoma&family=Arial+Unicode+MS&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* CSS Variables for theming */
+        :root {
+            /* Light mode variables */
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --header-bg: white;
+            --header-text: #333;
+            --panel-bg: white;
+            --panel-text: #333;
+            --button-bg: #667eea;
+            --button-text: white;
+            --button-secondary-bg: #48bb78;
+            --input-bg: white;
+            --input-border: #e0e0e0;
+            --card-bg: white;
+            --card-bg-normal: white;
+            --card-bg-debug: white;
+            --syllable-display-bg-debug: #f8f9fa;
+            --debug-dots-opacity: 0;
+            --card-border: #e0e0e0;
+            --card-selected-bg: #f0fdf4;
+            --card-selected-border: #48bb78;
+            --badge-valid-bg: #d4edda;
+            --badge-valid-text: #155724;
+            --badge-invalid-bg: #f8d7da;
+            --badge-invalid-text: #721c24;
+            --tag-bg: #e0e7ff;
+            --tag-text: #3730a3;
+            --modal-bg: white;
+            --shadow-color: rgba(0,0,0,0.1);
+        }
+
+        /* Dark mode variables */
+        [data-theme="dark"] {
+            --bg-gradient: linear-gradient(135deg, #1a1b2e 0%, #16213e 100%);
+            --header-bg: #1e2a3a;
+            --header-text: white;
+            --panel-bg: #1e2a3a;
+            --panel-text: white;
+            --button-bg: #000000;
+            --button-text: white;
+            --button-secondary-bg: #28a745;
+            --input-bg: #2a3441;
+            --input-border: #4f5b69;
+            --card-bg: white;
+            --card-bg-normal: white;
+            --card-bg-debug: white;
+            --syllable-display-bg-debug: #f8f9fa;
+            --debug-dots-opacity: 0;
+            --card-border: #4f5b69;
+            --card-selected-bg: #1e3a2e;
+            --card-selected-border: #28a745;
+            --badge-valid-bg: #1e4c33;
+            --badge-valid-text: #a3d977;
+            --badge-invalid-bg: #4c1e1e;
+            --badge-invalid-text: #f5a3a3;
+            --tag-bg: #1e2a3a;
+            --tag-text: #a3b3d4;
+            --modal-bg: #1e2a3a;
+            --shadow-color: rgba(0,0,0,0.3);
+        }
+
+        /* Dark mode global text color */
+        [data-theme="dark"] * {
+            color: white;
+        }
+
+        /* Keep input text readable */
+        [data-theme="dark"] input,
+        [data-theme="dark"] select,
+        [data-theme="dark"] textarea {
+            color: #333;
+        }
+
+        /* Font families for Thai text */
+        .thai-noto { font-family: 'Noto Sans Thai', 'Sarabun', 'Prompt', 'Kanit', 'Tahoma', 'Arial Unicode MS', 'Segoe UI', sans-serif; }
+        .thai-sarabun { font-family: 'Sarabun', 'Noto Sans Thai', 'Prompt', 'Kanit', 'Tahoma', 'Arial Unicode MS', sans-serif; }
+        .thai-prompt { font-family: 'Prompt', 'Noto Sans Thai', 'Sarabun', 'Kanit', 'Tahoma', 'Arial Unicode MS', sans-serif; }
+        .thai-kanit { font-family: 'Kanit', 'Noto Sans Thai', 'Sarabun', 'Prompt', 'Tahoma', 'Arial Unicode MS', sans-serif; }
+
+        /* Special class for pattern display with English letters + Thai tone marks */
+        .pattern-with-tones {
+            font-family: 'Times New Roman', 'Courier New', monospace !important;
+            font-size: inherit !important;
+            line-height: 1.2 !important;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: var(--header-bg);
+            color: var(--header-text);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px var(--shadow-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: var(--header-text);
+            margin-bottom: 10px;
+        }
+
+        .theme-toggle {
+            background: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .main-panel {
+            background: var(--panel-bg);
+            color: var(--panel-text);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px var(--shadow-color);
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .thai-input {
+            flex: 1;
+            padding: 12px;
+            font-size: 24px;
+            /* font-family removed - will be set by JavaScript via CSS classes */
+            border: 2px solid var(--input-border);
+            border-radius: 8px;
+            text-align: center;
+            background: var(--input-bg);
+            color: var(--panel-text);
+        }
+
+        .thai-input:focus {
+            outline: none;
+            border-color: var(--button-bg);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            opacity: 0.8;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--button-secondary-bg);
+        }
+
+        .btn-secondary:hover {
+            opacity: 0.8;
+        }
+
+        .word-display {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .word-display h2 {
+            font-size: 72px;
+            /* font-family removed - will be set by JavaScript via CSS classes */
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .word-info {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .interpretations-container {
+            display: grid;
+            gap: 20px;
+        }
+
+        .interpretation-card {
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            background: var(--card-bg-debug);
+        }
+
+        .interpretation-card:hover {
+            border-color: var(--button-bg);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow-color);
+        }
+
+        .interpretation-card.selected {
+            border-color: var(--card-selected-border);
+            background: var(--card-selected-bg);
+        }
+
+        .interpretation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .interpretation-id {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .validation-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: help;
+            position: relative;
+        }
+
+        .validation-valid {
+            background: var(--badge-valid-bg);
+            color: var(--badge-valid-text);
+        }
+
+        .validation-invalid {
+            background: var(--badge-invalid-bg);
+            color: var(--badge-invalid-text);
+        }
+
+        /* Tooltip for validation issues */
+        .validation-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            margin-bottom: 5px;
+        }
+
+        .validation-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 4px solid transparent;
+            border-top-color: #333;
+        }
+
+        .validation-badge:hover .validation-tooltip {
+            opacity: 1;
+        }
+
+        .syllable-display {
+            background: var(--syllable-display-bg-debug);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .reading-order {
+            position: relative;
+            width: 400px;
+            height: 160px;
+            margin: 15px auto;
+        }
+
+        .reading-component {
+            text-align: center;
+        }
+
+        .component-char {
+            font-size: 36px;
+            /* font-family removed - will be set by JavaScript via CSS classes */
+            color: #333;
+            line-height: 1.2;
+            display: inline-block;
+            text-align: center;
+            /* Force Unicode-capable font for Thai characters */
+            unicode-bidi: embed;
+            direction: ltr;
+        }
+
+        .component-type {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .pattern-display {
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            font-family: 'Microsoft Sans Serif' !important;
+            font-size: 18px !important;
+            color: #4a5568;
+        }
+
+        .tags-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 8px;
+            margin: 2px;
+            background: var(--tag-bg);
+            color: var(--tag-text);
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .custom-interpretation-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 2px dashed #cbd5e0;
+        }
+
+        .custom-interpretation-section h3 {
+            margin-bottom: 15px;
+            color: #4a5568;
+        }
+
+        .custom-form {
+            display: grid;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-label {
+            font-weight: bold;
+            color: #4a5568;
+        }
+
+        .form-input {
+            padding: 8px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            /* font-family removed - will be set by JavaScript via CSS classes */
+            font-size: 18px;
+        }
+
+        .notes-section {
+            margin-top: 20px;
+        }
+
+        .notes-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .batch-panel {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            width: 300px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+
+        .batch-panel h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .word-queue {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .queue-item {
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .queue-item:hover {
+            background: #f8f9fa;
+        }
+
+        .queue-item.current {
+            background: #e0e7ff;
+            border-color: #667eea;
+        }
+
+        .queue-item.labeled {
+            background: #d4edda;
+            border-color: #48bb78;
+        }
+
+        .queue-word {
+            /* font-family removed - will be set by JavaScript via CSS classes */
+            font-size: 18px;
+        }
+
+        .queue-status {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .help-section {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        .font-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .font-controls label {
+            font-weight: 500;
+            color: var(--panel-text);
+            font-size: 14px;
+        }
+
+        .font-controls select,
+        .font-controls input[type="range"] {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 4px;
+            padding: 4px 8px;
+            color: var(--panel-text);
+        }
+
+        .font-controls input[type="range"] {
+            width: 80px;
+        }
+
+        .font-size-display {
+            font-size: 12px;
+            color: var(--panel-text);
+            min-width: 35px;
+        }
+
+        @media (max-width: 768px) {
+            .batch-panel {
+                position: static;
+                width: 100%;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>Thai Syllable Labeling System</h1>
+                <div class="stats">
+                    <span>Session: <strong id="sessionId">New Session</strong></span>
+                    <span>Labels: <strong id="labelCount">0</strong></span>
+                    <span>Custom: <strong id="customCount">0</strong></span>
+                    <span>Words: <strong id="wordCount">0</strong></span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+                <button class="btn" onclick="restartServer()" style="padding: 8px 16px; font-size: 14px;">🔄 Restart Server</button>
+            </div>
+        </div>
+
+        <div class="batch-panel">
+            <h3>Word Queue</h3>
+            <div class="input-group">
+                <textarea id="batchInput" placeholder="Enter words (one per line)" style="width: 100%; height: 80px; padding: 8px; border: 1px solid #cbd5e0; border-radius: 6px;"></textarea>
+            </div>
+            <button class="btn btn-secondary" onclick="loadBatch()" style="width: 100%; margin-bottom: 15px;">Load Batch</button>
+            <div class="word-queue" id="wordQueue"></div>
+        </div>
+
+        <div class="main-panel">
+            <div class="input-section">
+                <div class="input-group">
+                    <input type="text" id="wordInput" class="thai-input" placeholder="Enter Thai word...">
+                    <button class="btn" onclick="analyzeWord()">Analyze</button>
+                </div>
+                <div class="help-section">
+                    Enter a single Thai syllable to generate all possible interpretations.
+                    Select the correct interpretation or add a custom one if the system missed it.
+                </div>
+            </div>
+
+            <div class="font-controls">
+                <label for="fontSelect">Thai Font:</label>
+                <select id="fontSelect" onchange="changeThaiFontFamily()">
+                    <option value="thai-noto">Noto Sans Thai</option>
+                    <option value="thai-sarabun" selected>Sarabun</option>
+                    <option value="thai-prompt">Prompt</option>
+                    <option value="thai-kanit">Kanit</option>
+                </select>
+
+                <label for="fontSizeSlider">Size:</label>
+                <input type="range" id="fontSizeSlider" min="12" max="48" value="24" onchange="changeFontSize()">
+                <span id="fontSizeDisplay" class="font-size-display">24px</span>
+
+                <label for="fontWeightSelect">Weight:</label>
+                <select id="fontWeightSelect" onchange="changeFontWeight()">
+                    <option value="300">Light</option>
+                    <option value="400">Normal</option>
+                    <option value="500">Medium</option>
+                    <option value="700">Bold</option>
+                </select>
+
+                <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+                    <label for="debugToggle" style="font-size: 12px;">Debug:</label>
+                    <input type="checkbox" id="debugToggle" onchange="toggleDebugMode()" style="transform: scale(1.2);">
+                </div>
+            </div>
+
+            <div id="analysisSection" style="display: none;">
+                <div class="word-display">
+                    <h2 id="currentWord"></h2>
+                    <div class="word-info">
+                        <span id="interpretationCount"></span> possible interpretations
+                    </div>
+                </div>
+
+                <div class="interpretations-container" id="interpretationsContainer"></div>
+
+                <div class="custom-interpretation-section">
+                    <h3>Custom Interpretation (if system missed it)</h3>
+                    <div class="custom-form">
+                        <div class="form-group">
+                            <label class="form-label">Foundation:</label>
+                            <input type="text" id="customFoundation" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Vowel:</label>
+                            <input type="text" id="customVowel" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Final:</label>
+                            <input type="text" id="customFinal" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Pattern:</label>
+                            <input type="text" id="customPattern" class="form-input" placeholder="e.g., xา, เxf">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="notes-section">
+                    <label style="font-weight: bold; color: #4a5568; display: block; margin-bottom: 5px;">Notes:</label>
+                    <textarea id="labelNotes" class="notes-textarea" placeholder="Add any notes about this labeling decision..."></textarea>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn" onclick="saveLabel()">Save Label</button>
+                    <button class="btn btn-secondary" onclick="skipWord()">Skip</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <h3 style="color: #48bb78; margin-bottom: 15px;">Label Saved!</h3>
+            <p id="modalMessage"></p>
+            <button class="btn" onclick="closeModal()" style="margin-top: 15px;">Continue</button>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let currentWord = '';
+        let currentWordId = null;
+        let currentInterpretations = [];
+        let selectedInterpretation = null;
+        let sessionId = null;
+        let wordQueue = [];
+        let currentQueueIndex = -1;
+        let stats = {
+            labels: 0,
+            custom: 0,
+            words: new Set()
+        };
+
+
+        function initSession() {
+            // Create new session or restore existing
+            sessionId = localStorage.getItem('labeling_session_id');
+            if (!sessionId) {
+                sessionId = 'session_' + Date.now();
+                localStorage.setItem('labeling_session_id', sessionId);
+            }
+            document.getElementById('sessionId').textContent = sessionId.substring(0, 15) + '...';
+            updateStats();
+        }
+
+        async function analyzeWord(word = null) {
+            const inputWord = word || document.getElementById('wordInput').value.trim();
+            if (!inputWord) return;
+
+            currentWord = inputWord;
+            document.getElementById('currentWord').textContent = currentWord;
+            document.getElementById('analysisSection').style.display = 'block';
+
+            try {
+                const response = await fetch('http://localhost:5001/api/generate-interpretations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ word: inputWord })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                }
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                currentWordId = data.word_id;
+                currentInterpretations = data.interpretations || [];
+
+                document.getElementById('interpretationCount').textContent = data.count || currentInterpretations.length;
+                renderInterpretations(currentInterpretations);
+
+                // Clear custom form
+                document.getElementById('customFoundation').value = '';
+                document.getElementById('customVowel').value = '';
+                document.getElementById('customFinal').value = '';
+                document.getElementById('customPattern').value = '';
+                document.getElementById('labelNotes').value = '';
+
+            } catch (error) {
+                console.error('Error analyzing word:', error);
+                alert('Error analyzing word. Please check the server is running.');
+            }
+        }
+
+        function renderInterpretations(interpretations) {
+            const container = document.getElementById('interpretationsContainer');
+            container.innerHTML = '';
+            selectedInterpretation = null;
+
+            if (!interpretations || interpretations.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #666;">No interpretations generated. Try a different word.</div>';
+                return;
+            }
+
+            interpretations.forEach((interp, index) => {
+                const card = document.createElement('div');
+                card.className = 'interpretation-card';
+                card.onclick = () => selectInterpretation(index);
+
+                const syllable = interp.syllables[0]; // Single syllable focus
+
+                // Validation status
+                const isValid = !interp.validation || interp.validation.is_valid;
+                let validationBadge;
+
+                if (isValid) {
+                    validationBadge = '<span class="validation-badge validation-valid">Valid</span>';
+                } else {
+                    const issues = interp.validation.issues || ['Unknown validation error'];
+                    const issueText = issues.join('; ');
+                    validationBadge = `<span class="validation-badge validation-invalid">
+                        Has Issues
+                        <div class="validation-tooltip">${issueText}</div>
+                    </span>`;
+                }
+
+                card.innerHTML = `
+                    <div class="interpretation-header">
+                        <span class="interpretation-id">Interpretation ${index + 1}</span>
+                        ${validationBadge}
+                    </div>
+                    <div class="syllable-display">
+                        <div class="reading-order">
+                            ${renderReadingOrder(syllable)}
+                        </div>
+                    </div>
+                    <div class="tags-section" id="tags-${index}">
+                        <small style="color: #999;">Loading tags...</small>
+                    </div>
+                `;
+
+                container.appendChild(card);
+                loadTagsForInterpretation(syllable, index);
+            });
+
+            // Apply font settings to newly created interpretation elements
+            applyFontSettings();
+        }
+
+        function getFoundationMapping(syllable) {
+            const pattern = syllable.pattern || '';
+            if (!pattern.includes('x') && !pattern.includes('f')) {
+                return ''; // No template variables to map
+            }
+
+            let mapping = '<div class="foundation-mapping" style="font-size: 12px; color: #666; margin-top: 4px;">';
+
+            // Get foundation characters
+            let foundationChars = [];
+            if (syllable.foundation) {
+                if (typeof syllable.foundation === 'object' && syllable.foundation.consonants) {
+                    foundationChars = syllable.foundation.consonants;
+                } else if (Array.isArray(syllable.foundation)) {
+                    foundationChars = syllable.foundation;
+                } else {
+                    foundationChars = [syllable.foundation];
+                }
+            }
+
+            // Get final characters
+            let finalChars = [];
+            if (syllable.final) {
+                if (typeof syllable.final === 'object' && syllable.final.consonants) {
+                    finalChars = syllable.final.consonants;
+                } else if (Array.isArray(syllable.final)) {
+                    finalChars = syllable.final;
+                } else {
+                    finalChars = [syllable.final];
+                }
+            }
+
+            // Map x to foundation
+            if (pattern.includes('x')) {
+                const foundationStr = foundationChars.join('');
+                const isCluster = foundationChars.length > 1;
+                mapping += `x = ${foundationStr || '?'}${isCluster ? ' (cluster)' : ''} `;
+            }
+
+            // Map f to final
+            if (pattern.includes('f')) {
+                const finalStr = finalChars.join('');
+                const isFinalCluster = finalChars.length > 1;
+                mapping += `f = ${finalStr || '?'}${isFinalCluster ? ' (cluster)' : ''}`;
+            }
+
+            mapping += '</div>';
+            return mapping;
+        }
+
+        function calculateAngle(x1, y1, x2, y2) {
+            // Calculate angle in degrees from horizontal
+            const deltaX = x2 - x1;
+            const deltaY = y2 - y1;
+            const angleRadians = Math.atan2(deltaY, deltaX);
+            const angleDegrees = angleRadians * (180 / Math.PI);
+            return Math.abs(angleDegrees); // Return absolute angle
+        }
+
+        function calculateDynamicPositions(containerId) {
+            // Find the reading-order div that contains our elements
+            const readingOrderDivs = document.querySelectorAll('.reading-order');
+            let container = null;
+
+            // Find the reading-order div that contains our containerId elements
+            for (let div of readingOrderDivs) {
+                if (div.querySelector(`#foundation-${containerId}`)) {
+                    container = div;
+                    break;
+                }
+            }
+            const foundationWrapper = document.getElementById(`foundation-wrapper-${containerId}`);
+            const finalWrapper = document.getElementById(`final-wrapper-${containerId}`);
+            const foundationBox = document.getElementById(`foundation-${containerId}`);
+            const finalBox = document.getElementById(`final-${containerId}`);
+            const vowelBox = document.getElementById(`vowel-${containerId}`);
+
+            if (!container || !foundationWrapper || !finalWrapper || !foundationBox || !vowelBox) {
+                return;
+            }
+
+            // Constants for 30-degree triangle
+            const TARGET_ANGLE = 30; // degrees
+            const VERTICAL_DISTANCE = 100; // pixels from vowel to bottom row
+
+            // Calculate required horizontal distance for 30-degree angle
+            // tan(30°) = opposite/adjacent = vertical_distance/horizontal_distance
+            // horizontal_distance = vertical_distance / tan(30°)
+            const angleRadians = TARGET_ANGLE * (Math.PI / 180);
+            const requiredHorizontalDistance = VERTICAL_DISTANCE / Math.tan(angleRadians);
+
+            console.log(`Required horizontal distance for 30°: ${requiredHorizontalDistance.toFixed(1)}px`);
+
+            // Measure text widths (need to position temporarily to get measurements)
+            foundationWrapper.style.left = '0px';
+            finalWrapper.style.left = '0px';
+
+            // Force layout calculation
+            foundationWrapper.offsetWidth;
+            finalWrapper.offsetWidth;
+
+            const foundationWidth = foundationBox.offsetWidth;
+            const finalWidth = finalBox.offsetWidth;
+
+            console.log(`Text widths - Foundation: ${foundationWidth}px, Final: ${finalWidth}px`);
+
+            // Calculate container center
+            const containerWidth = container.offsetWidth;
+            const centerX = containerWidth / 2;
+
+            // Calculate positions for symmetric layout using max distance
+            // Use the larger of the two required distances to maintain symmetry
+            const foundationRightToCenter = requiredHorizontalDistance;
+            const finalLeftToCenter = requiredHorizontalDistance;
+            const maxDistance = Math.max(foundationRightToCenter, finalLeftToCenter);
+
+            // TEXT POSITIONING MOVED TO positionDotsForContainer (per-interpretation)
+            // NOTE: Text uses Microsoft Sans Serif font for vowel patterns with tone marks
+
+            // Update container width - keep default since text is hidden
+            const requiredContainerWidth = Math.max(400, containerWidth);
+            if (requiredContainerWidth > containerWidth) {
+                container.style.width = requiredContainerWidth + 'px';
+            }
+
+            console.log(`Naive positioning - text at triangle dots:`, {
+                triangleDotsVisible: true,
+                textFieldsVisible: true,
+                requiredHorizontalDistance: requiredHorizontalDistance.toFixed(1),
+                containerWidth: container.offsetWidth
+            });
+
+            // Position dots for verification
+            positionDotsForContainer(containerId);
+        }
+
+        function positionDotsForContainer(containerId) {
+            // Find the reading-order div that contains our elements
+            const readingOrderDivs = document.querySelectorAll('.reading-order');
+            let container = null;
+
+            // Find the reading-order div that contains our containerId elements
+            for (let div of readingOrderDivs) {
+                if (div.querySelector(`#foundation-${containerId}`)) {
+                    container = div;
+                    break;
+                }
+            }
+            const foundationWrapper = document.getElementById(`foundation-wrapper-${containerId}`);
+            const finalWrapper = document.getElementById(`final-wrapper-${containerId}`);
+            const foundationBox = document.getElementById(`foundation-${containerId}`);
+            const finalBox = document.getElementById(`final-${containerId}`);
+            const vowelBox = document.getElementById(`vowel-${containerId}`);
+            // OLD DOT VARIABLES - COMMENTED OUT FOR REFERENCE
+            /*
+            const dot1 = document.getElementById(`dot1-${containerId}`); // Red - Foundation right
+            const dot2 = document.getElementById(`dot2-${containerId}`); // Red - Vowel left
+            const dot3 = document.getElementById(`dot3-${containerId}`); // Blue - Vowel right
+            const dot4 = document.getElementById(`dot4-${containerId}`); // Blue - Final left
+            const centerDot = document.getElementById(`center-dot-${containerId}`); // Black - Center reference (baseline)
+            const centerDotTop = document.getElementById(`center-dot-top-${containerId}`); // Black - Center reference (vowel level)
+            const centerDotMiddle = document.getElementById(`center-dot-middle-${containerId}`); // Black - Center reference (middle)
+            const centerDotLeft = document.getElementById(`center-dot-left-${containerId}`); // Black - Left edge
+            const centerDotRight = document.getElementById(`center-dot-right-${containerId}`); // Black - Right edge
+            */
+            const leftDistance = document.getElementById(`left-distance-${containerId}`);
+            const rightDistance = document.getElementById(`right-distance-${containerId}`);
+            const verticalDistance = document.getElementById(`vertical-distance-${containerId}`);
+            const horizontalLeftDistance = document.getElementById(`horizontal-left-distance-${containerId}`);
+            const horizontalRightDistance = document.getElementById(`horizontal-right-distance-${containerId}`);
+            const foundationBorder = document.getElementById(`foundation-border-${containerId}`);
+            const vowelBorder = document.getElementById(`vowel-border-${containerId}`);
+            const finalBorder = document.getElementById(`final-border-${containerId}`);
+            const foundationDimensions = document.getElementById(`foundation-dimensions-${containerId}`);
+            const vowelDimensions = document.getElementById(`vowel-dimensions-${containerId}`);
+            const finalDimensions = document.getElementById(`final-dimensions-${containerId}`);
+            const centerDot = document.getElementById(`center-dot-${containerId}`);
+            const basePoint = document.getElementById(`base-point-${containerId}`);
+            const pointVowel = document.getElementById(`point-vowel-${containerId}`);
+            const pointF1 = document.getElementById(`point-f1-${containerId}`);
+            const pointF2 = document.getElementById(`point-f2-${containerId}`);
+
+            if (container && foundationWrapper && finalWrapper && foundationBox && vowelBox &&
+                leftDistance && rightDistance && verticalDistance &&
+                horizontalLeftDistance && horizontalRightDistance && foundationBorder && vowelBorder && finalBorder &&
+                foundationDimensions && vowelDimensions && finalDimensions && centerDot && basePoint && pointVowel && pointF1 && pointF2) {
+
+                // Get positions relative to container using offsetLeft/offsetTop
+                const foundationWrapperLeft = foundationWrapper.offsetLeft;
+                const foundationWrapperTop = foundationWrapper.offsetTop;
+                const foundationBoxWidth = foundationBox.offsetWidth;
+                const foundationBoxHeight = foundationBox.offsetHeight;
+
+                const finalWrapperLeft = finalWrapper.offsetLeft;
+                const finalWrapperTop = finalWrapper.offsetTop;
+                const finalBoxHeight = finalBox.offsetHeight;
+
+                // Foundation right edge position
+                const foundationRightX = foundationWrapperLeft + foundationBoxWidth;
+                const foundationCenterY = foundationWrapperTop + foundationBoxHeight / 2;
+
+                // Final left edge position
+                const finalLeftX = finalWrapperLeft;
+                const finalCenterY = finalWrapperTop + finalBoxHeight / 2;
+
+                // Ensure foundation and final are on same height level
+                const baselineY = Math.max(foundationCenterY, finalCenterY);
+
+                // Vowel position - MUST be exactly centered in container
+                const vowelWrapperTop = 10; // from top: 10px
+                const vowelBoxHeight = vowelBox.offsetHeight;
+                const vowelBoxWidth = vowelBox.offsetWidth;
+                const containerCenterX = container.offsetWidth / 2; // exact center of container
+                const vowelLeftX = containerCenterX - vowelBoxWidth / 2;
+                const vowelRightX = containerCenterX + vowelBoxWidth / 2;
+                const vowelBottomY = vowelWrapperTop + vowelBoxHeight;
+
+                // OLD DOT POSITIONING SYSTEM - COMMENTED OUT FOR REFERENCE
+                /*
+                // Calculate angles
+                const leftAngle = calculateAngle(foundationRightX, baselineY, vowelLeftX, vowelBottomY);
+                const rightAngle = calculateAngle(vowelRightX, vowelBottomY, finalLeftX, baselineY);
+
+                // Calculate target positions based on geometry (not measured text)
+                const TARGET_ANGLE = 30;
+                const VERTICAL_DISTANCE = 100;
+                const angleRadians = TARGET_ANGLE * (Math.PI / 180);
+                const requiredHorizontalDistance = VERTICAL_DISTANCE / Math.tan(angleRadians);
+
+                // RED DOTS: Positioned at calculated target positions (container-relative)
+                const targetFoundationRightX = centerX - requiredHorizontalDistance;
+                dot1.style.left = (targetFoundationRightX - 4) + 'px';
+                dot1.style.top = (baselineY - 4) + 'px';
+
+                // Position dot2 at left edge of Vowel (bottom edge)
+                dot2.style.left = (vowelLeftX - 4) + 'px';
+                dot2.style.top = (vowelBottomY - 4) + 'px';
+
+                // BLUE DOTS: Vowel right edge to Final left edge
+                dot3.style.left = (vowelRightX - 4) + 'px';
+                dot3.style.top = (vowelBottomY - 4) + 'px';
+
+                // BLUE DOT: Positioned at calculated target position (container-relative)
+                const targetFinalLeftX = centerX + requiredHorizontalDistance;
+                dot4.style.left = (targetFinalLeftX - 4) + 'px';
+                dot4.style.top = (baselineY - 4) + 'px';
+
+                // BLACK CENTER DOTS - All at exact center of container horizontally
+                // (centerX is already the container center)
+
+                // Bottom black dot: At container center horizontally, baseline vertically
+                centerDot.style.left = (centerX - 4) + 'px';
+                centerDot.style.top = (baselineY - 4) + 'px';
+
+                // Top black dot: At container center horizontally, vowel bottom level vertically
+                centerDotTop.style.left = (centerX - 4) + 'px';
+                centerDotTop.style.top = (vowelBottomY - 4) + 'px';
+
+                // Middle black dot: At container center horizontally, halfway between top and bottom
+                const middleY = vowelBottomY + (baselineY - vowelBottomY) / 2;
+                centerDotMiddle.style.left = (centerX - 4) + 'px';
+                centerDotMiddle.style.top = (middleY - 4) + 'px';
+
+                // Green dots: At middle level (same height as gold dot), at cyan container edges
+                const syllableDisplay = container.parentElement; // Get the syllable-display (cyan) container
+                const syllableDisplayRect = syllableDisplay.getBoundingClientRect();
+                const readingOrderRect = container.getBoundingClientRect();
+
+                // Calculate offset from reading-order to syllable-display
+                const offsetX = readingOrderRect.left - syllableDisplayRect.left;
+
+                const leftEdgeX = -offsetX; // At the very left edge of cyan container
+                const rightEdgeX = syllableDisplay.offsetWidth - offsetX - 8; // At the very right edge of cyan container (minus dot width)
+
+                centerDotLeft.style.left = leftEdgeX + 'px';
+                centerDotLeft.style.top = (middleY - 4) + 'px'; // Same height as gold dot
+
+                centerDotRight.style.left = rightEdgeX + 'px';
+                centerDotRight.style.top = (middleY - 4) + 'px'; // Same height as gold dot
+
+                // Calculate distances using target positions (container-relative, always equal)
+                const leftDistancePx = Math.abs(centerX - targetFoundationRightX);
+                const rightDistancePx = Math.abs(targetFinalLeftX - centerX);
+
+                // These should now be exactly equal by design
+                const equalLeftDistance = leftDistancePx;
+                const equalRightDistance = rightDistancePx;
+                */
+
+                // CLEAN SLATE - NEW DOT SYSTEM STARTS HERE
+
+                // OLD BORDER POSITIONING - DISABLED (now handled after text positioning)
+                // The borders are now positioned after text positioning in the triangle system
+
+                // NEW DOT SYSTEM - Position gold center dot relative to cyan container
+                // Get the cyan syllable-display container (parent of the reading-order container)
+                const syllableDisplay = container.parentElement;
+                if (syllableDisplay) {
+                    const syllableDisplayRect = syllableDisplay.getBoundingClientRect();
+                    const containerRect = container.getBoundingClientRect();
+
+                    // Calculate center position of the cyan container relative to the reading-order container
+                    const cyanCenterX = (syllableDisplayRect.left + syllableDisplayRect.width / 2) - containerRect.left;
+                    const cyanCenterY = (syllableDisplayRect.top + syllableDisplayRect.height / 2) - containerRect.top;
+
+                    // Position gold dot at center of cyan container (offset by half dot size for true centering)
+                    centerDot.style.left = (cyanCenterX - 4) + 'px';
+                    centerDot.style.top = (cyanCenterY - 4) + 'px';
+
+                    // Position black base point 50px below gold dot (ABSOLUTE reference point for triangle)
+                    basePoint.style.left = (cyanCenterX - 4) + 'px';
+                    basePoint.style.top = (cyanCenterY + 50 - 4) + 'px';
+
+                    // Triangle height variable for vowel positioning
+                    const triangle_h = -90; // Negative value to go up from base point
+
+                    // Position blue vowel point: same horizontal as base point, triangle_h above base point
+                    pointVowel.style.left = (cyanCenterX - 4) + 'px';
+                    pointVowel.style.top = (cyanCenterY + 50 + triangle_h - 4) + 'px';
+
+                    // Function to calculate horizontal offset for triangle with 30° base angles
+                    function calculateHorizontalOffset(triangleHeight, baseAngleDegrees) {
+                        // For a 30° base angle, the angle from vertical to the side is 60°
+                        const angleFromVertical = 90 - baseAngleDegrees;
+                        const angleRadians = (angleFromVertical * Math.PI) / 180;
+                        return Math.abs(triangleHeight) * Math.tan(angleRadians);
+                    }
+
+                    // Triangle angles: 120° at top (vowel), 30° at each base corner
+                    const baseCornerAngle = 30; // degrees at f1 and f2 points
+                    const horizontalOffset = calculateHorizontalOffset(triangle_h, baseCornerAngle);
+
+                    // Position f1 and f2 points at base height with calculated horizontal offsets
+                    const basePointY = cyanCenterY + 50; // Same height as black base point
+
+                    // f1 point (red) - left side of triangle
+                    pointF1.style.left = (cyanCenterX - horizontalOffset - 4) + 'px';
+                    pointF1.style.top = (basePointY - 4) + 'px';
+
+                    // f2 point (green) - right side of triangle
+                    pointF2.style.left = (cyanCenterX + horizontalOffset - 4) + 'px';
+                    pointF2.style.top = (basePointY - 4) + 'px';
+
+                    // NAIVE TEXT POSITIONING: Place text boxes directly at triangle dot positions
+                    // Get text elements for this specific interpretation
+                    const foundationWrapper = document.getElementById(`foundation-wrapper-${containerId}`);
+                    const finalWrapper = document.getElementById(`final-wrapper-${containerId}`);
+                    const vowelBox = document.getElementById(`vowel-${containerId}`);
+
+                    if (foundationWrapper && finalWrapper && vowelBox) {
+                        // Position text at exact dot coordinates
+                        // Foundation text at red dot (f1 point)
+                        foundationWrapper.style.left = (cyanCenterX - horizontalOffset) + 'px';
+                        foundationWrapper.style.top = basePointY + 'px';
+
+                        // Final text at green dot (f2 point)
+                        finalWrapper.style.left = (cyanCenterX + horizontalOffset) + 'px';
+                        finalWrapper.style.top = basePointY + 'px';
+
+                        // Vowel text at blue dot (vowel point)
+                        vowelBox.style.left = cyanCenterX + 'px';
+                        vowelBox.style.top = (cyanCenterY + 50 + triangle_h) + 'px';
+
+                        // Update debug borders to match new text positions
+                        setTimeout(() => {
+                            // Get the actual rendered positions of text elements
+                            const foundationRect = foundationWrapper.getBoundingClientRect();
+                            const vowelRect = vowelBox.getBoundingClientRect();
+                            const containerRect = container.getBoundingClientRect();
+
+                            // Position foundation border
+                            foundationBorder.style.left = (foundationRect.left - containerRect.left) + 'px';
+                            foundationBorder.style.top = (foundationRect.top - containerRect.top) + 'px';
+                            foundationBorder.style.width = foundationRect.width + 'px';
+                            foundationBorder.style.height = foundationRect.height + 'px';
+                            foundationDimensions.textContent = Math.round(foundationRect.width) + 'x' + Math.round(foundationRect.height);
+                            foundationDimensions.style.left = (foundationRect.left - containerRect.left) + 'px';
+                            foundationDimensions.style.top = (foundationRect.bottom - containerRect.top + 2) + 'px';
+
+                            // Position vowel border
+                            vowelBorder.style.left = (vowelRect.left - containerRect.left) + 'px';
+                            vowelBorder.style.top = (vowelRect.top - containerRect.top) + 'px';
+                            vowelBorder.style.width = vowelRect.width + 'px';
+                            vowelBorder.style.height = vowelRect.height + 'px';
+                            vowelDimensions.textContent = Math.round(vowelRect.width) + 'x' + Math.round(vowelRect.height);
+                            vowelDimensions.style.left = (vowelRect.left - containerRect.left) + 'px';
+                            vowelDimensions.style.top = (vowelRect.bottom - containerRect.top + 2) + 'px';
+
+                            // Position final border
+                            if (finalBox) {
+                                const finalRect = finalWrapper.getBoundingClientRect();
+                                finalBorder.style.left = (finalRect.left - containerRect.left) + 'px';
+                                finalBorder.style.top = (finalRect.top - containerRect.top) + 'px';
+                                finalBorder.style.width = finalRect.width + 'px';
+                                finalBorder.style.height = finalRect.height + 'px';
+                                finalDimensions.textContent = Math.round(finalRect.width) + 'x' + Math.round(finalRect.height);
+                                finalDimensions.style.left = (finalRect.left - containerRect.left) + 'px';
+                                finalDimensions.style.top = (finalRect.bottom - containerRect.top + 2) + 'px';
+                            }
+                        }, 10); // Small delay to ensure text positioning is rendered
+                    }
+                }
+            }
+        }
+
+        function renderReadingOrder(syllable) {
+            let components = [];
+
+            // Foundation
+            if (syllable.foundation) {
+                let foundationStr;
+
+                if (typeof syllable.foundation === 'object' && syllable.foundation.consonants) {
+                    // Foundation is an object with consonants and possibly tone
+                    foundationStr = syllable.foundation.consonants.join('');
+
+                    // Add tone mark if present
+                    if (syllable.foundation.tone) {
+                        // Insert tone mark after the tone_owner consonant
+                        const toneOwner = syllable.foundation.tone_owner || 0;
+                        const consonants = syllable.foundation.consonants;
+
+                        if (toneOwner < consonants.length) {
+                            // Build string with tone mark placed correctly
+                            let result = '';
+                            for (let i = 0; i < consonants.length; i++) {
+                                result += consonants[i];
+                                if (i === toneOwner) {
+                                    result += syllable.foundation.tone;
+                                }
+                            }
+                            foundationStr = result;
+                        } else {
+                            // Fallback: append tone mark at end
+                            foundationStr += syllable.foundation.tone;
+                        }
+                    }
+                } else if (Array.isArray(syllable.foundation)) {
+                    foundationStr = syllable.foundation.join('');
+                } else {
+                    foundationStr = syllable.foundation;
+                }
+
+                // Check if foundation is a cluster
+                let foundationChars = [];
+                if (typeof syllable.foundation === 'object' && syllable.foundation.consonants) {
+                    foundationChars = syllable.foundation.consonants;
+                } else if (Array.isArray(syllable.foundation)) {
+                    foundationChars = syllable.foundation;
+                } else {
+                    foundationChars = [syllable.foundation];
+                }
+                const isCluster = foundationChars.length > 1;
+                const clusterNote = isCluster ? '<div style="font-size: 12px; color: #666; margin-top: 4px;">(cluster)</div>' : '';
+
+                components.push(`
+                    <div class="reading-component">
+                        <div class="component-char">${foundationStr}</div>
+                        <div class="component-type">Foundation</div>
+                        ${clusterNote}
+                    </div>
+                `);
+            }
+
+            // Vowel - show pattern with English letters (x, f) using correct font
+            components.push(`
+                <div class="reading-component">
+                    <div class="component-char" style="font-family: 'Microsoft Sans Serif' !important;">${syllable.pattern || ''}</div>
+                    <div class="component-type">Vowel</div>
+                </div>
+            `);
+
+            // Final (if present)
+            if (syllable.final) {
+                let finalStr;
+
+                if (typeof syllable.final === 'object' && syllable.final.consonants) {
+                    // Final is an object with consonants and possibly tone
+                    finalStr = syllable.final.consonants.join('');
+
+                    // Add tone mark if present
+                    if (syllable.final.tone) {
+                        // Insert tone mark after the tone_owner consonant
+                        const toneOwner = syllable.final.tone_owner || 0;
+                        const consonants = syllable.final.consonants;
+
+                        if (toneOwner < consonants.length) {
+                            // Build string with tone mark placed correctly
+                            let result = '';
+                            for (let i = 0; i < consonants.length; i++) {
+                                result += consonants[i];
+                                if (i === toneOwner) {
+                                    result += syllable.final.tone;
+                                }
+                            }
+                            finalStr = result;
+                        } else {
+                            // Fallback: append tone mark at end
+                            finalStr += syllable.final.tone;
+                        }
+                    }
+                } else if (Array.isArray(syllable.final)) {
+                    finalStr = syllable.final.join('');
+                } else {
+                    finalStr = syllable.final;
+                }
+
+                components.push(`
+                    <div class="reading-component">
+                        <div class="component-char">${finalStr}</div>
+                        <div class="component-type">Final</div>
+                    </div>
+                `);
+            }
+
+            // Triangular layout with dynamic spacing for 30-degree angles
+            const containerId = `container-${Math.random().toString(36).substr(2, 9)}`;
+
+            // No tan container wrapper - elements go directly into cyan container
+            let html = '';
+
+            // VOWEL TEXT RESTORED - positioned at blue triangle dot
+            // NOTE: Vowel component uses Microsoft Sans Serif font for tone mark support
+            if (components.length > 1) {
+                html += '<div id="vowel-' + containerId + '" style="position: absolute;">';
+                html += components[1].replace('<div class="component-char"', '<div class="component-char"');
+                html += '</div>';
+            }
+
+            // Bottom row: Foundation and Final - positions will be calculated dynamically
+            // NO HARDCODED POSITIONS - let positionDotsForContainer handle all positioning
+
+            // Foundation: positioned dynamically
+            if (components.length > 0) {
+                html += `<div id="foundation-wrapper-${containerId}" style="position: absolute;">`;
+                html += components[0].replace('<div class="component-char"', `<div id="foundation-${containerId}" class="component-char"`);
+                html += '</div>';
+            }
+
+            // Final: positioned dynamically
+            html += `<div id="final-wrapper-${containerId}" style="position: absolute;">`;
+            if (components.length > 2) {
+                html += components[2].replace('<div class="component-char"', `<div id="final-${containerId}" class="component-char"`);
+            } else {
+                // Empty final placeholder
+                html += `<div id="final-${containerId}" class="reading-component"><div class="component-char" style="opacity: 0.3; font-size: 24px; color: #ccc;">—</div><div class="component-type" style="opacity: 0.5;">Final</div></div>`;
+            }
+            html += '</div>';
+
+            // OLD DOT SYSTEM - COMMENTED OUT FOR REFERENCE
+            /*
+            // Red dots for testing coordinates - positioned within the container
+            html += '<div id="dot1-' + containerId + '" style="position: absolute; width: 8px; height: 8px; background: red; border-radius: 50%; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+            html += '<div id="dot2-' + containerId + '" style="position: absolute; width: 8px; height: 8px; background: red; border-radius: 50%; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+
+            // Blue dots for the other angle measurements
+            html += '<div id="dot3-' + containerId + '" style="position: absolute; width: 8px; height: 8px; background: blue; border-radius: 50%; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+            html += '<div id="dot4-' + containerId + '" style="position: absolute; width: 8px; height: 8px; background: blue; border-radius: 50%; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+
+            // Black center reference dots
+            html += '<div id="center-dot-' + containerId + '" style="position: absolute; width: 8px; height: 8px; background: black; border-radius: 50%; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+            html += '<div id="center-dot-top-' + containerId + '" style="position: absolute; width: 8px; height: 8px; background: black; border-radius: 50%; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+            html += '<div id="center-dot-middle-' + containerId + '" style="position: absolute; width: 8px; height: 8px; background: gold; border-radius: 50%; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+            html += '<div id="center-dot-left-' + containerId + '" style="position: absolute; width: 8px; height: 8px; background: green; border-radius: 50%; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+            html += '<div id="center-dot-right-' + containerId + '" style="position: absolute; width: 8px; height: 8px; background: green; border-radius: 50%; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+            */
+
+            // Distance display elements
+            html += '<div id="left-distance-' + containerId + '" style="position: absolute; color: red; font-size: 12px; font-weight: bold; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+            html += '<div id="right-distance-' + containerId + '" style="position: absolute; color: blue; font-size: 12px; font-weight: bold; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+            html += '<div id="vertical-distance-' + containerId + '" style="position: absolute; color: black; font-size: 12px; font-weight: bold; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+            html += '<div id="horizontal-left-distance-' + containerId + '" style="position: absolute; color: green; font-size: 12px; font-weight: bold; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+            html += '<div id="horizontal-right-distance-' + containerId + '" style="position: absolute; color: green; font-size: 12px; font-weight: bold; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+
+            // Text box border elements
+            html += '<div id="foundation-border-' + containerId + '" style="position: absolute; border: 2px solid red; z-index: 99; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+            html += '<div id="vowel-border-' + containerId + '" style="position: absolute; border: 2px solid blue; z-index: 99; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+            html += '<div id="final-border-' + containerId + '" style="position: absolute; border: 2px solid green; z-index: 99; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+
+            // Text box dimension labels
+            html += '<div id="foundation-dimensions-' + containerId + '" style="position: absolute; color: red; font-size: 10px; font-weight: bold; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none; background: rgba(255,255,255,0.8); padding: 1px 2px;"></div>';
+            html += '<div id="vowel-dimensions-' + containerId + '" style="position: absolute; color: blue; font-size: 10px; font-weight: bold; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none; background: rgba(255,255,255,0.8); padding: 1px 2px;"></div>';
+            html += '<div id="final-dimensions-' + containerId + '" style="position: absolute; color: green; font-size: 10px; font-weight: bold; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none; background: rgba(255,255,255,0.8); padding: 1px 2px;"></div>';
+
+            // NEW DOT SYSTEM - Gold center dot (ABSOLUTE - never moves, cyan container center)
+            html += '<div id="center-dot-' + containerId + '" style="position: absolute; width: 8px; height: 8px; background: gold; border-radius: 50%; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+
+            // Black base point dot - ABSOLUTE reference point 50px below gold dot (most important triangle point)
+            html += '<div id="base-point-' + containerId + '" style="position: absolute; width: 8px; height: 8px; background: black; border-radius: 50%; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+
+            // Blue vowel point - positioned triangle_h above base point (same horizontal position)
+            html += '<div id="point-vowel-' + containerId + '" style="position: absolute; width: 8px; height: 8px; background: blue; border-radius: 50%; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+
+            // Triangle base points f1 and f2 - same height as base point, positioned for 30° base angles (120° top angle)
+            html += '<div id="point-f1-' + containerId + '" style="position: absolute; width: 8px; height: 8px; background: red; border-radius: 50%; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+            html += '<div id="point-f2-' + containerId + '" style="position: absolute; width: 8px; height: 8px; background: green; border-radius: 50%; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+
+            // Add to positioning queue - calculate dynamic positions for 30-degree angles
+            setTimeout(() => calculateDynamicPositions(containerId), 50);
+
+            return html;
+        }
+
+        async function loadTagsForInterpretation(syllable, index) {
+            try {
+                const response = await fetch('http://localhost:5001/api/get-tags', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        characters: {
+                            foundation: syllable.foundation,
+                            vowel: syllable.vowel,
+                            final: syllable.final
+                        }
+                    })
+                });
+
+                const tags = await response.json();
+                const tagsContainer = document.getElementById(`tags-${index}`);
+
+                let tagsHtml = '';
+                for (const [type, data] of Object.entries(tags)) {
+                    if (data.tags && data.tags.length > 0) {
+                        tagsHtml += `<div style="margin-top: 5px;">`;
+                        tagsHtml += `<strong style="font-size: 11px; color: #666;">${type}:</strong> `;
+                        data.tags.forEach(tag => {
+                            tagsHtml += `<span class="tag">${tag}</span>`;
+                        });
+                        tagsHtml += `</div>`;
+                    }
+                }
+
+                tagsContainer.innerHTML = tagsHtml || '<small style="color: #999;">No tags found</small>';
+
+            } catch (error) {
+                console.error('Error loading tags:', error);
+            }
+        }
+
+        function selectInterpretation(index) {
+            // Clear previous selection
+            document.querySelectorAll('.interpretation-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Select new interpretation
+            const cards = document.querySelectorAll('.interpretation-card');
+            cards[index].classList.add('selected');
+            selectedInterpretation = currentInterpretations[index];
+        }
+
+        async function saveLabel() {
+            let labelData = {
+                word_id: currentWordId,
+                session_id: sessionId,
+                labeler: 'user',
+                notes: document.getElementById('labelNotes').value
+            };
+
+            // Check if custom interpretation is provided
+            const customFoundation = document.getElementById('customFoundation').value.trim();
+            const customVowel = document.getElementById('customVowel').value.trim();
+            const customPattern = document.getElementById('customPattern').value.trim();
+
+            if (customFoundation || customVowel || customPattern) {
+                // Custom interpretation
+                labelData.is_custom = true;
+                labelData.custom_interpretation = {
+                    foundation: customFoundation ? customFoundation.split('') : [],
+                    vowel: customVowel,
+                    final: document.getElementById('customFinal').value.trim(),
+                    pattern: customPattern
+                };
+                stats.custom++;
+            } else if (selectedInterpretation) {
+                // Selected existing interpretation
+                labelData.interpretation_id = selectedInterpretation.id;
+                labelData.is_custom = false;
+            } else {
+                alert('Please select an interpretation or provide a custom one');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:5001/api/save-label', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(labelData)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    stats.labels++;
+                    stats.words.add(currentWord);
+                    updateStats();
+
+                    showSuccessModal(labelData.is_custom);
+
+                    // Mark queue item as labeled
+                    if (currentQueueIndex >= 0) {
+                        wordQueue[currentQueueIndex].labeled = true;
+                        updateWordQueue();
+                        nextInQueue();
+                    } else {
+                        // Clear for next word
+                        document.getElementById('wordInput').value = '';
+                        document.getElementById('analysisSection').style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('Error saving label:', error);
+                alert('Error saving label');
+            }
+        }
+
+        function skipWord() {
+            if (currentQueueIndex >= 0) {
+                nextInQueue();
+            } else {
+                document.getElementById('wordInput').value = '';
+                document.getElementById('analysisSection').style.display = 'none';
+            }
+        }
+
+        function loadBatch() {
+            const input = document.getElementById('batchInput').value.trim();
+            if (!input) return;
+
+            const words = input.split('\n').map(w => w.trim()).filter(w => w);
+            wordQueue = words.map(word => ({ word, labeled: false }));
+            currentQueueIndex = -1;
+
+            updateWordQueue();
+            document.getElementById('batchInput').value = '';
+
+            if (wordQueue.length > 0) {
+                nextInQueue();
+            }
+        }
+
+        function updateWordQueue() {
+            const container = document.getElementById('wordQueue');
+            container.innerHTML = '';
+
+            wordQueue.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'queue-item';
+                if (index === currentQueueIndex) div.classList.add('current');
+                if (item.labeled) div.classList.add('labeled');
+
+                div.innerHTML = `
+                    <span class="queue-word">${item.word}</span>
+                    <span class="queue-status">${item.labeled ? '✓' : ''}</span>
+                `;
+                div.onclick = () => goToQueueItem(index);
+
+                container.appendChild(div);
+            });
+        }
+
+        function nextInQueue() {
+            if (currentQueueIndex < wordQueue.length - 1) {
+                currentQueueIndex++;
+                const item = wordQueue[currentQueueIndex];
+                document.getElementById('wordInput').value = item.word;
+                analyzeWord(item.word);
+                updateWordQueue();
+            }
+        }
+
+        function goToQueueItem(index) {
+            currentQueueIndex = index;
+            const item = wordQueue[index];
+            document.getElementById('wordInput').value = item.word;
+            analyzeWord(item.word);
+            updateWordQueue();
+        }
+
+        function updateStats() {
+            document.getElementById('labelCount').textContent = stats.labels;
+            document.getElementById('customCount').textContent = stats.custom;
+            document.getElementById('wordCount').textContent = stats.words.size;
+        }
+
+        function showSuccessModal(isCustom) {
+            const modal = document.getElementById('successModal');
+            const message = document.getElementById('modalMessage');
+
+            if (isCustom) {
+                message.textContent = 'Custom interpretation saved! This helps identify gaps in the algorithm.';
+            } else {
+                message.textContent = 'Label saved successfully!';
+            }
+
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('successModal').classList.remove('show');
+        }
+
+        // Server restart functionality
+        async function restartServer() {
+            if (!confirm('Are you sure you want to restart the server? This will reload the page and any unsaved work will be lost.')) {
+                return;
+            }
+
+            // Save current word for restoration after restart
+            const currentWordInput = document.getElementById('wordInput').value;
+            if (currentWordInput.trim()) {
+                sessionStorage.setItem('restartCurrentWord', currentWordInput.trim());
+            }
+
+            // Save debug mode state
+            const debugMode = document.getElementById('debugToggle').checked;
+            sessionStorage.setItem('restartDebugMode', debugMode.toString());
+
+            try {
+                // Get current port from window location
+                const currentPort = window.location.port || '5001';
+
+                const response = await fetch(`http://localhost:${currentPort}/api/restart-server`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.ok) {
+                    // Create non-blocking notification
+                    const notification = document.createElement('div');
+                    notification.style.cssText = `
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        background: #4CAF50;
+                        color: white;
+                        padding: 15px 20px;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                        z-index: 10000;
+                        font-family: Arial, sans-serif;
+                        font-size: 14px;
+                    `;
+                    notification.textContent = 'Server restarting... Page will reload in 1 second.';
+                    document.body.appendChild(notification);
+
+                    // Reload after delay
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    alert('Failed to restart server. Check console for details.');
+                }
+            } catch (error) {
+                console.error('Error restarting server:', error);
+                // If restart call fails, just reload the page as fallback
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #ff9800;
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                    z-index: 10000;
+                    font-family: Arial, sans-serif;
+                    font-size: 14px;
+                `;
+                notification.textContent = 'Restart request failed. Reloading page as fallback...';
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            }
+        }
+
+        // Theme and Font Controls
+        let isDarkMode = localStorage.getItem('darkMode') === 'true';
+
+        // Font settings (simple approach like pattern classifier)
+        let currentFontFamily = 'thai-sarabun';
+        let currentFontSize = 24;
+        let currentFontWeight = 400;
+
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            localStorage.setItem('darkMode', isDarkMode);
+            applyTheme();
+        }
+
+        function applyTheme() {
+            const body = document.body;
+            const toggle = document.querySelector('.theme-toggle');
+
+            if (isDarkMode) {
+                body.setAttribute('data-theme', 'dark');
+                toggle.textContent = '☀️ Light Mode';
+            } else {
+                body.removeAttribute('data-theme');
+                toggle.textContent = '🌙 Dark Mode';
+            }
+        }
+
+        function changeThaiFontFamily() {
+            currentFontFamily = document.getElementById('fontSelect').value;
+            applyFontSettings();
+        }
+
+        function changeFontSize() {
+            currentFontSize = document.getElementById('fontSizeSlider').value;
+            document.getElementById('fontSizeDisplay').textContent = currentFontSize + 'px';
+            applyFontSettings();
+        }
+
+        function changeFontWeight() {
+            currentFontWeight = document.getElementById('fontWeightSelect').value;
+            applyFontSettings();
+        }
+
+        function toggleDebugMode() {
+            const isDebug = document.getElementById('debugToggle').checked;
+
+            if (isDebug) {
+                // Enable debug colors
+                document.documentElement.style.setProperty('--card-bg-debug', '#666666');
+                document.documentElement.style.setProperty('--syllable-display-bg-debug', 'cyan');
+                // Show dots and measurements
+                document.documentElement.style.setProperty('--debug-dots-opacity', '1');
+            } else {
+                // Reset to normal colors
+                document.documentElement.style.setProperty('--card-bg-debug', 'var(--card-bg-normal)');
+                document.documentElement.style.setProperty('--syllable-display-bg-debug', '#f8f9fa');
+                // Hide dots and measurements
+                document.documentElement.style.setProperty('--debug-dots-opacity', '0');
+            }
+        }
+
+        function containsThaiCharacters(text) {
+            // Check if text contains Thai characters (U+0E00-U+0E7F)
+            return /[\u0E00-\u0E7F]/.test(text);
+        }
+
+        function convertTemplateToThai(template) {
+            // Replace placeholders with actual Thai consonants for proper rendering
+            // x = initial consonant (ก), f = final consonant (ง)
+            // This ensures tone marks display properly since Thai fonts support tone marks on Thai consonants
+            return template.replace(/x/g, 'ก').replace(/f/g, 'ง');
+        }
+
+        function addPatternDisplay(template) {
+            // Show both English template and Thai version for clarity
+            const thaiVersion = convertTemplateToThai(template);
+            if (template !== thaiVersion && /[xf]/.test(template)) {
+                return `${thaiVersion} (${template})`;
+            }
+            return template;
+        }
+
+        function applyFontSettings() {
+            // Apply font settings to Thai text elements (pattern classifier approach)
+            // Note: .pattern-display excluded to preserve Unicode combining character support
+            const thaiElements = document.querySelectorAll('.thai-input, #currentWord, .component-char, .form-input, .queue-word');
+
+            thaiElements.forEach(element => {
+                // Remove existing thai-* classes
+                element.className = element.className.replace(/thai-\w+/g, '');
+                // Add the current font family class
+                element.classList.add(currentFontFamily);
+                // Apply font size and weight as inline styles
+                element.style.fontSize = currentFontSize + 'px';
+                element.style.fontWeight = currentFontWeight;
+            });
+
+            // Recalculate text dimensions and triangle positioning after font changes
+            setTimeout(() => {
+                recalculateTextDimensionsAndTriangles();
+            }, 50); // Small delay to ensure font changes are applied
+        }
+
+        function recalculateTextDimensionsAndTriangles() {
+            // Find all syllable containers and recalculate their positioning
+            const syllableContainers = document.querySelectorAll('.syllable-display');
+
+            syllableContainers.forEach(container => {
+                const readingOrderDiv = container.querySelector('.reading-order');
+                if (readingOrderDiv) {
+                    // Extract containerId from the reading-order div
+                    const foundationElement = readingOrderDiv.querySelector('[id^="foundation-"]');
+                    if (foundationElement) {
+                        const containerId = foundationElement.id.split('-')[1];
+
+                        // Recalculate positioning for this container
+                        setTimeout(() => {
+                            calculateDynamicPositions(containerId);
+                            positionDotsForContainer(containerId);
+                        }, 10);
+                    }
+                }
+            });
+        }
+
+        // Initialize theme and font settings on page load
+        function initializeUI() {
+            // Apply saved theme
+            applyTheme();
+
+            // Set font control values to current variables
+            document.getElementById('fontSelect').value = currentFontFamily;
+            document.getElementById('fontSizeSlider').value = currentFontSize;
+            document.getElementById('fontSizeDisplay').textContent = currentFontSize + 'px';
+            document.getElementById('fontWeightSelect').value = currentFontWeight;
+
+            // Apply initial font settings
+            applyFontSettings();
+
+            // Restore word if coming from restart
+            const restartWord = sessionStorage.getItem('restartCurrentWord');
+            if (restartWord) {
+                document.getElementById('wordInput').value = restartWord;
+                sessionStorage.removeItem('restartCurrentWord'); // Clear after restoring
+                // Auto-analyze the restored word
+                setTimeout(() => analyzeWord(), 100);
+            }
+
+            // Restore debug mode state
+            const restartDebugMode = sessionStorage.getItem('restartDebugMode');
+            if (restartDebugMode !== null) {
+                const isDebug = restartDebugMode === 'true';
+                document.getElementById('debugToggle').checked = isDebug;
+                sessionStorage.removeItem('restartDebugMode'); // Clear after restoring
+                toggleDebugMode(); // Apply the debug mode
+            }
+        }
+
+        // Initialize everything when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            initSession();
+            initializeUI();
+            document.getElementById('wordInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') analyzeWord();
+            });
+        });
+    </script>
+</body>
+</html>

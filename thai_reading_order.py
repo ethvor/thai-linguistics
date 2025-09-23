@@ -55,8 +55,10 @@ class ThaiReadingOrderAnalyzer:
             """Recursively explore all possible syllable segmentations."""
 
             # If all positions used, we have a complete reading
+            # CONSTRAINT: Only accept single-syllable readings
             if len(used) == text_len:
-                all_readings.append(current_reading.copy())
+                if len(current_reading) == 1:  # Only single syllable interpretations
+                    all_readings.append(current_reading.copy())
                 return
 
             # Find next unused position
