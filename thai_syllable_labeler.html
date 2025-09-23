@@ -1172,18 +1172,39 @@
                     const vowelBox = document.getElementById(`vowel-${containerId}`);
 
                     if (foundationWrapper && finalWrapper && vowelBox) {
-                        // Position text at exact dot coordinates
-                        // Foundation text at red dot (f1 point)
-                        foundationWrapper.style.left = (cyanCenterX - horizontalOffset) + 'px';
-                        foundationWrapper.style.top = basePointY + 'px';
+                        // First position elements temporarily to measure their dimensions
+                        foundationWrapper.style.left = '0px';
+                        foundationWrapper.style.top = '0px';
+                        finalWrapper.style.left = '0px';
+                        finalWrapper.style.top = '0px';
+                        vowelBox.style.left = '0px';
+                        vowelBox.style.top = '0px';
 
-                        // Final text at green dot (f2 point)
-                        finalWrapper.style.left = (cyanCenterX + horizontalOffset) + 'px';
-                        finalWrapper.style.top = basePointY + 'px';
+                        // Force layout to get accurate measurements
+                        foundationWrapper.offsetWidth;
+                        finalWrapper.offsetWidth;
+                        vowelBox.offsetWidth;
 
-                        // Vowel text at blue dot (vowel point)
-                        vowelBox.style.left = cyanCenterX + 'px';
-                        vowelBox.style.top = (cyanCenterY + 50 + triangle_h) + 'px';
+                        // Get text box dimensions
+                        const foundationWidth = foundationWrapper.offsetWidth;
+                        const foundationHeight = foundationWrapper.offsetHeight;
+                        const finalWidth = finalWrapper.offsetWidth;
+                        const finalHeight = finalWrapper.offsetHeight;
+                        const vowelWidth = vowelBox.offsetWidth;
+                        const vowelHeight = vowelBox.offsetHeight;
+
+                        // Position text using width/height offsets for better alignment
+                        // Foundation text: subtract width (right-align to dot), subtract height/2 (vertically center)
+                        foundationWrapper.style.left = (cyanCenterX - horizontalOffset - foundationWidth) + 'px';
+                        foundationWrapper.style.top = (basePointY - foundationHeight / 2) + 'px';
+
+                        // Final text: add width (left-align to dot), subtract height/2 (vertically center)
+                        finalWrapper.style.left = (cyanCenterX + horizontalOffset + finalWidth) + 'px';
+                        finalWrapper.style.top = (basePointY - finalHeight / 2) + 'px';
+
+                        // Vowel text: add width (center horizontally around dot), subtract height/2 (vertically center)
+                        vowelBox.style.left = (cyanCenterX + vowelWidth) + 'px';
+                        vowelBox.style.top = (cyanCenterY + 50 + triangle_h - vowelHeight / 2) + 'px';
 
                         // Update debug borders to match new text positions
                         setTimeout(() => {
