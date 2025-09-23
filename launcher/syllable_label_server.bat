@@ -31,6 +31,7 @@ if not exist "thai_labeling_app.py" (
 
 :restart
 REM Run the Flask server
+set LAUNCHER_TYPE=batch
 python thai_labeling_app.py
 
 REM Check the exit code

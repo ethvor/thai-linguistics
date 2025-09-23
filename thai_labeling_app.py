@@ -362,21 +362,45 @@ def load_word_batch():
 
 @app.route('/api/restart-server', methods=['POST'])
 def restart_server():
-    """Restart the Flask server"""
+    """Restart the Flask server - system independent approach"""
     try:
-        # Use Flask's built-in shutdown if available, otherwise force exit
         def shutdown():
             import time
+            import os
+            import sys
+
             time.sleep(1)  # Give time for response to be sent
+
+            # System-independent restart approach
             try:
-                # Try graceful shutdown first
-                import signal
-                import os
-                os.kill(os.getpid(), signal.SIGTERM)
-            except:
-                # Force exit if graceful shutdown fails
-                import os
-                os._exit(1)  # Exit with code 1 to trigger restart
+                # Check if we're running under a launcher that expects specific exit codes
+                launcher_type = os.environ.get('LAUNCHER_TYPE', 'direct')
+
+                # Method 1: Try graceful shutdown with different signals based on OS
+                if sys.platform.startswith('win'):
+                    # Windows: Use taskkill or direct exit
+                    try:
+                        import signal
+                        os.kill(os.getpid(), signal.SIGTERM)
+                    except:
+                        # Exit with code 1 to trigger restart in batch/shell launcher
+                        os._exit(1)
+                else:
+                    # Unix-like systems (Mac, Linux): Try multiple approaches
+                    try:
+                        import signal
+                        # First try SIGTERM (works well with shell scripts)
+                        os.kill(os.getpid(), signal.SIGTERM)
+                    except:
+                        try:
+                            # If SIGTERM fails, try SIGINT (Ctrl+C equivalent)
+                            os.kill(os.getpid(), signal.SIGINT)
+                        except:
+                            # Force exit with code 1 to trigger restart in launcher
+                            os._exit(1)
+            except Exception:
+                # Ultimate fallback: force exit with code 1 to trigger restart in launcher
+                os._exit(1)
 
         import threading
         thread = threading.Thread(target=shutdown)

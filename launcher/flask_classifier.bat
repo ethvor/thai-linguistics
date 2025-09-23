@@ -34,6 +34,7 @@ echo.
 
 :restart
 REM Run the Flask server
+set LAUNCHER_TYPE=batch
 python launcher\flask_server.py
 
 REM Check the exit code
