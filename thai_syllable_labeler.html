@@ -636,8 +636,50 @@
                 </select>
 
                 <div style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+                    <button onclick="toggleTweaksPanel()" style="font-size: 11px; padding: 4px 8px; background: #e0e0e0; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">Interpretation View Tweaks</button>
                     <label for="debugToggle" style="font-size: 12px;">Debug:</label>
                     <input type="checkbox" id="debugToggle" onchange="toggleDebugMode()" style="transform: scale(1.2);">
+                </div>
+            </div>
+
+            <!-- Interpretation View Tweaks Panel -->
+            <div id="tweaksPanel" style="display: none; background: #f5f5f5; border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin: 10px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <h3 style="margin: 0 0 15px 0; font-size: 14px; color: #333;">Interpretation View Tweaks</h3>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 12px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Triangle Height:</label>
+                        <input type="range" id="triangleHeightSlider" min="30" max="120" value="40" onchange="updateTriangleHeight()" style="width: 100%;">
+                        <span id="triangleHeightDisplay">40px</span>
+                    </div>
+
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Base Angle:</label>
+                        <input type="range" id="baseAngleSlider" min="15" max="45" value="25" onchange="updateBaseAngle()" style="width: 100%;">
+                        <span id="baseAngleDisplay">25°</span>
+                    </div>
+
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Arrowhead Width:</label>
+                        <input type="range" id="arrowWidthSlider" min="4" max="20" value="8" onchange="updateArrowheadSize()" style="width: 100%;">
+                        <span id="arrowWidthDisplay">8px</span>
+                    </div>
+
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Arrowhead Height:</label>
+                        <input type="range" id="arrowHeightSlider" min="3" max="15" value="6" onchange="updateArrowheadSize()" style="width: 100%;">
+                        <span id="arrowHeightDisplay">6px</span>
+                    </div>
+
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Arrow Stroke Width:</label>
+                        <input type="range" id="arrowStrokeSlider" min="1" max="5" value="2" onchange="updateArrowStroke()" style="width: 100%;">
+                        <span id="arrowStrokeDisplay">2px</span>
+                    </div>
+
+                    <div style="display: flex; align-items: end;">
+                        <button onclick="resetTweaksToDefaults()" style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px;">Reset to Defaults</button>
+                    </div>
                 </div>
             </div>
 
@@ -924,11 +966,12 @@
             const foundationWidth = foundationBox.offsetWidth;
             const finalWidth = finalBox.offsetWidth;
 
-            console.log(`Text widths - Foundation: ${foundationWidth}px, Final: ${finalWidth}px`);
+            console.log(`🔧 calculateDynamicPositions(${containerId}): Foundation: ${foundationWidth}px, Final: ${finalWidth}px`);
 
             // Calculate container center
             const containerWidth = container.offsetWidth;
             const centerX = containerWidth / 2;
+            console.log(`📐 Container ${containerId}: width=${containerWidth}px, centerX=${centerX}px`);
 
             // Calculate positions for symmetric layout using max distance
             // Use the larger of the two required distances to maintain symmetry
@@ -1010,11 +1053,14 @@
             const angleTextGreen = document.getElementById(`angle-text-green-${containerId}`);
             const distanceLabel = document.getElementById(`distance-label-${containerId}`);
             const greenDistanceLabel = document.getElementById(`green-distance-label-${containerId}`);
+            const foundationLabel = document.getElementById(`foundation-label-${containerId}`);
+            const vowelLabel = document.getElementById(`vowel-label-${containerId}`);
+            const finalLabel = document.getElementById(`final-label-${containerId}`);
 
             if (container && foundationWrapper && finalWrapper && foundationBox && vowelBox &&
                 leftDistance && rightDistance && verticalDistance &&
                 horizontalLeftDistance && horizontalRightDistance && foundationBorder && vowelBorder && finalBorder &&
-                foundationDimensions && vowelDimensions && finalDimensions && centerDot && basePoint && pointVowel && pointVowelPurple && pointVowelPink && pointF1 && pointF2 && redGreenLine && redPinkArrow && purpleGreenArrow && angleText && angleTextGreen && distanceLabel && greenDistanceLabel) {
+                foundationDimensions && vowelDimensions && finalDimensions && centerDot && basePoint && pointVowel && pointVowelPurple && pointVowelPink && pointF1 && pointF2 && redGreenLine && redPinkArrow && purpleGreenArrow && angleText && angleTextGreen && distanceLabel && greenDistanceLabel && foundationLabel && vowelLabel && finalLabel) {
 
                 // Get positions relative to container using offsetLeft/offsetTop
                 const foundationWrapperLeft = foundationWrapper.offsetLeft;
@@ -1135,7 +1181,7 @@
                     const cyanCenterY = (syllableDisplayRect.top + syllableDisplayRect.height / 2) - containerRect.top;
 
                     // === TRIANGLE CONFIGURATION ===
-                    const triangle_h = 70; // Triangle height (positive = up from base point)
+                    const triangle_h = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--triangle-height')) || 70; // Triangle height from CSS variable
                     const triangle_base_pos = cyanCenterY + triangle_h / 2; // Dynamic base position
 
                     // Position gold dot at center of cyan container (offset by half dot size for true centering)
@@ -1161,32 +1207,29 @@
                         return Math.abs(triangleHeight) * Math.tan(angleRadians);
                     }
 
-                    // Calculate horizontal offsets independently for each side (30° base angles)
-                    const baseCornerAngle = 30; // degrees at f1 and f2 points
+                    // Calculate horizontal offsets using fixed triangle height
+                    const baseCornerAngle = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--base-angle')) || 25;  // Default to 25 degrees
                     const angleRadians = baseCornerAngle * (Math.PI / 180);
-
-                    // Independent calculation for red dot (f1) - left side
-                    const horizontalOffset_red = triangle_h / Math.tan(angleRadians); // tan(30°) = triangle_h/offset
-                    console.log(`Red side 30° calculation: triangle_h=${triangle_h}, horizontalOffset_red=${horizontalOffset_red.toFixed(1)}px`);
-
-                    // Independent calculation for green dot (f2) - right side
-                    const horizontalOffset_green = triangle_h / Math.tan(angleRadians); // tan(30°) = triangle_h/offset
-                    console.log(`Green side 30° calculation: triangle_h=${triangle_h}, horizontalOffset_green=${horizontalOffset_green.toFixed(1)}px`);
+                    const horizontalOffset_red = triangle_h / Math.tan(angleRadians);
+                    const horizontalOffset_green = triangle_h / Math.tan(angleRadians);
 
                     // Position f1 and f2 points at base height with independently calculated horizontal offsets
                     // basePointY already declared above
 
                     // f1 point (red) - left side of triangle
-                    pointF1.style.left = (cyanCenterX - horizontalOffset_red - 4) + 'px';
-                    pointF1.style.top = (basePointY - 4) + 'px';
-
-                    // f2 point (green) - right side of triangle
-                    pointF2.style.left = (cyanCenterX + horizontalOffset_green - 4) + 'px';
-                    pointF2.style.top = (basePointY - 4) + 'px';
-
-                    // Line connecting red and green dots using independent offsets
                     const redDotX = cyanCenterX - horizontalOffset_red;
                     const greenDotX = cyanCenterX + horizontalOffset_green;
+                    pointF1.style.left = (redDotX - 4) + 'px';
+                    pointF1.style.top = (basePointY - 4) + 'px';
+                    // Old static offset console logs removed - corrected ones are shown later
+
+                    // f2 point (green) - right side of triangle
+                    pointF2.style.left = (greenDotX - 4) + 'px';
+                    pointF2.style.top = (basePointY - 4) + 'px';
+                    // Old static offset console logs removed - corrected ones are shown later
+
+                    // Line connecting red and green dots using independent offsets
+                    // redDotX and greenDotX already declared above
                     const lineWidth = greenDotX - redDotX;
                     redGreenLine.style.left = (redDotX) + 'px';
                     redGreenLine.style.top = (basePointY - 1) + 'px'; // Center vertically on dots
@@ -1221,37 +1264,125 @@
                         const vowelWidth = vowelChar.offsetWidth;
                         const vowelHeight = vowelChar.offsetHeight;
 
+                        // RECALCULATE red/green dot positions to maintain CONSISTENT angles
+                        // The key insight: Calculate red dot position FROM pink dot, not from center
+                        // This ensures the angle is always exactly what's set in settings
+
                         // SIMPLE POSITIONING: Position elements at dot positions, offset up by half height
                         const dotmargin = 5; // 5px spacing from dots
 
+                        // First, calculate where the pink and purple dots will be based on vowel dimensions
+                        const blueDotX = cyanCenterX;  // Blue dot is centered horizontally
+                        const blueDotY_actual = basePointY - triangle_h;  // Blue dot is at vowel center
+                        const pinkDotY_actual = blueDotY_actual - vowelHeight / 2;  // Pink is above vowel center
+                        const purpleDotY_actual = blueDotY_actual - vowelHeight / 2;  // Purple is same height as pink
+
+                        // Calculate pink and purple dot X positions based on vowel width
+                        const pinkDotX = blueDotX - vowelWidth / 2 - dotmargin;  // Pink is left of vowel
+                        const purpleDotX = blueDotX + vowelWidth / 2 + dotmargin;  // Purple is right of vowel
+
+                        // Calculate the vertical distance from black dot to pink/purple dots
+                        const verticalDistance_to_pink = Math.abs(basePointY - pinkDotY_actual);
+                        const verticalDistance_to_purple = Math.abs(basePointY - purpleDotY_actual);
+
+                        // Using trigonometry: tan(angle) = opposite / adjacent
+                        // Rearranging: adjacent = opposite / tan(angle)
+                        // This gives us the horizontal offset needed to maintain the desired angle
+                        const horizontalOffset_from_pink = verticalDistance_to_pink / Math.tan(angleRadians);
+                        const horizontalOffset_from_purple = verticalDistance_to_purple / Math.tan(angleRadians);
+
+                        // Calculate red dot position: It's to the LEFT of pink dot by the horizontal offset
+                        const correctedRedDotX = pinkDotX - horizontalOffset_from_pink;
+
+                        // Calculate green dot position: It's to the RIGHT of purple dot by the horizontal offset
+                        const correctedGreenDotX = purpleDotX + horizontalOffset_from_purple;
+
+                        console.log(`🎯 CONSISTENT ANGLE CALCULATION:
+                            Pink dot: (${pinkDotX.toFixed(1)}, ${pinkDotY_actual.toFixed(1)})
+                            Purple dot: (${purpleDotX.toFixed(1)}, ${purpleDotY_actual.toFixed(1)})
+                            Vertical distance: ${verticalDistance_to_pink.toFixed(1)}px
+                            Horizontal offset from pink: ${horizontalOffset_from_pink.toFixed(1)}px
+                            Horizontal offset from purple: ${horizontalOffset_from_purple.toFixed(1)}px
+                            Red dot X: ${correctedRedDotX.toFixed(1)}
+                            Green dot X: ${correctedGreenDotX.toFixed(1)}
+                            Target angle: ${(angleRadians * 180 / Math.PI).toFixed(1)}°`);
+
+                        // Update the actual dot positions in the DOM
+                        pointF1.style.left = (correctedRedDotX - 4) + 'px';  // -4 to center the 8px dot
+                        pointF2.style.left = (correctedGreenDotX - 4) + 'px';  // -4 to center the 8px dot
+
+                        // Update the console logs with corrected offset values
+                        console.log(`🔴 Red dot CORRECTED at X=${correctedRedDotX} (center=${cyanCenterX} - offset=${horizontalOffset_from_pink.toFixed(1)})`);
+                        console.log(`🟢 Green dot CORRECTED at X=${correctedGreenDotX} (center=${cyanCenterX} + offset=${horizontalOffset_from_purple.toFixed(1)})`);
+
+                        // UPDATE LINE between red and green dots with new positions
+                        const correctedLineWidth = correctedGreenDotX - correctedRedDotX;
+                        redGreenLine.style.left = correctedRedDotX + 'px';
+                        redGreenLine.style.width = correctedLineWidth + 'px';
+
+                        // UPDATE DISTANCE LABELS with corrected positions
+                        const distanceLabel = document.getElementById(`distance-label-${containerId}`);
+                        const greenDistanceLabel = document.getElementById(`green-distance-label-${containerId}`);
+
+                        // UPDATE HORIZONTAL OFFSET LABELS with corrected values
+                        const horizontalLeftDistance = document.getElementById(`horizontal-left-distance-${containerId}`);
+                        const horizontalRightDistance = document.getElementById(`horizontal-right-distance-${containerId}`);
+
+                        // Update red side distance label
+                        if (distanceLabel) {
+                            const blackDotX = cyanCenterX;
+                            const blackDotY = basePointY;
+                            const distance = Math.abs(correctedRedDotX - blackDotX);
+                            const midX = (blackDotX + correctedRedDotX) / 2;
+                            const midY = basePointY;
+
+                            distanceLabel.style.left = (midX - 25) + 'px';
+                            distanceLabel.style.top = (midY + 10) + 'px';
+                            distanceLabel.textContent = `${Math.round(distance)}px`;
+                        }
+
+                        // Update green side distance label
+                        if (greenDistanceLabel) {
+                            const blackDotX = cyanCenterX;
+                            const distance_green = Math.abs(correctedGreenDotX - blackDotX);
+                            const midX_green = (blackDotX + correctedGreenDotX) / 2;
+                            const midY_green = basePointY;
+
+                            greenDistanceLabel.style.left = (midX_green - 25) + 'px';
+                            greenDistanceLabel.style.top = (midY_green + 10) + 'px';
+                            greenDistanceLabel.textContent = `${Math.round(distance_green)}px`;
+                        }
+
+
+                        // Use corrected dot positions for text positioning
+                        const redDotX = correctedRedDotX;
+                        const greenDotX = correctedGreenDotX;
+
                         // Foundation: position at red dot, offset left by width + dotmargin, move up by half height
-                        // Use the already defined redDotX from line positioning section
                         foundationWrapper.style.left = (redDotX - foundationWidth - dotmargin) + 'px';
                         foundationWrapper.style.top = (basePointY - foundationHeight / 2) + 'px';
 
                         // Final: position at green dot, offset right by dotmargin, move up by half height
-                        // Use the already defined greenDotX from line positioning section
                         finalWrapper.style.left = (greenDotX + dotmargin) + 'px';
                         finalWrapper.style.top = (basePointY - finalHeight / 2) + 'px';
 
                         // Vowel: position at blue dot, offset up by full height and left by half width
-                        const blueDotX = cyanCenterX;
-                        const blueDotY = basePointY - triangle_h;
+                        // blueDotX and blueDotY_actual already calculated above
+                        const blueDotY = blueDotY_actual;  // Use the already calculated value
                         vowelBox.style.left = (blueDotX - vowelWidth / 2) + 'px';
                         vowelBox.style.top = (blueDotY - vowelHeight) + 'px';
 
                         // Position dynamic vowel-based dots using the calculated vowel dimensions
-                        // Purple dot: blue dot position + vowel_width/2 + dotmargin (right) - vowel_height/2 (up)
-                        const purpleDotX = blueDotX + vowelWidth / 2 + dotmargin;
-                        const purpleDotY = blueDotY - vowelHeight / 2;
+                        // Purple and pink dots already calculated above, just need to position them in DOM
+                        const purpleDotY = purpleDotY_actual;  // Use already calculated value
+                        const pinkDotY = pinkDotY_actual;  // Use already calculated value
+
+                        console.log(`🟣 Purple dot: (${purpleDotX}, ${purpleDotY}) based on vowel H=${vowelHeight}`);
                         if (pointVowelPurple) {
                             pointVowelPurple.style.left = (purpleDotX - 4) + 'px';
                             pointVowelPurple.style.top = (purpleDotY - 4) + 'px';
                         }
 
-                        // Pink dot: blue dot position - vowel_width/2 - dotmargin (left) - vowel_height/2 (up)
-                        const pinkDotX = blueDotX - vowelWidth / 2 - dotmargin;
-                        const pinkDotY = blueDotY - vowelHeight / 2;
                         if (pointVowelPink) {
                             pointVowelPink.style.left = (pinkDotX - 4) + 'px';
                             pointVowelPink.style.top = (pinkDotY - 4) + 'px';
@@ -1287,8 +1418,8 @@
 
                         // Position SVG arrow from purple dot to green dot
                         if (purpleGreenArrow) {
-                            // Get green dot coordinates using independent offset
-                            const greenDotX = cyanCenterX + horizontalOffset_green;
+                            // Use the corrected green dot position (already calculated above)
+                            // greenDotX is already set to correctedGreenDotX
                             const greenDotY = basePointY;
 
                             // Calculate arrow dimensions and position
@@ -1314,98 +1445,69 @@
                             }
                         }
 
-                        // Calculate and display angle at red dot (green-red-blue triangle base angle)
+                        // Calculate and display angle at red dot (green-red-PINK triangle base angle)
                         if (angleText) {
-                            // Calculate vectors from red dot to green and blue dots (true triangle geometry)
-                            const greenDotX = cyanCenterX + horizontalOffset_green;
-                            const blueDotX_actual = cyanCenterX; // blue dot is centered
-                            const blueDotY_actual = basePointY - triangle_h; // blue dot position
+                            // Use corrected dot positions (already calculated above)
+                            // greenDotX and redDotX are already set to corrected values
+                            // Use PINK dot for the angle calculation (not blue dot)
                             const vectorToGreen = { x: greenDotX - redDotX, y: basePointY - basePointY }; // horizontal vector
-                            const vectorToBlue = { x: blueDotX_actual - redDotX, y: blueDotY_actual - basePointY };
+                            const vectorToPink = { x: pinkDotX - redDotX, y: pinkDotY - basePointY }; // vector to pink dot
+
+                            // Recalculate the offsets for logging (they were calculated in a different scope)
+                            // Also need to recalculate angleRadians since it's in a different scope
+                            const baseCornerAngle_log = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--base-angle')) || 25;
+                            const angleRadians_log = baseCornerAngle_log * (Math.PI / 180);
+                            const verticalDist = Math.abs(basePointY - pinkDotY);
+                            const horizontalOffsetForAngle = verticalDist / Math.tan(angleRadians_log);
 
                             console.log(`Triangle Base Angle Debug:
-                                redDotX: ${redDotX}, greenDotX: ${greenDotX}, blueDotX: ${blueDotX_actual}
-                                basePointY: ${basePointY}, blueDotY: ${blueDotY_actual}
+                                redDotX: ${redDotX}, greenDotX: ${greenDotX}, pinkDotX: ${pinkDotX}
+                                basePointY: ${basePointY}, pinkDotY: ${pinkDotY}
                                 vectorToGreen: ${vectorToGreen.x}, ${vectorToGreen.y}
-                                vectorToBlue: ${vectorToBlue.x}, ${vectorToBlue.y}
-                                horizontalOffset_red: ${horizontalOffset_red}, horizontalOffset_green: ${horizontalOffset_green}
-                                triangle_h: ${triangle_h}`);
+                                vectorToPink: ${vectorToPink.x}, ${vectorToPink.y}
+                                horizontalOffset (calculated): ${horizontalOffsetForAngle.toFixed(1)}
+                                verticalDistance: ${verticalDist.toFixed(1)}`);
 
-                            // Calculate angle using dot product formula (green-red-blue angle)
-                            const dotProduct = vectorToGreen.x * vectorToBlue.x + vectorToGreen.y * vectorToBlue.y;
+                            // Calculate angle using dot product formula (green-red-PINK angle)
+                            const dotProduct = vectorToGreen.x * vectorToPink.x + vectorToGreen.y * vectorToPink.y;
                             const magnitudeGreen = Math.sqrt(vectorToGreen.x * vectorToGreen.x + vectorToGreen.y * vectorToGreen.y);
-                            const magnitudeBlue = Math.sqrt(vectorToBlue.x * vectorToBlue.x + vectorToBlue.y * vectorToBlue.y);
-                            const angleRadians = Math.acos(dotProduct / (magnitudeGreen * magnitudeBlue));
+                            const magnitudePink = Math.sqrt(vectorToPink.x * vectorToPink.x + vectorToPink.y * vectorToPink.y);
+                            const angleRadians = Math.acos(dotProduct / (magnitudeGreen * magnitudePink));
                             const angleDegrees = angleRadians * (180 / Math.PI);
 
-                            // Position angle text near red dot
-                            angleText.style.left = (redDotX - 30) + 'px'; // To the left of red dot
-                            angleText.style.top = (basePointY - 30) + 'px'; // Above red dot
+                            // Position angle text underneath the red distance label
+                            // Use the corrected red dot position
+                            const redMidX = (cyanCenterX + redDotX) / 2;
+                            const redMidY = (basePointY + basePointY) / 2; // Same Y level
+                            angleText.style.left = (redMidX - 15) + 'px'; // Centered under distance label
+                            angleText.style.top = (redMidY + 25 + dotmargin) + 'px'; // Below the distance label + dotmargin
                             angleText.textContent = `${Math.round(angleDegrees)}°`;
                         }
 
-                        // Calculate and display angle at green dot (red-green-blue triangle base angle)
+                        // Calculate and display angle at green dot (red-green-PURPLE triangle base angle)
                         if (angleTextGreen) {
-                            // Calculate vectors from green dot to red and blue dots (true triangle geometry)
-                            const greenDotX = cyanCenterX + horizontalOffset_green;
+                            // Use corrected dot positions (greenDotX and redDotX already set to corrected values)
                             const greenDotY = basePointY;
-                            const blueDotX_actual = cyanCenterX; // blue dot is centered
-                            const blueDotY_actual = basePointY - triangle_h; // blue dot position
+                            // Use PURPLE dot for the angle calculation (not blue dot)
                             const vectorToRed_green = { x: redDotX - greenDotX, y: basePointY - basePointY }; // horizontal vector
-                            const vectorToBlue_green = { x: blueDotX_actual - greenDotX, y: blueDotY_actual - basePointY };
+                            const vectorToPurple_green = { x: purpleDotX - greenDotX, y: purpleDotY - basePointY }; // vector to purple dot
 
-                            // Calculate angle using dot product formula (red-green-blue triangle base angle)
-                            const dotProduct_green = vectorToRed_green.x * vectorToBlue_green.x + vectorToRed_green.y * vectorToBlue_green.y;
+                            // Calculate angle using dot product formula (red-green-PURPLE triangle base angle)
+                            const dotProduct_green = vectorToRed_green.x * vectorToPurple_green.x + vectorToRed_green.y * vectorToPurple_green.y;
                             const magnitudeRed_green = Math.sqrt(vectorToRed_green.x * vectorToRed_green.x + vectorToRed_green.y * vectorToRed_green.y);
-                            const magnitudeBlue_green = Math.sqrt(vectorToBlue_green.x * vectorToBlue_green.x + vectorToBlue_green.y * vectorToBlue_green.y);
-                            const angleRadians_green = Math.acos(dotProduct_green / (magnitudeRed_green * magnitudeBlue_green));
+                            const magnitudePurple_green = Math.sqrt(vectorToPurple_green.x * vectorToPurple_green.x + vectorToPurple_green.y * vectorToPurple_green.y);
+                            const angleRadians_green = Math.acos(dotProduct_green / (magnitudeRed_green * magnitudePurple_green));
                             const angleDegrees_green = angleRadians_green * (180 / Math.PI);
 
-                            // Position text near green dot
-                            angleTextGreen.style.left = (greenDotX + 20) + 'px'; // To the right of green dot
-                            angleTextGreen.style.top = (greenDotY - 30) + 'px'; // Above green dot
+                            // Position text underneath the green distance label
+                            // Use the corrected green dot position
+                            const greenMidX = (cyanCenterX + greenDotX) / 2;
+                            const greenMidY = (basePointY + basePointY) / 2; // Same Y level
+                            angleTextGreen.style.left = (greenMidX - 15) + 'px'; // Centered under distance label
+                            angleTextGreen.style.top = (greenMidY + 25 + dotmargin) + 'px'; // Below the distance label + dotmargin
                             angleTextGreen.textContent = `${Math.round(angleDegrees_green)}°`;
                         }
 
-                        // Calculate and display distance between black and red dots
-                        if (distanceLabel) {
-                            // Calculate distance between black dot (center) and red dot independently
-                            const blackDotX = cyanCenterX;
-                            const blackDotY = basePointY;
-                            const redDotX_independent = cyanCenterX - horizontalOffset_red;
-                            const redDotY_independent = basePointY;
-                            const deltaX = redDotX_independent - blackDotX;
-                            const deltaY = redDotY_independent - blackDotY; // Should be 0 since both at baseline
-                            const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-                            // Position label at midpoint between black and red dots
-                            const midX = (blackDotX + redDotX_independent) / 2;
-                            const midY = (blackDotY + basePointY) / 2;
-
-                            distanceLabel.style.left = (midX - 25) + 'px'; // Offset for text centering
-                            distanceLabel.style.top = (midY + 10) + 'px'; // Slightly below the line
-                            distanceLabel.textContent = `${Math.round(distance)}px`;
-                        }
-
-                        // Calculate and display distance between black and green dots
-                        if (greenDistanceLabel) {
-                            // Calculate distance between black dot (center) and green dot independently
-                            const blackDotX = cyanCenterX;
-                            const blackDotY = basePointY;
-                            const greenDotX_independent = cyanCenterX + horizontalOffset_green;
-                            const greenDotY_independent = basePointY;
-                            const deltaX_green = greenDotX_independent - blackDotX;
-                            const deltaY_green = greenDotY_independent - blackDotY; // Should be 0 since both at baseline
-                            const distance_green = Math.sqrt(deltaX_green * deltaX_green + deltaY_green * deltaY_green);
-
-                            // Position label at midpoint between black and green dots
-                            const midX_green = (blackDotX + greenDotX_independent) / 2;
-                            const midY_green = (blackDotY + greenDotY_independent) / 2;
-
-                            greenDistanceLabel.style.left = (midX_green - 25) + 'px'; // Offset for text centering
-                            greenDistanceLabel.style.top = (midY_green + 10) + 'px'; // Slightly below the line
-                            greenDistanceLabel.textContent = `${Math.round(distance_green)}px`;
-                        }
 
 
                         // Update debug borders to match new text positions - target only the character text, not labels
@@ -1422,7 +1524,9 @@
                             foundationBorder.style.height = foundationCharRect.height + 'px';
                             foundationDimensions.textContent = Math.round(foundationCharRect.width) + 'x' + Math.round(foundationCharRect.height);
                             foundationDimensions.style.left = (foundationCharRect.left - containerRect.left) + 'px';
-                            foundationDimensions.style.top = (foundationCharRect.bottom - containerRect.top + 2) + 'px';
+                            // Get the height of the foundation dimensions label itself and move it up by that amount
+                            const foundationDimensionsLabelHeight = foundationDimensions.offsetHeight || 12; // fallback estimate
+                            foundationDimensions.style.top = (foundationCharRect.top - containerRect.top - foundationDimensionsLabelHeight) + 'px';
 
                             // Position vowel border around character only
                             vowelBorder.style.left = (vowelCharRect.left - containerRect.left) + 'px';
@@ -1431,7 +1535,10 @@
                             vowelBorder.style.height = vowelCharRect.height + 'px';
                             vowelDimensions.textContent = Math.round(vowelCharRect.width) + 'x' + Math.round(vowelCharRect.height);
                             vowelDimensions.style.left = (vowelCharRect.left - containerRect.left) + 'px';
-                            vowelDimensions.style.top = (vowelCharRect.bottom - containerRect.top + 2) + 'px';
+
+                            // Get the height of the dimensions label itself and move it up by that amount
+                            const dimensionsLabelHeight = vowelDimensions.offsetHeight || 12; // fallback estimate
+                            vowelDimensions.style.top = (vowelCharRect.top - containerRect.top - dimensionsLabelHeight) + 'px';
 
                             // Position final border around character only
                             if (finalBox) {
@@ -1442,7 +1549,38 @@
                                 finalBorder.style.height = finalCharRect.height + 'px';
                                 finalDimensions.textContent = Math.round(finalCharRect.width) + 'x' + Math.round(finalCharRect.height);
                                 finalDimensions.style.left = (finalCharRect.left - containerRect.left) + 'px';
-                                finalDimensions.style.top = (finalCharRect.bottom - containerRect.top + 2) + 'px';
+                                // Get the height of the final dimensions label itself and move it up by that amount
+                                const finalDimensionsLabelHeight = finalDimensions.offsetHeight || 12; // fallback estimate
+                                finalDimensions.style.top = (finalCharRect.top - containerRect.top - finalDimensionsLabelHeight) + 'px';
+                            }
+
+                            // Position field name labels relative to their corresponding elements
+                            if (foundationLabel) {
+                                // Center the foundation label horizontally under the foundation text box
+                                const foundationCenterX = redDotX - foundationWidth - dotmargin + (foundationWidth / 2);
+                                const foundationLabelWidth = foundationLabel.offsetWidth || 50; // Fallback estimate
+                                foundationLabel.style.left = (foundationCenterX - foundationLabelWidth / 2) + 'px';
+                                foundationLabel.style.top = (basePointY + foundationHeight / 2 + 5) + 'px'; // Below foundation text box
+                            }
+
+                            if (vowelLabel) {
+                                // Center the label horizontally on the vowel text box center
+                                const vowelCenterX = blueDotX; // Blue dot is already center of vowel box
+                                const vowelCenterY = blueDotY - vowelHeight / 2; // Center of vowel text box vertically
+
+                                // Get label width to center it properly
+                                const labelWidth = vowelLabel.offsetWidth || 30; // Fallback estimate
+
+                                vowelLabel.style.left = (vowelCenterX - labelWidth / 2) + 'px'; // Center horizontally
+                                vowelLabel.style.top = (vowelCenterY + vowelHeight / 2 + 5) + 'px'; // Below vowel box
+                            }
+
+                            if (finalLabel) {
+                                // Center the final label horizontally under the final text box
+                                const finalCenterX = greenDotX + dotmargin + (finalWidth / 2);
+                                const finalLabelWidth = finalLabel.offsetWidth || 30; // Fallback estimate
+                                finalLabel.style.left = (finalCenterX - finalLabelWidth / 2) + 'px';
+                                finalLabel.style.top = (basePointY + finalHeight / 2 + 5) + 'px'; // Below final text box
                             }
                         }, 10); // Small delay to ensure text positioning is rendered
                     }
@@ -1580,6 +1718,10 @@
                 html += '</div>';
             }
 
+            // Check if there's no final consonant (needed for multiple sections)
+            const hasNoFinal = !syllable.final || (Array.isArray(syllable.final) && syllable.final.length === 0);
+            console.log('Has no final?', hasNoFinal);
+
             // Final: positioned dynamically
             html += `<div id="final-wrapper-${containerId}" style="position: absolute;">`;
             if (components.length > 2) {
@@ -1589,6 +1731,38 @@
                 html += `<div id="final-${containerId}" class="reading-component"><div class="component-char" style="opacity: 0.3; font-size: 24px; color: #ccc;">—</div></div>`;
             }
             html += '</div>';
+
+            // Field Name Labels - positioned dynamically
+            // Check if foundation is a cluster
+            console.log('Foundation data:', syllable.foundation);
+            const isFoundationCluster = syllable.foundation &&
+                                       Array.isArray(syllable.foundation) &&
+                                       syllable.foundation.length > 1;
+            console.log('Is foundation cluster?', isFoundationCluster);
+            const foundationLabelText = isFoundationCluster ? 'Foundation<br>(cluster)' : 'Foundation';
+
+            // Check if final is a cluster
+            console.log('Final data:', syllable.final);
+            const isFinalCluster = syllable.final &&
+                                  Array.isArray(syllable.final) &&
+                                  syllable.final.length > 1;
+            console.log('Is final cluster?', isFinalCluster);
+            const finalLabelText = isFinalCluster ? 'Final<br>(cluster)' : 'Final';
+
+            // Set opacity for final label based on whether final exists
+            const finalLabelOpacity = hasNoFinal ? 'opacity: 0.5;' : '';
+
+            html += `<div id="foundation-label-${containerId}" style="position: absolute; font-size: 10px; font-weight: bold; color: #666; background: rgba(255,255,255,0.8); padding: 1px 3px; border-radius: 2px; z-index: 98; pointer-events: none; text-align: center;">${foundationLabelText}</div>`;
+            html += `<div id="vowel-label-${containerId}" style="position: absolute; font-size: 10px; font-weight: bold; color: #666; background: rgba(255,255,255,0.8); padding: 1px 3px; border-radius: 2px; z-index: 98; pointer-events: none;">Vowel</div>`;
+            html += `<div id="final-label-${containerId}" style="position: absolute; font-size: 10px; font-weight: bold; color: #666; background: rgba(255,255,255,0.8); padding: 1px 3px; border-radius: 2px; z-index: 98; pointer-events: none; text-align: center; ${finalLabelOpacity}">${finalLabelText}</div>`;
+
+            // Closed syllable indicator - square with "Closed" text when final is not empty
+            if (!hasNoFinal) {
+                html += `<div id="closed-indicator-${containerId}" style="position: absolute; z-index: 98; pointer-events: none; display: flex; align-items: center; gap: 4px;">`;
+                html += `<div style="width: 8px; height: 8px; background: #333; border: 1px solid #666;"></div>`;
+                html += `<span style="font-size: var(--font-size, 24px); font-weight: bold; color: #333;">Closed</span>`;
+                html += `</div>`;
+            }
 
             // OLD DOT SYSTEM - COMMENTED OUT FOR REFERENCE
             /*
@@ -1647,14 +1821,17 @@
 
             // SVG Arrow from red dot to pink dot
             html += '<svg id="red-pink-arrow-' + containerId + '" style="position: absolute; z-index: 99; opacity: 1; pointer-events: none; overflow: visible;">';
-            html += '<defs><marker id="arrowhead-' + containerId + '" markerWidth="15" markerHeight="10" refX="13" refY="5" orient="auto"><polygon points="0 0, 15 5, 0 10" fill="var(--arrow-color-red, #000000)" /></marker></defs>';
-            html += '<line x1="0" y1="0" x2="100" y2="0" stroke="var(--arrow-color-red, #000000)" stroke-width="2" marker-end="url(#arrowhead-' + containerId + ')" />';
+            html += '<defs><marker id="arrowhead-' + containerId + '" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon id="arrowhead-polygon-' + containerId + '" points="0 0, 8 3, 0 6" fill="var(--arrow-color-red, #000000)" /></marker></defs>';
+            html += '<line id="arrow-line-' + containerId + '" x1="0" y1="0" x2="100" y2="0" stroke="var(--arrow-color-red, #000000)" stroke-width="var(--arrow-stroke-width, 2)" marker-end="url(#arrowhead-' + containerId + ')" />';
             html += '</svg>';
 
-            // SVG Arrow from purple dot to green dot
+            // SVG Arrow from blue dot to green dot
+            // Check if there's no final consonant to make arrow dotted (variable already declared above)
+            const arrowDashArray = hasNoFinal ? 'stroke-dasharray="3,3"' : '';
+
             html += '<svg id="purple-green-arrow-' + containerId + '" style="position: absolute; z-index: 99; opacity: 1; pointer-events: none; overflow: visible;">';
-            html += '<defs><marker id="arrowhead-purple-' + containerId + '" markerWidth="15" markerHeight="10" refX="13" refY="5" orient="auto"><polygon points="0 0, 15 5, 0 10" fill="var(--arrow-color-purple, #000000)" /></marker></defs>';
-            html += '<line x1="0" y1="0" x2="100" y2="0" stroke="var(--arrow-color-purple, #000000)" stroke-width="2" marker-end="url(#arrowhead-purple-' + containerId + ')" />';
+            html += '<defs><marker id="arrowhead-purple-' + containerId + '" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon id="arrowhead-polygon-purple-' + containerId + '" points="0 0, 8 3, 0 6" fill="var(--arrow-color-blue, #000000)" /></marker></defs>';
+            html += `<line id="arrow-line-purple-${containerId}" x1="0" y1="0" x2="100" y2="0" stroke="var(--arrow-color-blue, #000000)" stroke-width="var(--arrow-stroke-width, 2)" ${arrowDashArray} marker-end="url(#arrowhead-purple-${containerId})" />`;
             html += '</svg>';
 
             html += '<div id="angle-text-' + containerId + '" style="position: absolute; z-index: 99; opacity: var(--debug-dots-opacity); pointer-events: none; font-size: 14px; font-weight: bold; color: #9b59b6; background: rgba(255,255,255,0.8); padding: 2px 4px; border-radius: 3px;"></div>';
@@ -2004,17 +2181,142 @@
                 document.documentElement.style.setProperty('--debug-dots-opacity', '1');
                 // Enable debug arrow colors
                 document.documentElement.style.setProperty('--arrow-color-red', '#e74c3c');
-                document.documentElement.style.setProperty('--arrow-color-purple', '#9b59b6');
+                document.documentElement.style.setProperty('--arrow-color-blue', '#007bff');
             } else {
                 // Reset to normal colors
                 document.documentElement.style.setProperty('--card-bg-debug', 'var(--card-bg-normal)');
-                document.documentElement.style.setProperty('--syllable-display-bg-debug', '#f8f9fa');
+                document.documentElement.style.setProperty('--syllable-display-bg-debug', 'transparent');
                 // Hide dots and measurements
                 document.documentElement.style.setProperty('--debug-dots-opacity', '0');
                 // Use black arrows in normal mode
                 document.documentElement.style.setProperty('--arrow-color-red', '#000000');
-                document.documentElement.style.setProperty('--arrow-color-purple', '#000000');
+                document.documentElement.style.setProperty('--arrow-color-blue', '#000000');
             }
+        }
+
+        // Interpretation View Tweaks Functions
+        function toggleTweaksPanel() {
+            const panel = document.getElementById('tweaksPanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function updateTriangleHeight() {
+            const triangleHeightValue = document.getElementById('triangleHeightSlider').value;
+            document.getElementById('triangleHeightDisplay').textContent = triangleHeightValue + 'px';
+            document.documentElement.style.setProperty('--triangle-height', triangleHeightValue);
+
+            // Trigger recalculation of all interpretations
+            if (currentWord) {
+                setTimeout(() => {
+                    analyzeWord(currentWord);
+                }, 50);
+            }
+        }
+
+        function updateBaseAngle() {
+            const baseAngleValue = document.getElementById('baseAngleSlider').value;
+            document.getElementById('baseAngleDisplay').textContent = baseAngleValue + '°';
+            document.documentElement.style.setProperty('--base-angle', baseAngleValue);
+
+            // Trigger recalculation of all interpretations
+            if (currentWord) {
+                setTimeout(() => {
+                    analyzeWord(currentWord);
+                }, 50);
+            }
+        }
+
+        function updateArrowheadSize() {
+            const arrowWidthValue = document.getElementById('arrowWidthSlider').value;
+            const arrowHeightValue = document.getElementById('arrowHeightSlider').value;
+
+            document.getElementById('arrowWidthDisplay').textContent = arrowWidthValue + 'px';
+            document.getElementById('arrowHeightDisplay').textContent = arrowHeightValue + 'px';
+
+            document.documentElement.style.setProperty('--arrowhead-width', arrowWidthValue);
+            document.documentElement.style.setProperty('--arrowhead-height', arrowHeightValue);
+            document.documentElement.style.setProperty('--arrowhead-refx', Math.round(arrowWidthValue * 0.875)); // 7/8 of width
+            document.documentElement.style.setProperty('--arrowhead-refy', Math.round(arrowHeightValue / 2)); // half height
+
+            // Update all existing SVG arrowheads immediately
+            updateAllArrowheadAttributes(arrowWidthValue, arrowHeightValue);
+
+            // Also trigger a re-analysis if we have a current word to ensure new elements get updated
+            if (currentWord) {
+                setTimeout(() => {
+                    analyzeWord(currentWord);
+                }, 100);
+            }
+        }
+
+        function updateAllArrowheadAttributes(width, height) {
+            const refX = Math.round(width * 0.875);
+            const refY = Math.round(height / 2);
+            const points = `0 0, ${width} ${refY}, 0 ${height}`;
+
+            console.log(`Updating arrowheads: ${width}x${height}, refX=${refX}, refY=${refY}, points="${points}"`);
+
+            // Find all arrowhead markers and polygons in the document
+            const markers = document.querySelectorAll('[id^="arrowhead-"]');
+            const polygons = document.querySelectorAll('[id^="arrowhead-polygon-"]');
+
+            console.log(`Found ${markers.length} markers and ${polygons.length} polygons to update`);
+
+            markers.forEach(marker => {
+                if (marker.tagName === 'marker') {
+                    marker.setAttribute('markerWidth', width);
+                    marker.setAttribute('markerHeight', height);
+                    marker.setAttribute('refX', refX);
+                    marker.setAttribute('refY', refY);
+                    console.log(`Updated marker: ${marker.id}`);
+                }
+            });
+
+            polygons.forEach(polygon => {
+                polygon.setAttribute('points', points);
+                console.log(`Updated polygon: ${polygon.id}`);
+            });
+        }
+
+        function updateArrowStroke() {
+            const arrowStrokeValue = document.getElementById('arrowStrokeSlider').value;
+            document.getElementById('arrowStrokeDisplay').textContent = arrowStrokeValue + 'px';
+            document.documentElement.style.setProperty('--arrow-stroke-width', arrowStrokeValue);
+        }
+
+        function resetTweaksToDefaults() {
+            // Reset all sliders to default values
+            document.getElementById('triangleHeightSlider').value = '40';
+            document.getElementById('baseAngleSlider').value = '25';
+            document.getElementById('arrowWidthSlider').value = '8';
+            document.getElementById('arrowHeightSlider').value = '6';
+            document.getElementById('arrowStrokeSlider').value = '2';
+
+            // Update displays and apply changes
+            updateTriangleHeight();
+            updateBaseAngle();
+            updateArrowheadSize();
+            updateArrowStroke();
+        }
+
+        function initializeTweaksDefaults() {
+            // Initialize CSS variables with default values
+            document.documentElement.style.setProperty('--triangle-height', '40');
+            document.documentElement.style.setProperty('--base-angle', '25');
+            document.documentElement.style.setProperty('--arrowhead-width', '8');
+            document.documentElement.style.setProperty('--arrowhead-height', '6');
+            document.documentElement.style.setProperty('--arrowhead-refx', '7');
+            document.documentElement.style.setProperty('--arrowhead-refy', '3');
+            document.documentElement.style.setProperty('--arrow-stroke-width', '2');
+
+            // Set initial arrow colors to black (normal mode)
+            document.documentElement.style.setProperty('--arrow-color-red', '#000000');
+            document.documentElement.style.setProperty('--arrow-color-blue', '#000000');
+
+            // Wait a bit for DOM elements to be created, then update arrowheads
+            setTimeout(() => {
+                updateAllArrowheadAttributes(8, 6);
+            }, 100);
         }
 
         function containsThaiCharacters(text) {
@@ -2039,6 +2341,9 @@
         }
 
         function applyFontSettings() {
+            // Update CSS custom property for font size to ensure dynamic elements respond
+            document.documentElement.style.setProperty('--font-size', currentFontSize + 'px');
+
             // Apply font settings to Thai text elements (pattern classifier approach)
             // Note: .pattern-display excluded to preserve Unicode combining character support
             const thaiElements = document.querySelectorAll('.thai-input, #currentWord, .component-char, .form-input, .queue-word');
@@ -2053,26 +2358,61 @@
                 element.style.fontWeight = currentFontWeight;
             });
 
+            // Force immediate reflow to ensure font changes are applied
+            document.body.offsetHeight;
+
             // Recalculate text dimensions and triangle positioning after font changes
             setTimeout(() => {
                 recalculateTextDimensionsAndTriangles();
-            }, 50); // Small delay to ensure font changes are applied
+            }, 150); // Even longer delay to ensure font changes are fully applied and text is re-rendered
         }
 
         function recalculateTextDimensionsAndTriangles() {
+            console.log('🔄 Recalculating text dimensions and triangles...');
+
             // Find all syllable containers and recalculate their positioning
             const syllableContainers = document.querySelectorAll('.syllable-display');
+            console.log(`Found ${syllableContainers.length} syllable containers`);
 
-            syllableContainers.forEach(container => {
+            syllableContainers.forEach((container, index) => {
                 const readingOrderDiv = container.querySelector('.reading-order');
                 if (readingOrderDiv) {
+                    // Force layout recalculation by accessing offsetHeight
+                    readingOrderDiv.offsetHeight;
+
                     // Extract containerId from the reading-order div
                     const foundationElement = readingOrderDiv.querySelector('[id^="foundation-"]');
                     if (foundationElement) {
-                        const containerId = foundationElement.id.split('-')[1];
+                        // Handle both old format (foundation-containerId) and new format (foundation-wrapper-containerId)
+                        const idParts = foundationElement.id.split('-');
+                        let containerId;
+                        if (idParts.length === 2) {
+                            // Old format: foundation-containerId
+                            containerId = idParts[1];
+                        } else if (idParts.length >= 3) {
+                            // New format: foundation-wrapper-containerId or foundation-containerId-...
+                            // Take everything after "foundation-wrapper-" or "foundation-"
+                            const foundationPrefix = idParts[0]; // "foundation"
+                            if (idParts[1] === 'wrapper') {
+                                containerId = idParts.slice(2).join('-'); // everything after "foundation-wrapper-"
+                            } else {
+                                containerId = idParts.slice(1).join('-'); // everything after "foundation-"
+                            }
+                        } else {
+                            containerId = foundationElement.id; // fallback
+                        }
+                        console.log(`📏 Recalculating container ${index + 1}: ${containerId}`);
+
+                        // Force layout recalculation on text elements to ensure new dimensions are available
+                        const textElements = readingOrderDiv.querySelectorAll('.component-char');
+                        textElements.forEach(el => {
+                            const width = el.offsetWidth;
+                            console.log(`Text element width: ${width}px, font-size: ${getComputedStyle(el).fontSize}`);
+                        });
 
                         // Recalculate positioning for this container
                         setTimeout(() => {
+                            console.log(`⚡ Triggering position recalculation for ${containerId}`);
                             calculateDynamicPositions(containerId);
                             positionDotsForContainer(containerId);
                         }, 10);
@@ -2116,6 +2456,7 @@
 
         // Initialize everything when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
+            initializeTweaksDefaults();
             initSession();
             initializeUI();
             document.getElementById('wordInput').addEventListener('keypress', (e) => {
