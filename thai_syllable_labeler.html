@@ -30,6 +30,7 @@
             --card-bg-debug: white;
             --syllable-display-bg-debug: #f8f9fa;
             --debug-dots-opacity: 0;
+            --label-font-size: 12px;
             --card-border: #e0e0e0;
             --card-selected-bg: #f0fdf4;
             --card-selected-border: #48bb78;
@@ -677,6 +678,12 @@
                         <span id="arrowStrokeDisplay">2px</span>
                     </div>
 
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Label Font Size:</label>
+                        <input type="range" id="labelFontSizeSlider" min="8" max="16" value="12" onchange="updateLabelFontSize()" style="width: 100%;">
+                        <span id="labelFontSizeDisplay">12px</span>
+                    </div>
+
                     <div style="display: flex; align-items: end;">
                         <button onclick="resetTweaksToDefaults()" style="background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px;">Reset to Defaults</button>
                     </div>
@@ -1000,591 +1007,569 @@
         }
 
         function positionDotsForContainer(containerId) {
+            // === PHASE 1: SETUP & VALIDATION ===
+            const elements = setupAndValidateElements(containerId);
+            if (!elements) return;
+
+            // === PHASE 2: COORDINATE SYSTEM & CONFIG ===
+            const config = calculateCoordinateSystemAndConfig(elements.container);
+            if (!config) return;
+
+            // === PHASE 3: ELEMENT MEASUREMENT ===
+            const dimensions = measureElementDimensions(elements);
+
+            // === PHASE 4: CORE POSITIONING CALCULATIONS ===
+            const positions = calculateDotPositions(config, dimensions);
+
+            // === PHASE 5: TEXT POSITIONING ===
+            positionTextElements(elements, positions, dimensions, config);
+
+            // === PHASE 5B: LABEL POSITIONING (using pre-measured dimensions) ===
+            positionLabelsWithMeasuredDimensions(elements, positions, dimensions, config);
+
+            // === PHASE 6: VISUALIZATION UPDATES ===
+            updateVisualizationElements(elements, positions, config, dimensions);
+
+            // === PHASE 7: DEBUG INFORMATION ===
+            updateDebugInformation(elements, positions, config, dimensions);
+
+            // === PHASE 8: LAYOUT-DEPENDENT UPDATES (ASYNC) ===
+            updateLayoutDependentElements(elements, positions, dimensions, config);
+        }
+
+        function setupAndValidateElements(containerId) {
             // Find the reading-order div that contains our elements
             const readingOrderDivs = document.querySelectorAll('.reading-order');
             let container = null;
 
-            // Find the reading-order div that contains our containerId elements
             for (let div of readingOrderDivs) {
                 if (div.querySelector(`#foundation-${containerId}`)) {
                     container = div;
                     break;
                 }
             }
-            const foundationWrapper = document.getElementById(`foundation-wrapper-${containerId}`);
-            const finalWrapper = document.getElementById(`final-wrapper-${containerId}`);
-            const foundationBox = document.getElementById(`foundation-${containerId}`);
-            const finalBox = document.getElementById(`final-${containerId}`);
-            const vowelBox = document.getElementById(`vowel-${containerId}`);
-            // OLD DOT VARIABLES - COMMENTED OUT FOR REFERENCE
-            /*
-            const dot1 = document.getElementById(`dot1-${containerId}`); // Red - Foundation right
-            const dot2 = document.getElementById(`dot2-${containerId}`); // Red - Vowel left
-            const dot3 = document.getElementById(`dot3-${containerId}`); // Blue - Vowel right
-            const dot4 = document.getElementById(`dot4-${containerId}`); // Blue - Final left
-            const centerDot = document.getElementById(`center-dot-${containerId}`); // Black - Center reference (baseline)
-            const centerDotTop = document.getElementById(`center-dot-top-${containerId}`); // Black - Center reference (vowel level)
-            const centerDotMiddle = document.getElementById(`center-dot-middle-${containerId}`); // Black - Center reference (middle)
-            const centerDotLeft = document.getElementById(`center-dot-left-${containerId}`); // Black - Left edge
-            const centerDotRight = document.getElementById(`center-dot-right-${containerId}`); // Black - Right edge
-            */
-            const leftDistance = document.getElementById(`left-distance-${containerId}`);
-            const rightDistance = document.getElementById(`right-distance-${containerId}`);
-            const verticalDistance = document.getElementById(`vertical-distance-${containerId}`);
-            const horizontalLeftDistance = document.getElementById(`horizontal-left-distance-${containerId}`);
-            const horizontalRightDistance = document.getElementById(`horizontal-right-distance-${containerId}`);
-            const foundationBorder = document.getElementById(`foundation-border-${containerId}`);
-            const vowelBorder = document.getElementById(`vowel-border-${containerId}`);
-            const finalBorder = document.getElementById(`final-border-${containerId}`);
-            const foundationDimensions = document.getElementById(`foundation-dimensions-${containerId}`);
-            const vowelDimensions = document.getElementById(`vowel-dimensions-${containerId}`);
-            const finalDimensions = document.getElementById(`final-dimensions-${containerId}`);
-            const centerDot = document.getElementById(`center-dot-${containerId}`);
-            const basePoint = document.getElementById(`base-point-${containerId}`);
-            const pointVowel = document.getElementById(`point-vowel-${containerId}`);
-            const pointVowelPurple = document.getElementById(`point-vowel-purple-${containerId}`);
-            const pointVowelPink = document.getElementById(`point-vowel-pink-${containerId}`);
-            const pointF1 = document.getElementById(`point-f1-${containerId}`);
-            const pointF2 = document.getElementById(`point-f2-${containerId}`);
-            const redGreenLine = document.getElementById(`red-green-line-${containerId}`);
-            const redPinkArrow = document.getElementById(`red-pink-arrow-${containerId}`);
-            const purpleGreenArrow = document.getElementById(`purple-green-arrow-${containerId}`);
-            const angleText = document.getElementById(`angle-text-${containerId}`);
-            const angleTextGreen = document.getElementById(`angle-text-green-${containerId}`);
-            const distanceLabel = document.getElementById(`distance-label-${containerId}`);
-            const greenDistanceLabel = document.getElementById(`green-distance-label-${containerId}`);
-            const foundationLabel = document.getElementById(`foundation-label-${containerId}`);
-            const vowelLabel = document.getElementById(`vowel-label-${containerId}`);
-            const finalLabel = document.getElementById(`final-label-${containerId}`);
 
-            if (container && foundationWrapper && finalWrapper && foundationBox && vowelBox &&
-                leftDistance && rightDistance && verticalDistance &&
-                horizontalLeftDistance && horizontalRightDistance && foundationBorder && vowelBorder && finalBorder &&
-                foundationDimensions && vowelDimensions && finalDimensions && centerDot && basePoint && pointVowel && pointVowelPurple && pointVowelPink && pointF1 && pointF2 && redGreenLine && redPinkArrow && purpleGreenArrow && angleText && angleTextGreen && distanceLabel && greenDistanceLabel && foundationLabel && vowelLabel && finalLabel) {
-
-                // Get positions relative to container using offsetLeft/offsetTop
-                const foundationWrapperLeft = foundationWrapper.offsetLeft;
-                const foundationWrapperTop = foundationWrapper.offsetTop;
-                const foundationBoxWidth = foundationBox.offsetWidth;
-                const foundationBoxHeight = foundationBox.offsetHeight;
-
-                const finalWrapperLeft = finalWrapper.offsetLeft;
-                const finalWrapperTop = finalWrapper.offsetTop;
-                const finalBoxHeight = finalBox.offsetHeight;
-
-                // Foundation right edge position
-                const foundationRightX = foundationWrapperLeft + foundationBoxWidth;
-                const foundationCenterY = foundationWrapperTop + foundationBoxHeight / 2;
-
-                // Final left edge position
-                const finalLeftX = finalWrapperLeft;
-                const finalCenterY = finalWrapperTop + finalBoxHeight / 2;
-
-                // Ensure foundation and final are on same height level
-                const baselineY = Math.max(foundationCenterY, finalCenterY);
-
-                // Vowel position - MUST be exactly centered in container
-                const vowelWrapperTop = 10; // from top: 10px
-                const vowelBoxHeight = vowelBox.offsetHeight;
-                const vowelBoxWidth = vowelBox.offsetWidth;
-                const containerCenterX = container.offsetWidth / 2; // exact center of container
-                const vowelLeftX = containerCenterX - vowelBoxWidth / 2;
-                const vowelRightX = containerCenterX + vowelBoxWidth / 2;
-                const vowelBottomY = vowelWrapperTop + vowelBoxHeight;
-
-                // OLD DOT POSITIONING SYSTEM - COMMENTED OUT FOR REFERENCE
-                /*
-                // Calculate angles
-                const leftAngle = calculateAngle(foundationRightX, baselineY, vowelLeftX, vowelBottomY);
-                const rightAngle = calculateAngle(vowelRightX, vowelBottomY, finalLeftX, baselineY);
-
-                // Calculate target positions based on geometry (not measured text)
-                const TARGET_ANGLE = 30;
-                const VERTICAL_DISTANCE = 100;
-                const angleRadians = TARGET_ANGLE * (Math.PI / 180);
-                const requiredHorizontalDistance = VERTICAL_DISTANCE / Math.tan(angleRadians);
-
-                // RED DOTS: Positioned at calculated target positions (container-relative)
-                const targetFoundationRightX = centerX - requiredHorizontalDistance;
-                dot1.style.left = (targetFoundationRightX - 4) + 'px';
-                dot1.style.top = (baselineY - 4) + 'px';
-
-                // Position dot2 at left edge of Vowel (bottom edge)
-                dot2.style.left = (vowelLeftX - 4) + 'px';
-                dot2.style.top = (vowelBottomY - 4) + 'px';
-
-                // BLUE DOTS: Vowel right edge to Final left edge
-                dot3.style.left = (vowelRightX - 4) + 'px';
-                dot3.style.top = (vowelBottomY - 4) + 'px';
-
-                // BLUE DOT: Positioned at calculated target position (container-relative)
-                const targetFinalLeftX = centerX + requiredHorizontalDistance;
-                dot4.style.left = (targetFinalLeftX - 4) + 'px';
-                dot4.style.top = (baselineY - 4) + 'px';
-
-                // BLACK CENTER DOTS - All at exact center of container horizontally
-                // (centerX is already the container center)
-
-                // Bottom black dot: At container center horizontally, baseline vertically
-                centerDot.style.left = (centerX - 4) + 'px';
-                centerDot.style.top = (baselineY - 4) + 'px';
-
-                // Top black dot: At container center horizontally, vowel bottom level vertically
-                centerDotTop.style.left = (centerX - 4) + 'px';
-                centerDotTop.style.top = (vowelBottomY - 4) + 'px';
-
-                // Middle black dot: At container center horizontally, halfway between top and bottom
-                const middleY = vowelBottomY + (baselineY - vowelBottomY) / 2;
-                centerDotMiddle.style.left = (centerX - 4) + 'px';
-                centerDotMiddle.style.top = (middleY - 4) + 'px';
-
-                // Green dots: At middle level (same height as gold dot), at cyan container edges
-                const syllableDisplay = container.parentElement; // Get the syllable-display (cyan) container
-                const syllableDisplayRect = syllableDisplay.getBoundingClientRect();
-                const readingOrderRect = container.getBoundingClientRect();
-
-                // Calculate offset from reading-order to syllable-display
-                const offsetX = readingOrderRect.left - syllableDisplayRect.left;
-
-                const leftEdgeX = -offsetX; // At the very left edge of cyan container
-                const rightEdgeX = syllableDisplay.offsetWidth - offsetX - 8; // At the very right edge of cyan container (minus dot width)
-
-                centerDotLeft.style.left = leftEdgeX + 'px';
-                centerDotLeft.style.top = (middleY - 4) + 'px'; // Same height as gold dot
-
-                centerDotRight.style.left = rightEdgeX + 'px';
-                centerDotRight.style.top = (middleY - 4) + 'px'; // Same height as gold dot
-
-                // Calculate distances using target positions (container-relative, always equal)
-                const leftDistancePx = Math.abs(centerX - targetFoundationRightX);
-                const rightDistancePx = Math.abs(targetFinalLeftX - centerX);
-
-                // These should now be exactly equal by design
-                const equalLeftDistance = leftDistancePx;
-                const equalRightDistance = rightDistancePx;
-                */
-
-                // CLEAN SLATE - NEW DOT SYSTEM STARTS HERE
-
-                // OLD BORDER POSITIONING - DISABLED (now handled after text positioning)
-                // The borders are now positioned after text positioning in the triangle system
-
-                // NEW DOT SYSTEM - Position gold center dot relative to cyan container
-                // Get the cyan syllable-display container (parent of the reading-order container)
-                const syllableDisplay = container.parentElement;
-                if (syllableDisplay) {
-                    const syllableDisplayRect = syllableDisplay.getBoundingClientRect();
-                    const containerRect = container.getBoundingClientRect();
-
-                    // Calculate center position of the cyan container relative to the reading-order container
-                    const cyanCenterX = (syllableDisplayRect.left + syllableDisplayRect.width / 2) - containerRect.left;
-                    const cyanCenterY = (syllableDisplayRect.top + syllableDisplayRect.height / 2) - containerRect.top;
-
-                    // === TRIANGLE CONFIGURATION ===
-                    const triangle_h = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--triangle-height')) || 70; // Triangle height from CSS variable
-                    const triangle_base_pos = cyanCenterY + triangle_h / 2; // Dynamic base position
-
-                    // Position gold dot at center of cyan container (offset by half dot size for true centering)
-                    centerDot.style.left = (cyanCenterX - 4) + 'px';
-                    centerDot.style.top = (cyanCenterY - 4) + 'px';
-
-                    // Calculate base point Y coordinate (used by all triangle dots)
-                    const basePointY = triangle_base_pos; // Use config variable
-
-                    // Position black base point at configured position (ABSOLUTE reference point for triangle)
-                    basePoint.style.left = (cyanCenterX - 4) + 'px';
-                    basePoint.style.top = (basePointY - 4) + 'px';
-
-                    // Position blue vowel point: same horizontal as base point, triangle_h above base point
-                    pointVowel.style.left = (cyanCenterX - 4) + 'px';
-                    pointVowel.style.top = (basePointY - triangle_h - 4) + 'px';
-
-                    // Function to calculate horizontal offset for triangle with 30° base angles
-                    function calculateHorizontalOffset(triangleHeight, baseAngleDegrees) {
-                        // For a 30° base angle, the angle from vertical to the side is 60°
-                        const angleFromVertical = 90 - baseAngleDegrees;
-                        const angleRadians = (angleFromVertical * Math.PI) / 180;
-                        return Math.abs(triangleHeight) * Math.tan(angleRadians);
-                    }
-
-                    // Calculate horizontal offsets using fixed triangle height
-                    const baseCornerAngle = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--base-angle')) || 25;  // Default to 25 degrees
-                    const angleRadians = baseCornerAngle * (Math.PI / 180);
-                    const horizontalOffset_red = triangle_h / Math.tan(angleRadians);
-                    const horizontalOffset_green = triangle_h / Math.tan(angleRadians);
-
-                    // Position f1 and f2 points at base height with independently calculated horizontal offsets
-                    // basePointY already declared above
-
-                    // f1 point (red) - left side of triangle
-                    const redDotX = cyanCenterX - horizontalOffset_red;
-                    const greenDotX = cyanCenterX + horizontalOffset_green;
-                    pointF1.style.left = (redDotX - 4) + 'px';
-                    pointF1.style.top = (basePointY - 4) + 'px';
-                    // Old static offset console logs removed - corrected ones are shown later
-
-                    // f2 point (green) - right side of triangle
-                    pointF2.style.left = (greenDotX - 4) + 'px';
-                    pointF2.style.top = (basePointY - 4) + 'px';
-                    // Old static offset console logs removed - corrected ones are shown later
-
-                    // Line connecting red and green dots using independent offsets
-                    // redDotX and greenDotX already declared above
-                    const lineWidth = greenDotX - redDotX;
-                    redGreenLine.style.left = (redDotX) + 'px';
-                    redGreenLine.style.top = (basePointY - 1) + 'px'; // Center vertically on dots
-                    redGreenLine.style.width = lineWidth + 'px';
-
-                    // NAIVE TEXT POSITIONING: Place text boxes directly at triangle dot positions
-                    // Get text elements for this specific interpretation
-                    const foundationWrapper = document.getElementById(`foundation-wrapper-${containerId}`);
-                    const finalWrapper = document.getElementById(`final-wrapper-${containerId}`);
-                    const vowelBox = document.getElementById(`vowel-${containerId}`);
-
-                    if (foundationWrapper && finalWrapper && vowelBox) {
-                        // First position elements temporarily to measure their dimensions
-                        foundationWrapper.style.left = '0px';
-                        foundationWrapper.style.top = '0px';
-                        finalWrapper.style.left = '0px';
-                        finalWrapper.style.top = '0px';
-                        vowelBox.style.left = '0px';
-                        vowelBox.style.top = '0px';
-
-                        // Force layout to get accurate measurements
-                        foundationWrapper.offsetWidth;
-                        finalWrapper.offsetWidth;
-                        vowelBox.offsetWidth;
-
-                        // Get character-only dimensions for positioning
-                        const foundationWidth = foundationBox.offsetWidth;
-                        const foundationHeight = foundationBox.offsetHeight;
-                        const finalWidth = finalBox.offsetWidth;
-                        const finalHeight = finalBox.offsetHeight;
-                        const vowelChar = vowelBox.querySelector('.component-char');
-                        const vowelWidth = vowelChar.offsetWidth;
-                        const vowelHeight = vowelChar.offsetHeight;
-
-                        // RECALCULATE red/green dot positions to maintain CONSISTENT angles
-                        // The key insight: Calculate red dot position FROM pink dot, not from center
-                        // This ensures the angle is always exactly what's set in settings
-
-                        // SIMPLE POSITIONING: Position elements at dot positions, offset up by half height
-                        const dotmargin = 5; // 5px spacing from dots
-
-                        // First, calculate where the pink and purple dots will be based on vowel dimensions
-                        const blueDotX = cyanCenterX;  // Blue dot is centered horizontally
-                        const blueDotY_actual = basePointY - triangle_h;  // Blue dot is at vowel center
-                        const pinkDotY_actual = blueDotY_actual - vowelHeight / 2;  // Pink is above vowel center
-                        const purpleDotY_actual = blueDotY_actual - vowelHeight / 2;  // Purple is same height as pink
-
-                        // Calculate pink and purple dot X positions based on vowel width
-                        const pinkDotX = blueDotX - vowelWidth / 2 - dotmargin;  // Pink is left of vowel
-                        const purpleDotX = blueDotX + vowelWidth / 2 + dotmargin;  // Purple is right of vowel
-
-                        // Calculate the vertical distance from black dot to pink/purple dots
-                        const verticalDistance_to_pink = Math.abs(basePointY - pinkDotY_actual);
-                        const verticalDistance_to_purple = Math.abs(basePointY - purpleDotY_actual);
-
-                        // Using trigonometry: tan(angle) = opposite / adjacent
-                        // Rearranging: adjacent = opposite / tan(angle)
-                        // This gives us the horizontal offset needed to maintain the desired angle
-                        const horizontalOffset_from_pink = verticalDistance_to_pink / Math.tan(angleRadians);
-                        const horizontalOffset_from_purple = verticalDistance_to_purple / Math.tan(angleRadians);
-
-                        // Calculate red dot position: It's to the LEFT of pink dot by the horizontal offset
-                        const correctedRedDotX = pinkDotX - horizontalOffset_from_pink;
-
-                        // Calculate green dot position: It's to the RIGHT of purple dot by the horizontal offset
-                        const correctedGreenDotX = purpleDotX + horizontalOffset_from_purple;
-
-                        console.log(`🎯 CONSISTENT ANGLE CALCULATION:
-                            Pink dot: (${pinkDotX.toFixed(1)}, ${pinkDotY_actual.toFixed(1)})
-                            Purple dot: (${purpleDotX.toFixed(1)}, ${purpleDotY_actual.toFixed(1)})
-                            Vertical distance: ${verticalDistance_to_pink.toFixed(1)}px
-                            Horizontal offset from pink: ${horizontalOffset_from_pink.toFixed(1)}px
-                            Horizontal offset from purple: ${horizontalOffset_from_purple.toFixed(1)}px
-                            Red dot X: ${correctedRedDotX.toFixed(1)}
-                            Green dot X: ${correctedGreenDotX.toFixed(1)}
-                            Target angle: ${(angleRadians * 180 / Math.PI).toFixed(1)}°`);
-
-                        // Update the actual dot positions in the DOM
-                        pointF1.style.left = (correctedRedDotX - 4) + 'px';  // -4 to center the 8px dot
-                        pointF2.style.left = (correctedGreenDotX - 4) + 'px';  // -4 to center the 8px dot
-
-                        // Update the console logs with corrected offset values
-                        console.log(`🔴 Red dot CORRECTED at X=${correctedRedDotX} (center=${cyanCenterX} - offset=${horizontalOffset_from_pink.toFixed(1)})`);
-                        console.log(`🟢 Green dot CORRECTED at X=${correctedGreenDotX} (center=${cyanCenterX} + offset=${horizontalOffset_from_purple.toFixed(1)})`);
-
-                        // UPDATE LINE between red and green dots with new positions
-                        const correctedLineWidth = correctedGreenDotX - correctedRedDotX;
-                        redGreenLine.style.left = correctedRedDotX + 'px';
-                        redGreenLine.style.width = correctedLineWidth + 'px';
-
-                        // UPDATE DISTANCE LABELS with corrected positions
-                        const distanceLabel = document.getElementById(`distance-label-${containerId}`);
-                        const greenDistanceLabel = document.getElementById(`green-distance-label-${containerId}`);
-
-                        // UPDATE HORIZONTAL OFFSET LABELS with corrected values
-                        const horizontalLeftDistance = document.getElementById(`horizontal-left-distance-${containerId}`);
-                        const horizontalRightDistance = document.getElementById(`horizontal-right-distance-${containerId}`);
-
-                        // Update red side distance label
-                        if (distanceLabel) {
-                            const blackDotX = cyanCenterX;
-                            const blackDotY = basePointY;
-                            const distance = Math.abs(correctedRedDotX - blackDotX);
-                            const midX = (blackDotX + correctedRedDotX) / 2;
-                            const midY = basePointY;
-
-                            distanceLabel.style.left = (midX - 25) + 'px';
-                            distanceLabel.style.top = (midY + 10) + 'px';
-                            distanceLabel.textContent = `${Math.round(distance)}px`;
-                        }
-
-                        // Update green side distance label
-                        if (greenDistanceLabel) {
-                            const blackDotX = cyanCenterX;
-                            const distance_green = Math.abs(correctedGreenDotX - blackDotX);
-                            const midX_green = (blackDotX + correctedGreenDotX) / 2;
-                            const midY_green = basePointY;
-
-                            greenDistanceLabel.style.left = (midX_green - 25) + 'px';
-                            greenDistanceLabel.style.top = (midY_green + 10) + 'px';
-                            greenDistanceLabel.textContent = `${Math.round(distance_green)}px`;
-                        }
-
-
-                        // Use corrected dot positions for text positioning
-                        const redDotX = correctedRedDotX;
-                        const greenDotX = correctedGreenDotX;
-
-                        // Foundation: position at red dot, offset left by width + dotmargin, move up by half height
-                        foundationWrapper.style.left = (redDotX - foundationWidth - dotmargin) + 'px';
-                        foundationWrapper.style.top = (basePointY - foundationHeight / 2) + 'px';
-
-                        // Final: position at green dot, offset right by dotmargin, move up by half height
-                        finalWrapper.style.left = (greenDotX + dotmargin) + 'px';
-                        finalWrapper.style.top = (basePointY - finalHeight / 2) + 'px';
-
-                        // Vowel: position at blue dot, offset up by full height and left by half width
-                        // blueDotX and blueDotY_actual already calculated above
-                        const blueDotY = blueDotY_actual;  // Use the already calculated value
-                        vowelBox.style.left = (blueDotX - vowelWidth / 2) + 'px';
-                        vowelBox.style.top = (blueDotY - vowelHeight) + 'px';
-
-                        // Position dynamic vowel-based dots using the calculated vowel dimensions
-                        // Purple and pink dots already calculated above, just need to position them in DOM
-                        const purpleDotY = purpleDotY_actual;  // Use already calculated value
-                        const pinkDotY = pinkDotY_actual;  // Use already calculated value
-
-                        console.log(`🟣 Purple dot: (${purpleDotX}, ${purpleDotY}) based on vowel H=${vowelHeight}`);
-                        if (pointVowelPurple) {
-                            pointVowelPurple.style.left = (purpleDotX - 4) + 'px';
-                            pointVowelPurple.style.top = (purpleDotY - 4) + 'px';
-                        }
-
-                        if (pointVowelPink) {
-                            pointVowelPink.style.left = (pinkDotX - 4) + 'px';
-                            pointVowelPink.style.top = (pinkDotY - 4) + 'px';
-                        }
-
-                        // Arrow from red dot to pink dot
-                        // Use the already defined red dot coordinates from the red-green line section
-
-                        // Position SVG arrow from red dot to pink dot
-                        if (redPinkArrow) {
-                            // Calculate arrow dimensions and position
-                            const deltaX = pinkDotX - redDotX;
-                            const deltaY = pinkDotY - basePointY;
-                            const arrowLength = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-                            const arrowAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
-
-                            // Position SVG at red dot center
-                            redPinkArrow.style.left = redDotX + 'px';
-                            redPinkArrow.style.top = (basePointY - 5) + 'px'; // Offset by half SVG height to center on dot
-                            redPinkArrow.style.width = arrowLength + 'px';
-                            redPinkArrow.style.height = '10px'; // Fixed height for the arrow
-                            redPinkArrow.style.transformOrigin = '0 50%'; // Rotate from start point (left center)
-                            redPinkArrow.style.transform = `rotate(${arrowAngle}deg)`;
-
-                            // Update the SVG line to match the calculated length
-                            const arrowLine = redPinkArrow.querySelector('line');
-                            if (arrowLine) {
-                                arrowLine.setAttribute('x2', arrowLength);
-                                arrowLine.setAttribute('y1', '5'); // Center vertically in 10px height
-                                arrowLine.setAttribute('y2', '5');
-                            }
-                        }
-
-                        // Position SVG arrow from purple dot to green dot
-                        if (purpleGreenArrow) {
-                            // Use the corrected green dot position (already calculated above)
-                            // greenDotX is already set to correctedGreenDotX
-                            const greenDotY = basePointY;
-
-                            // Calculate arrow dimensions and position
-                            const deltaX_pg = greenDotX - purpleDotX;
-                            const deltaY_pg = greenDotY - purpleDotY;
-                            const arrowLength_pg = Math.sqrt(deltaX_pg * deltaX_pg + deltaY_pg * deltaY_pg);
-                            const arrowAngle_pg = Math.atan2(deltaY_pg, deltaX_pg) * (180 / Math.PI);
-
-                            // Position SVG at purple dot center
-                            purpleGreenArrow.style.left = purpleDotX + 'px';
-                            purpleGreenArrow.style.top = (purpleDotY - 5) + 'px'; // Offset by half SVG height to center on dot
-                            purpleGreenArrow.style.width = arrowLength_pg + 'px';
-                            purpleGreenArrow.style.height = '10px'; // Fixed height for the arrow
-                            purpleGreenArrow.style.transformOrigin = '0 50%'; // Rotate from start point (left center)
-                            purpleGreenArrow.style.transform = `rotate(${arrowAngle_pg}deg)`;
-
-                            // Update the SVG line to match the calculated length
-                            const arrowLine_pg = purpleGreenArrow.querySelector('line');
-                            if (arrowLine_pg) {
-                                arrowLine_pg.setAttribute('x2', arrowLength_pg);
-                                arrowLine_pg.setAttribute('y1', '5'); // Center vertically in 10px height
-                                arrowLine_pg.setAttribute('y2', '5');
-                            }
-                        }
-
-                        // Calculate and display angle at red dot (green-red-PINK triangle base angle)
-                        if (angleText) {
-                            // Use corrected dot positions (already calculated above)
-                            // greenDotX and redDotX are already set to corrected values
-                            // Use PINK dot for the angle calculation (not blue dot)
-                            const vectorToGreen = { x: greenDotX - redDotX, y: basePointY - basePointY }; // horizontal vector
-                            const vectorToPink = { x: pinkDotX - redDotX, y: pinkDotY - basePointY }; // vector to pink dot
-
-                            // Recalculate the offsets for logging (they were calculated in a different scope)
-                            // Also need to recalculate angleRadians since it's in a different scope
-                            const baseCornerAngle_log = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--base-angle')) || 25;
-                            const angleRadians_log = baseCornerAngle_log * (Math.PI / 180);
-                            const verticalDist = Math.abs(basePointY - pinkDotY);
-                            const horizontalOffsetForAngle = verticalDist / Math.tan(angleRadians_log);
-
-                            console.log(`Triangle Base Angle Debug:
-                                redDotX: ${redDotX}, greenDotX: ${greenDotX}, pinkDotX: ${pinkDotX}
-                                basePointY: ${basePointY}, pinkDotY: ${pinkDotY}
-                                vectorToGreen: ${vectorToGreen.x}, ${vectorToGreen.y}
-                                vectorToPink: ${vectorToPink.x}, ${vectorToPink.y}
-                                horizontalOffset (calculated): ${horizontalOffsetForAngle.toFixed(1)}
-                                verticalDistance: ${verticalDist.toFixed(1)}`);
-
-                            // Calculate angle using dot product formula (green-red-PINK angle)
-                            const dotProduct = vectorToGreen.x * vectorToPink.x + vectorToGreen.y * vectorToPink.y;
-                            const magnitudeGreen = Math.sqrt(vectorToGreen.x * vectorToGreen.x + vectorToGreen.y * vectorToGreen.y);
-                            const magnitudePink = Math.sqrt(vectorToPink.x * vectorToPink.x + vectorToPink.y * vectorToPink.y);
-                            const angleRadians = Math.acos(dotProduct / (magnitudeGreen * magnitudePink));
-                            const angleDegrees = angleRadians * (180 / Math.PI);
-
-                            // Position angle text underneath the red distance label
-                            // Use the corrected red dot position
-                            const redMidX = (cyanCenterX + redDotX) / 2;
-                            const redMidY = (basePointY + basePointY) / 2; // Same Y level
-                            angleText.style.left = (redMidX - 15) + 'px'; // Centered under distance label
-                            angleText.style.top = (redMidY + 25 + dotmargin) + 'px'; // Below the distance label + dotmargin
-                            angleText.textContent = `${Math.round(angleDegrees)}°`;
-                        }
-
-                        // Calculate and display angle at green dot (red-green-PURPLE triangle base angle)
-                        if (angleTextGreen) {
-                            // Use corrected dot positions (greenDotX and redDotX already set to corrected values)
-                            const greenDotY = basePointY;
-                            // Use PURPLE dot for the angle calculation (not blue dot)
-                            const vectorToRed_green = { x: redDotX - greenDotX, y: basePointY - basePointY }; // horizontal vector
-                            const vectorToPurple_green = { x: purpleDotX - greenDotX, y: purpleDotY - basePointY }; // vector to purple dot
-
-                            // Calculate angle using dot product formula (red-green-PURPLE triangle base angle)
-                            const dotProduct_green = vectorToRed_green.x * vectorToPurple_green.x + vectorToRed_green.y * vectorToPurple_green.y;
-                            const magnitudeRed_green = Math.sqrt(vectorToRed_green.x * vectorToRed_green.x + vectorToRed_green.y * vectorToRed_green.y);
-                            const magnitudePurple_green = Math.sqrt(vectorToPurple_green.x * vectorToPurple_green.x + vectorToPurple_green.y * vectorToPurple_green.y);
-                            const angleRadians_green = Math.acos(dotProduct_green / (magnitudeRed_green * magnitudePurple_green));
-                            const angleDegrees_green = angleRadians_green * (180 / Math.PI);
-
-                            // Position text underneath the green distance label
-                            // Use the corrected green dot position
-                            const greenMidX = (cyanCenterX + greenDotX) / 2;
-                            const greenMidY = (basePointY + basePointY) / 2; // Same Y level
-                            angleTextGreen.style.left = (greenMidX - 15) + 'px'; // Centered under distance label
-                            angleTextGreen.style.top = (greenMidY + 25 + dotmargin) + 'px'; // Below the distance label + dotmargin
-                            angleTextGreen.textContent = `${Math.round(angleDegrees_green)}°`;
-                        }
-
-
-
-                        // Update debug borders to match new text positions - target only the character text, not labels
-                        setTimeout(() => {
-                            // Get the actual rendered positions of character elements only
-                            const foundationCharRect = foundationBox.getBoundingClientRect();
-                            const vowelCharRect = vowelBox.querySelector('.component-char').getBoundingClientRect();
-                            const containerRect = container.getBoundingClientRect();
-
-                            // Position foundation border around character only
-                            foundationBorder.style.left = (foundationCharRect.left - containerRect.left) + 'px';
-                            foundationBorder.style.top = (foundationCharRect.top - containerRect.top) + 'px';
-                            foundationBorder.style.width = foundationCharRect.width + 'px';
-                            foundationBorder.style.height = foundationCharRect.height + 'px';
-                            foundationDimensions.textContent = Math.round(foundationCharRect.width) + 'x' + Math.round(foundationCharRect.height);
-                            foundationDimensions.style.left = (foundationCharRect.left - containerRect.left) + 'px';
-                            // Get the height of the foundation dimensions label itself and move it up by that amount
-                            const foundationDimensionsLabelHeight = foundationDimensions.offsetHeight || 12; // fallback estimate
-                            foundationDimensions.style.top = (foundationCharRect.top - containerRect.top - foundationDimensionsLabelHeight) + 'px';
-
-                            // Position vowel border around character only
-                            vowelBorder.style.left = (vowelCharRect.left - containerRect.left) + 'px';
-                            vowelBorder.style.top = (vowelCharRect.top - containerRect.top) + 'px';
-                            vowelBorder.style.width = vowelCharRect.width + 'px';
-                            vowelBorder.style.height = vowelCharRect.height + 'px';
-                            vowelDimensions.textContent = Math.round(vowelCharRect.width) + 'x' + Math.round(vowelCharRect.height);
-                            vowelDimensions.style.left = (vowelCharRect.left - containerRect.left) + 'px';
-
-                            // Get the height of the dimensions label itself and move it up by that amount
-                            const dimensionsLabelHeight = vowelDimensions.offsetHeight || 12; // fallback estimate
-                            vowelDimensions.style.top = (vowelCharRect.top - containerRect.top - dimensionsLabelHeight) + 'px';
-
-                            // Position final border around character only
-                            if (finalBox) {
-                                const finalCharRect = finalBox.getBoundingClientRect();
-                                finalBorder.style.left = (finalCharRect.left - containerRect.left) + 'px';
-                                finalBorder.style.top = (finalCharRect.top - containerRect.top) + 'px';
-                                finalBorder.style.width = finalCharRect.width + 'px';
-                                finalBorder.style.height = finalCharRect.height + 'px';
-                                finalDimensions.textContent = Math.round(finalCharRect.width) + 'x' + Math.round(finalCharRect.height);
-                                finalDimensions.style.left = (finalCharRect.left - containerRect.left) + 'px';
-                                // Get the height of the final dimensions label itself and move it up by that amount
-                                const finalDimensionsLabelHeight = finalDimensions.offsetHeight || 12; // fallback estimate
-                                finalDimensions.style.top = (finalCharRect.top - containerRect.top - finalDimensionsLabelHeight) + 'px';
-                            }
-
-                            // Position field name labels relative to their corresponding elements
-                            if (foundationLabel) {
-                                // Center the foundation label horizontally under the foundation text box
-                                const foundationCenterX = redDotX - foundationWidth - dotmargin + (foundationWidth / 2);
-                                const foundationLabelWidth = foundationLabel.offsetWidth || 50; // Fallback estimate
-                                foundationLabel.style.left = (foundationCenterX - foundationLabelWidth / 2) + 'px';
-                                foundationLabel.style.top = (basePointY + foundationHeight / 2 + 5) + 'px'; // Below foundation text box
-                            }
-
-                            if (vowelLabel) {
-                                // Center the label horizontally on the vowel text box center
-                                const vowelCenterX = blueDotX; // Blue dot is already center of vowel box
-                                const vowelCenterY = blueDotY - vowelHeight / 2; // Center of vowel text box vertically
-
-                                // Get label width to center it properly
-                                const labelWidth = vowelLabel.offsetWidth || 30; // Fallback estimate
-
-                                vowelLabel.style.left = (vowelCenterX - labelWidth / 2) + 'px'; // Center horizontally
-                                vowelLabel.style.top = (vowelCenterY + vowelHeight / 2 + 5) + 'px'; // Below vowel box
-                            }
-
-                            if (finalLabel) {
-                                // Center the final label horizontally under the final text box
-                                const finalCenterX = greenDotX + dotmargin + (finalWidth / 2);
-                                const finalLabelWidth = finalLabel.offsetWidth || 30; // Fallback estimate
-                                finalLabel.style.left = (finalCenterX - finalLabelWidth / 2) + 'px';
-                                finalLabel.style.top = (basePointY + finalHeight / 2 + 5) + 'px'; // Below final text box
-                            }
-                        }, 10); // Small delay to ensure text positioning is rendered
-                    }
+            // Get all required DOM elements
+            const elements = {
+                container,
+                foundationWrapper: document.getElementById(`foundation-wrapper-${containerId}`),
+                finalWrapper: document.getElementById(`final-wrapper-${containerId}`),
+                foundationBox: document.getElementById(`foundation-${containerId}`),
+                finalBox: document.getElementById(`final-${containerId}`),
+                vowelBox: document.getElementById(`vowel-${containerId}`),
+
+                // Visualization elements
+                centerDot: document.getElementById(`center-dot-${containerId}`),
+                basePoint: document.getElementById(`base-point-${containerId}`),
+                pointVowel: document.getElementById(`point-vowel-${containerId}`),
+                pointVowelPurple: document.getElementById(`point-vowel-purple-${containerId}`),
+                pointVowelPink: document.getElementById(`point-vowel-pink-${containerId}`),
+                pointF1: document.getElementById(`point-f1-${containerId}`),
+                pointF2: document.getElementById(`point-f2-${containerId}`),
+                redGreenLine: document.getElementById(`red-green-line-${containerId}`),
+                redPinkArrow: document.getElementById(`red-pink-arrow-${containerId}`),
+                purpleGreenArrow: document.getElementById(`purple-green-arrow-${containerId}`),
+
+                // Debug elements
+                leftDistance: document.getElementById(`left-distance-${containerId}`),
+                rightDistance: document.getElementById(`right-distance-${containerId}`),
+                verticalDistance: document.getElementById(`vertical-distance-${containerId}`),
+                horizontalLeftDistance: document.getElementById(`horizontal-left-distance-${containerId}`),
+                horizontalRightDistance: document.getElementById(`horizontal-right-distance-${containerId}`),
+                foundationBorder: document.getElementById(`foundation-border-${containerId}`),
+                vowelBorder: document.getElementById(`vowel-border-${containerId}`),
+                finalBorder: document.getElementById(`final-border-${containerId}`),
+                closedBorder: document.getElementById(`closed-border-${containerId}`),
+                foundationDimensions: document.getElementById(`foundation-dimensions-${containerId}`),
+                vowelDimensions: document.getElementById(`vowel-dimensions-${containerId}`),
+                finalDimensions: document.getElementById(`final-dimensions-${containerId}`),
+                angleText: document.getElementById(`angle-text-${containerId}`),
+                angleTextGreen: document.getElementById(`angle-text-green-${containerId}`),
+                distanceLabel: document.getElementById(`distance-label-${containerId}`),
+                greenDistanceLabel: document.getElementById(`green-distance-label-${containerId}`),
+                foundationLabel: document.getElementById(`foundation-label-${containerId}`),
+                vowelLabel: document.getElementById(`vowel-label-${containerId}`),
+                finalLabel: document.getElementById(`final-label-${containerId}`),
+                closedIndicator: document.getElementById(`closed-indicator-${containerId}`)
+            };
+
+            // Validate critical elements
+            const requiredElements = [
+                'container', 'foundationWrapper', 'finalWrapper', 'foundationBox', 'vowelBox',
+                'centerDot', 'basePoint', 'pointVowel', 'pointF1', 'pointF2', 'redGreenLine'
+            ];
+
+            for (const elementName of requiredElements) {
+                if (!elements[elementName]) {
+                    console.warn(`Missing required element: ${elementName} for container ${containerId}`);
+                    return null;
                 }
+            }
+
+            return elements;
+        }
+
+        function calculateCoordinateSystemAndConfig(container) {
+            // Get the cyan syllable-display container (parent of the reading-order container)
+            const syllableDisplay = container.parentElement;
+            if (!syllableDisplay) return null;
+
+            const syllableDisplayRect = syllableDisplay.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+
+            // Calculate center position of the cyan container relative to the reading-order container
+            const cyanCenterX = (syllableDisplayRect.left + syllableDisplayRect.width / 2) - containerRect.left;
+            const cyanCenterY = (syllableDisplayRect.top + syllableDisplayRect.height / 2) - containerRect.top;
+
+            // Read configuration from CSS
+            const triangle_h = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--triangle-height')) || 70;
+            const baseCornerAngle = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--base-angle')) || 25;
+            const angleRadians = baseCornerAngle * (Math.PI / 180);
+            const triangle_base_pos = cyanCenterY + triangle_h / 2;
+            const basePointY = triangle_base_pos;
+
+            return {
+                cyanCenterX,
+                cyanCenterY,
+                triangle_h,
+                baseCornerAngle,
+                angleRadians,
+                basePointY,
+                dotmargin: 5
+            };
+        }
+
+        function measureElementDimensions(elements) {
+            // Position text elements temporarily for accurate measurement
+            elements.foundationWrapper.style.left = '0px';
+            elements.foundationWrapper.style.top = '0px';
+            elements.finalWrapper.style.left = '0px';
+            elements.finalWrapper.style.top = '0px';
+            elements.vowelBox.style.left = '0px';
+            elements.vowelBox.style.top = '0px';
+
+            // Force layout recalculation for Thai text elements
+            elements.foundationWrapper.offsetWidth;
+            elements.finalWrapper.offsetWidth;
+            elements.vowelBox.offsetWidth;
+
+            // Get Thai character dimensions only (labels measured during positioning)
+            const vowelChar = elements.vowelBox.querySelector('.component-char');
+
+            return {
+                foundationWidth: elements.foundationBox.offsetWidth,
+                foundationHeight: elements.foundationBox.offsetHeight,
+                finalWidth: elements.finalBox.offsetWidth,
+                finalHeight: elements.finalBox.offsetHeight,
+                vowelWidth: vowelChar.offsetWidth,
+                vowelHeight: vowelChar.offsetHeight
+            };
+        }
+
+        function calculateDotPositions(config, dimensions) {
+            const { cyanCenterX, triangle_h, basePointY, angleRadians, dotmargin } = config;
+            const { vowelWidth, vowelHeight } = dimensions;
+
+            // Blue dot (vowel center)
+            const blueDotX = cyanCenterX;
+            const blueDotY_actual = basePointY - triangle_h;
+
+            // Pink/Purple dots (based on vowel dimensions)
+            const pinkDotY_actual = blueDotY_actual - vowelHeight / 2;
+            const purpleDotY_actual = blueDotY_actual - vowelHeight / 2;
+            const pinkDotX = blueDotX - vowelWidth / 2 - dotmargin;
+            const purpleDotX = blueDotX + vowelWidth / 2 + dotmargin;
+
+            // Trigonometric offset calculations for consistent angles
+            const verticalDistance_to_pink = Math.abs(basePointY - pinkDotY_actual);
+            const verticalDistance_to_purple = Math.abs(basePointY - purpleDotY_actual);
+            const horizontalOffset_from_pink = verticalDistance_to_pink / Math.tan(angleRadians);
+            const horizontalOffset_from_purple = verticalDistance_to_purple / Math.tan(angleRadians);
+
+            // Final corrected dot positions
+            const correctedRedDotX = pinkDotX - horizontalOffset_from_pink;
+            const correctedGreenDotX = purpleDotX + horizontalOffset_from_purple;
+
+            return {
+                blueDotX,
+                blueDotY_actual,
+                pinkDotX,
+                pinkDotY_actual,
+                purpleDotX,
+                purpleDotY_actual,
+                correctedRedDotX,
+                correctedGreenDotX,
+                horizontalOffset_from_pink,
+                horizontalOffset_from_purple,
+                verticalDistance_to_pink,
+                verticalDistance_to_purple
+            };
+        }
+
+        function positionTextElements(elements, positions, dimensions, config) {
+            const { correctedRedDotX, correctedGreenDotX, blueDotX, blueDotY_actual } = positions;
+            const { foundationWidth, foundationHeight, finalWidth, finalHeight, vowelHeight } = dimensions;
+            const { basePointY, dotmargin } = config;
+
+            // Check if final exists by looking for actual final text content
+            const finalTextContent = elements.finalBox ? elements.finalBox.textContent.trim() : '';
+            const hasNoFinal = !elements.finalBox || finalTextContent === '' || finalTextContent === '∅' || finalTextContent === '—';
+
+            // Foundation: left of red dot
+            elements.foundationWrapper.style.left = (correctedRedDotX - foundationWidth - dotmargin) + 'px';
+            elements.foundationWrapper.style.top = (basePointY - foundationHeight / 2) + 'px';
+
+            // Final: right of green dot (DEBUG: Conditionally lift green dot only if no final)
+            const greenDotY = hasNoFinal ?
+                basePointY - (config.triangle_h + (finalHeight / 2)) :  // DEBUG: Lift if no final
+                basePointY;  // Normal position if final exists
+
+            elements.finalWrapper.style.left = (correctedGreenDotX + dotmargin) + 'px';
+            elements.finalWrapper.style.top = (greenDotY - finalHeight / 2) + 'px';
+
+            // Vowel: centered on blue dot
+            elements.vowelBox.style.left = (blueDotX - dimensions.vowelWidth / 2) + 'px';
+            elements.vowelBox.style.top = (blueDotY_actual - vowelHeight) + 'px';
+        }
+
+        function positionLabelsWithMeasuredDimensions(elements, positions, dimensions, config) {
+            // Position labels by: 1) Place temporarily, 2) Measure actual size, 3) Center properly
+            const { correctedRedDotX, correctedGreenDotX, blueDotX, blueDotY_actual } = positions;
+            const { foundationWidth, foundationHeight, finalWidth, finalHeight, vowelHeight } = dimensions;
+            const { basePointY, dotmargin } = config;
+
+            // Foundation label - centered under foundation text
+            if (elements.foundationLabel) {
+                const foundationCenterX = correctedRedDotX - foundationWidth - dotmargin + (foundationWidth / 2);
+                const foundationLabelY = basePointY + foundationHeight / 2 + 5;
+
+                // Step 1: Position at target center (temporarily, may be off-center)
+                elements.foundationLabel.style.left = foundationCenterX + 'px';
+                elements.foundationLabel.style.top = foundationLabelY + 'px';
+
+                // Step 2: Force layout and measure actual label width after font change
+                const actualFoundationLabelWidth = elements.foundationLabel.offsetWidth;
+
+                // Step 3: Re-position using actual measured width for perfect centering
+                elements.foundationLabel.style.left = (foundationCenterX - actualFoundationLabelWidth / 2) + 'px';
+            }
+
+            // Vowel label - centered under vowel text
+            if (elements.vowelLabel) {
+                const vowelCenterX = blueDotX;
+                const vowelCenterY = blueDotY_actual - vowelHeight / 2;
+                const vowelLabelY = vowelCenterY + vowelHeight / 2 + 5;
+
+                // Step 1: Position at target center (temporarily, may be off-center)
+                elements.vowelLabel.style.left = vowelCenterX + 'px';
+                elements.vowelLabel.style.top = vowelLabelY + 'px';
+
+                // Step 2: Force layout and measure actual label width after font change
+                const actualVowelLabelWidth = elements.vowelLabel.offsetWidth;
+
+                // Step 3: Re-position using actual measured width for perfect centering
+                elements.vowelLabel.style.left = (vowelCenterX - actualVowelLabelWidth / 2) + 'px';
+            }
+
+            // Final label - centered under final text (follows conditional green dot position)
+            if (elements.finalLabel) {
+                // Check if final exists (same logic as text positioning)
+                const finalTextContent = elements.finalBox ? elements.finalBox.textContent.trim() : '';
+                const hasNoFinal = !elements.finalBox || finalTextContent === '' || finalTextContent === '∅' || finalTextContent === '—';
+
+                // Use same conditional green dot calculation as final text positioning
+                const greenDotY = hasNoFinal ?
+                    basePointY - (config.triangle_h + (finalHeight / 2)) :  // DEBUG: Lift if no final
+                    basePointY;  // Normal position if final exists
+
+                const finalCenterX = correctedGreenDotX + dotmargin + (finalWidth / 2);
+                const finalLabelY = greenDotY + finalHeight / 2 + 5; // Follow final text position
+
+                // Step 1: Position at target center (temporarily, may be off-center)
+                elements.finalLabel.style.left = finalCenterX + 'px';
+                elements.finalLabel.style.top = finalLabelY + 'px';
+
+                // Step 2: Force layout and measure actual label width after font change
+                const actualFinalLabelWidth = elements.finalLabel.offsetWidth;
+
+                // Step 3: Re-position using actual measured width for perfect centering
+                elements.finalLabel.style.left = (finalCenterX - actualFinalLabelWidth / 2) + 'px';
+            }
+
+            // Closed indicator - positioned to the right of final textbox (vertical center aligned with green dot)
+            if (elements.closedIndicator) {
+                // Check if final exists by looking for actual final text content (same logic as text positioning)
+                const finalTextContent = elements.finalBox ? elements.finalBox.textContent.trim() : '';
+                const hasNoFinal = !elements.finalBox || finalTextContent === '' || finalTextContent === '∅' || finalTextContent === '—';
+
+                // Use same conditional green dot calculation as text positioning
+                const greenDotY = hasNoFinal ?
+                    basePointY - (config.triangle_h + (finalHeight / 2)) :  // DEBUG: Lift if no final
+                    basePointY;  // Normal position if final exists
+
+                const finalRightEdge = correctedGreenDotX + dotmargin + finalWidth;
+                const closedIndicatorX = finalRightEdge + 8; // 8px gap from final text
+
+                // Position temporarily to measure height, then center on green dot
+                elements.closedIndicator.style.left = closedIndicatorX + 'px';
+                elements.closedIndicator.style.top = '0px'; // Temporary position
+
+                // Measure actual closed indicator height
+                const closedIndicatorHeight = elements.closedIndicator.offsetHeight;
+
+                // Center the closed indicator vertically on the green dot position
+                const closedIndicatorY = greenDotY - (closedIndicatorHeight / 2);
+                elements.closedIndicator.style.top = closedIndicatorY + 'px';
+            }
+        }
+
+
+        function updateVisualizationElements(elements, positions, config, dimensions) {
+            const { cyanCenterX, basePointY, triangle_h } = config;
+            const { correctedRedDotX, correctedGreenDotX, blueDotX, blueDotY_actual, pinkDotX, pinkDotY_actual, purpleDotX, purpleDotY_actual } = positions;
+            const { finalWidth, finalHeight } = dimensions;
+
+            // Check if final exists by looking for actual final text content (same logic as text positioning)
+            const finalTextContent = elements.finalBox ? elements.finalBox.textContent.trim() : '';
+            const hasNoFinal = !elements.finalBox || finalTextContent === '' || finalTextContent === '∅' || finalTextContent === '—';
+
+            // Position core dots
+            elements.centerDot.style.left = (cyanCenterX - 4) + 'px';
+            elements.centerDot.style.top = (config.cyanCenterY - 4) + 'px';
+            elements.basePoint.style.left = (cyanCenterX - 4) + 'px';
+            elements.basePoint.style.top = (basePointY - 4) + 'px';
+            elements.pointVowel.style.left = (cyanCenterX - 4) + 'px';
+            elements.pointVowel.style.top = (basePointY - triangle_h - 4) + 'px';
+
+            // Position corrected red/green dots
+            elements.pointF1.style.left = (correctedRedDotX - 4) + 'px';
+            elements.pointF1.style.top = (basePointY - 4) + 'px';
+            elements.pointF2.style.left = (correctedGreenDotX - 4) + 'px';
+            // Green dot: Conditionally lift only if no final exists (DEBUG)
+            const greenDotVisualizationY = hasNoFinal ?
+                basePointY - (triangle_h + (finalHeight / 2)) - 4 :  // DEBUG: Lift if no final
+                basePointY - 4;  // Normal position if final exists
+            elements.pointF2.style.top = greenDotVisualizationY + 'px';
+
+            // Position vowel-based dots
+            if (elements.pointVowelPurple) {
+                elements.pointVowelPurple.style.left = (purpleDotX - 4) + 'px';
+                elements.pointVowelPurple.style.top = (purpleDotY_actual - 4) + 'px';
+            }
+            if (elements.pointVowelPink) {
+                elements.pointVowelPink.style.left = (pinkDotX - 4) + 'px';
+                elements.pointVowelPink.style.top = (pinkDotY_actual - 4) + 'px';
+            }
+
+            // Update line between red and green dots
+            const correctedLineWidth = correctedGreenDotX - correctedRedDotX;
+            elements.redGreenLine.style.left = correctedRedDotX + 'px';
+            elements.redGreenLine.style.top = (basePointY - 1) + 'px';
+            elements.redGreenLine.style.width = correctedLineWidth + 'px';
+
+            // Update arrows
+            updateArrows(elements, positions, config, dimensions);
+        }
+
+        function updateArrows(elements, positions, config, dimensions) {
+            const { correctedRedDotX, correctedGreenDotX, pinkDotX, pinkDotY_actual, purpleDotX, purpleDotY_actual } = positions;
+            const { basePointY } = config;
+            const { finalWidth, finalHeight } = dimensions;
+
+            // Check if final exists - same logic as other functions
+            const finalTextContent = elements.finalBox ? elements.finalBox.textContent.trim() : '';
+            const hasNoFinal = !elements.finalBox || finalTextContent === '' || finalTextContent === '∅' || finalTextContent === '—';
+
+            // Calculate actual green dot Y position (conditional)
+            const actualGreenDotY = hasNoFinal ?
+                basePointY - (config.triangle_h + (finalHeight / 2)) :  // DEBUG: Lift if no final
+                basePointY;  // Normal position if final exists
+
+            // Red to pink arrow
+            if (elements.redPinkArrow) {
+                const deltaX = pinkDotX - correctedRedDotX;
+                const deltaY = pinkDotY_actual - basePointY;
+                const arrowLength = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                const arrowAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+
+                elements.redPinkArrow.style.left = correctedRedDotX + 'px';
+                elements.redPinkArrow.style.top = (basePointY - 5) + 'px';
+                elements.redPinkArrow.style.width = arrowLength + 'px';
+                elements.redPinkArrow.style.height = '10px';
+                elements.redPinkArrow.style.transformOrigin = '0 50%';
+                elements.redPinkArrow.style.transform = `rotate(${arrowAngle}deg)`;
+
+                const arrowLine = elements.redPinkArrow.querySelector('line');
+                if (arrowLine) {
+                    arrowLine.setAttribute('x2', arrowLength);
+                    arrowLine.setAttribute('y1', '5');
+                    arrowLine.setAttribute('y2', '5');
+                }
+            }
+
+            // Purple to green arrow (using actual green dot position)
+            if (elements.purpleGreenArrow) {
+                const deltaX_pg = correctedGreenDotX - purpleDotX;
+                const deltaY_pg = actualGreenDotY - purpleDotY_actual; // Use conditional green dot Y
+                const arrowLength_pg = Math.sqrt(deltaX_pg * deltaX_pg + deltaY_pg * deltaY_pg);
+                const arrowAngle_pg = Math.atan2(deltaY_pg, deltaX_pg) * (180 / Math.PI);
+
+                elements.purpleGreenArrow.style.left = purpleDotX + 'px';
+                elements.purpleGreenArrow.style.top = (purpleDotY_actual - 5) + 'px';
+                elements.purpleGreenArrow.style.width = arrowLength_pg + 'px';
+                elements.purpleGreenArrow.style.height = '10px';
+                elements.purpleGreenArrow.style.transformOrigin = '0 50%';
+                elements.purpleGreenArrow.style.transform = `rotate(${arrowAngle_pg}deg)`;
+
+                const arrowLine_pg = elements.purpleGreenArrow.querySelector('line');
+                if (arrowLine_pg) {
+                    arrowLine_pg.setAttribute('x2', arrowLength_pg);
+                    arrowLine_pg.setAttribute('y1', '5');
+                    arrowLine_pg.setAttribute('y2', '5');
+                }
+            }
+        }
+
+        function updateDebugInformation(elements, positions, config, dimensions) {
+            const { cyanCenterX, basePointY, dotmargin, baseCornerAngle, angleRadians } = config;
+            const { correctedRedDotX, correctedGreenDotX, pinkDotX, pinkDotY_actual, purpleDotX, purpleDotY_actual, horizontalOffset_from_pink, horizontalOffset_from_purple } = positions;
+
+            // Update distance labels
+            if (elements.distanceLabel) {
+                const distance = Math.abs(correctedRedDotX - cyanCenterX);
+                const midX = (cyanCenterX + correctedRedDotX) / 2;
+                elements.distanceLabel.style.left = (midX - 25) + 'px';
+                elements.distanceLabel.style.top = (basePointY + 10) + 'px';
+                elements.distanceLabel.textContent = `${Math.round(distance)}px`;
+            }
+
+            if (elements.greenDistanceLabel) {
+                const distance_green = Math.abs(correctedGreenDotX - cyanCenterX);
+                const midX_green = (cyanCenterX + correctedGreenDotX) / 2;
+                elements.greenDistanceLabel.style.left = (midX_green - 25) + 'px';
+                elements.greenDistanceLabel.style.top = (basePointY + 10) + 'px';
+                elements.greenDistanceLabel.textContent = `${Math.round(distance_green)}px`;
+            }
+
+            // Update angle displays
+            updateAngleDisplays(elements, positions, config, dimensions);
+
+            // Console logging for debugging
+            console.log(`🎯 CONSISTENT ANGLE CALCULATION:
+                Pink dot: (${pinkDotX.toFixed(1)}, ${pinkDotY_actual.toFixed(1)})
+                Purple dot: (${purpleDotX.toFixed(1)}, ${purpleDotY_actual.toFixed(1)})
+                Vertical distance: ${positions.verticalDistance_to_pink.toFixed(1)}px
+                Horizontal offset from pink: ${horizontalOffset_from_pink.toFixed(1)}px
+                Horizontal offset from purple: ${horizontalOffset_from_purple.toFixed(1)}px
+                Red dot X: ${correctedRedDotX.toFixed(1)}
+                Green dot X: ${correctedGreenDotX.toFixed(1)}
+                Target angle: ${(angleRadians * 180 / Math.PI).toFixed(1)}°`);
+
+            console.log(`🔴 Red dot CORRECTED at X=${correctedRedDotX} (center=${cyanCenterX} - offset=${horizontalOffset_from_pink.toFixed(1)})`);
+            console.log(`🟢 Green dot CORRECTED at X=${correctedGreenDotX} (center=${cyanCenterX} + offset=${horizontalOffset_from_purple.toFixed(1)})`);
+        }
+
+        function updateAngleDisplays(elements, positions, config, dimensions) {
+            const { cyanCenterX, basePointY, dotmargin } = config;
+            const { correctedRedDotX, correctedGreenDotX, pinkDotX, pinkDotY_actual, purpleDotX, purpleDotY_actual } = positions;
+            const { finalWidth, finalHeight } = dimensions;
+
+            // Check if final exists - same logic as other functions
+            const finalTextContent = elements.finalBox ? elements.finalBox.textContent.trim() : '';
+            const hasNoFinal = !elements.finalBox || finalTextContent === '' || finalTextContent === '∅' || finalTextContent === '—';
+
+            // Calculate actual green dot Y position (conditional)
+            const actualGreenDotY = hasNoFinal ?
+                basePointY - (config.triangle_h + (finalHeight / 2)) :  // DEBUG: Lift if no final
+                basePointY;  // Normal position if final exists
+
+            // Left angle display
+            if (elements.angleText) {
+                const vectorToGreen = { x: correctedGreenDotX - correctedRedDotX, y: 0 };
+                const vectorToPink = { x: pinkDotX - correctedRedDotX, y: pinkDotY_actual - basePointY };
+
+                const dotProduct = vectorToGreen.x * vectorToPink.x + vectorToGreen.y * vectorToPink.y;
+                const magnitudeGreen = Math.sqrt(vectorToGreen.x * vectorToGreen.x + vectorToGreen.y * vectorToGreen.y);
+                const magnitudePink = Math.sqrt(vectorToPink.x * vectorToPink.x + vectorToPink.y * vectorToPink.y);
+                const angleRadians = Math.acos(dotProduct / (magnitudeGreen * magnitudePink));
+                const angleDegrees = angleRadians * (180 / Math.PI);
+
+                const redMidX = (cyanCenterX + correctedRedDotX) / 2;
+                elements.angleText.style.left = (redMidX - 15) + 'px';
+                elements.angleText.style.top = (basePointY + 25 + dotmargin) + 'px';
+                elements.angleText.textContent = `${Math.round(angleDegrees)}°`;
+            }
+
+            // Right angle display (using actual green dot position)
+            if (elements.angleTextGreen) {
+                const vectorToRed_green = { x: correctedRedDotX - correctedGreenDotX, y: 0 };
+                const vectorToPurple_green = { x: purpleDotX - correctedGreenDotX, y: purpleDotY_actual - actualGreenDotY }; // Use conditional green dot Y
+
+                const dotProduct_green = vectorToRed_green.x * vectorToPurple_green.x + vectorToRed_green.y * vectorToPurple_green.y;
+                const magnitudeRed_green = Math.sqrt(vectorToRed_green.x * vectorToRed_green.x + vectorToRed_green.y * vectorToRed_green.y);
+                const magnitudePurple_green = Math.sqrt(vectorToPurple_green.x * vectorToPurple_green.x + vectorToPurple_green.y * vectorToPurple_green.y);
+                const angleRadians_green = Math.acos(dotProduct_green / (magnitudeRed_green * magnitudePurple_green));
+                const angleDegrees_green = angleRadians_green * (180 / Math.PI);
+
+                const greenMidX = (cyanCenterX + correctedGreenDotX) / 2;
+                elements.angleTextGreen.style.left = (greenMidX - 15) + 'px';
+                elements.angleTextGreen.style.top = (actualGreenDotY + 25 + dotmargin) + 'px'; // Use conditional green dot Y for positioning
+                elements.angleTextGreen.textContent = `${Math.round(angleDegrees_green)}°`;
+            }
+        }
+
+        function updateLayoutDependentElements(elements, positions, dimensions, config) {
+            setTimeout(() => {
+                // Only update debug borders - labels are now positioned in main flow
+                updateDebugBorders(elements, positions, dimensions, config);
+            }, 10);
+        }
+
+        function updateDebugBorders(elements, positions, dimensions, config) {
+            const containerRect = elements.container.getBoundingClientRect();
+
+            // Foundation border
+            const foundationCharRect = elements.foundationBox.getBoundingClientRect();
+            elements.foundationBorder.style.left = (foundationCharRect.left - containerRect.left) + 'px';
+            elements.foundationBorder.style.top = (foundationCharRect.top - containerRect.top) + 'px';
+            elements.foundationBorder.style.width = foundationCharRect.width + 'px';
+            elements.foundationBorder.style.height = foundationCharRect.height + 'px';
+            elements.foundationDimensions.textContent = Math.round(foundationCharRect.width) + 'x' + Math.round(foundationCharRect.height);
+            elements.foundationDimensions.style.left = (foundationCharRect.left - containerRect.left) + 'px';
+            const foundationDimensionsLabelHeight = elements.foundationDimensions.offsetHeight || 12;
+            elements.foundationDimensions.style.top = (foundationCharRect.top - containerRect.top - foundationDimensionsLabelHeight) + 'px';
+
+            // Vowel border
+            const vowelCharRect = elements.vowelBox.querySelector('.component-char').getBoundingClientRect();
+            elements.vowelBorder.style.left = (vowelCharRect.left - containerRect.left) + 'px';
+            elements.vowelBorder.style.top = (vowelCharRect.top - containerRect.top) + 'px';
+            elements.vowelBorder.style.width = vowelCharRect.width + 'px';
+            elements.vowelBorder.style.height = vowelCharRect.height + 'px';
+            elements.vowelDimensions.textContent = Math.round(vowelCharRect.width) + 'x' + Math.round(vowelCharRect.height);
+            elements.vowelDimensions.style.left = (vowelCharRect.left - containerRect.left) + 'px';
+            const dimensionsLabelHeight = elements.vowelDimensions.offsetHeight || 12;
+            elements.vowelDimensions.style.top = (vowelCharRect.top - containerRect.top - dimensionsLabelHeight) + 'px';
+
+            // Final border
+            if (elements.finalBox) {
+                const finalCharRect = elements.finalBox.getBoundingClientRect();
+                elements.finalBorder.style.left = (finalCharRect.left - containerRect.left) + 'px';
+                elements.finalBorder.style.top = (finalCharRect.top - containerRect.top) + 'px';
+                elements.finalBorder.style.width = finalCharRect.width + 'px';
+                elements.finalBorder.style.height = finalCharRect.height + 'px';
+                elements.finalDimensions.textContent = Math.round(finalCharRect.width) + 'x' + Math.round(finalCharRect.height);
+                elements.finalDimensions.style.left = (finalCharRect.left - containerRect.left) + 'px';
+                const finalDimensionsLabelHeight = elements.finalDimensions.offsetHeight || 12;
+                elements.finalDimensions.style.top = (finalCharRect.top - containerRect.top - finalDimensionsLabelHeight) + 'px';
+            }
+
+            // Closed indicator border
+            if (elements.closedIndicator && elements.closedBorder) {
+                const closedRect = elements.closedIndicator.getBoundingClientRect();
+                elements.closedBorder.style.left = (closedRect.left - containerRect.left) + 'px';
+                elements.closedBorder.style.top = (closedRect.top - containerRect.top) + 'px';
+                elements.closedBorder.style.width = closedRect.width + 'px';
+                elements.closedBorder.style.height = closedRect.height + 'px';
             }
         }
 
@@ -1722,8 +1707,9 @@
             const hasNoFinal = !syllable.final || (Array.isArray(syllable.final) && syllable.final.length === 0);
             console.log('Has no final?', hasNoFinal);
 
-            // Final: positioned dynamically
-            html += `<div id="final-wrapper-${containerId}" style="position: absolute;">`;
+            // Final: positioned dynamically (with opacity control for open syllables)
+            const finalOpacity = hasNoFinal ? 'opacity: 0;' : '';
+            html += `<div id="final-wrapper-${containerId}" style="position: absolute; ${finalOpacity}">`;
             if (components.length > 2) {
                 html += components[2].replace('<div class="component-char"', `<div id="final-${containerId}" class="component-char"`);
             } else {
@@ -1750,19 +1736,26 @@
             const finalLabelText = isFinalCluster ? 'Final<br>(cluster)' : 'Final';
 
             // Set opacity for final label based on whether final exists
-            const finalLabelOpacity = hasNoFinal ? 'opacity: 0.5;' : '';
+            const finalLabelOpacity = hasNoFinal ? 'opacity: 0;' : '';
 
-            html += `<div id="foundation-label-${containerId}" style="position: absolute; font-size: 10px; font-weight: bold; color: #666; background: rgba(255,255,255,0.8); padding: 1px 3px; border-radius: 2px; z-index: 98; pointer-events: none; text-align: center;">${foundationLabelText}</div>`;
-            html += `<div id="vowel-label-${containerId}" style="position: absolute; font-size: 10px; font-weight: bold; color: #666; background: rgba(255,255,255,0.8); padding: 1px 3px; border-radius: 2px; z-index: 98; pointer-events: none;">Vowel</div>`;
-            html += `<div id="final-label-${containerId}" style="position: absolute; font-size: 10px; font-weight: bold; color: #666; background: rgba(255,255,255,0.8); padding: 1px 3px; border-radius: 2px; z-index: 98; pointer-events: none; text-align: center; ${finalLabelOpacity}">${finalLabelText}</div>`;
+            html += `<div id="foundation-label-${containerId}" style="position: absolute; font-size: var(--label-font-size, 12px); font-weight: bold; color: #666; background: rgba(255,255,255,0.8); padding: 1px 3px; border-radius: 2px; z-index: 98; pointer-events: none; text-align: center;">${foundationLabelText}</div>`;
+            html += `<div id="vowel-label-${containerId}" style="position: absolute; font-size: var(--label-font-size, 12px); font-weight: bold; color: #666; background: rgba(255,255,255,0.8); padding: 1px 3px; border-radius: 2px; z-index: 98; pointer-events: none;">Vowel</div>`;
+            html += `<div id="final-label-${containerId}" style="position: absolute; font-size: var(--label-font-size, 12px); font-weight: bold; color: #666; background: rgba(255,255,255,0.8); padding: 1px 3px; border-radius: 2px; z-index: 98; pointer-events: none; text-align: center; ${finalLabelOpacity}">${finalLabelText}</div>`;
 
-            // Closed syllable indicator - square with "Closed" text when final is not empty
-            if (!hasNoFinal) {
-                html += `<div id="closed-indicator-${containerId}" style="position: absolute; z-index: 98; pointer-events: none; display: flex; align-items: center; gap: 4px;">`;
-                html += `<div style="width: 8px; height: 8px; background: #333; border: 1px solid #666;"></div>`;
-                html += `<span style="font-size: var(--font-size, 24px); font-weight: bold; color: #333;">Closed</span>`;
-                html += `</div>`;
+            // Syllable type indicator - shows "Closed" or "Open" based on final consonant presence
+            const syllableType = hasNoFinal ? 'Open' : 'Closed';
+            const indicatorColor = hasNoFinal ? '#000' : '#333'; // Black for open, dark for closed
+            html += `<div id="closed-indicator-${containerId}" style="position: absolute; z-index: 98; pointer-events: none; display: flex; align-items: center; gap: 4px;">`;
+            // Show hollow circle for open, filled square for closed - sized relative to font
+            if (hasNoFinal) {
+                // Open syllable: hollow circle (sized relative to font)
+                html += `<div style="width: calc(var(--label-font-size, 12px) * 0.8); height: calc(var(--label-font-size, 12px) * 0.8); background: transparent; border: 2px solid ${indicatorColor}; border-radius: 50%;"></div>`;
+            } else {
+                // Closed syllable: filled square (sized relative to font)
+                html += `<div style="width: calc(var(--label-font-size, 12px) * 0.8); height: calc(var(--label-font-size, 12px) * 0.8); background: ${indicatorColor}; border: 1px solid #666;"></div>`;
             }
+            html += `<span style="font-size: var(--label-font-size, 12px); font-weight: bold; color: ${indicatorColor};">${syllableType}</span>`;
+            html += `</div>`;
 
             // OLD DOT SYSTEM - COMMENTED OUT FOR REFERENCE
             /*
@@ -1793,6 +1786,7 @@
             html += '<div id="foundation-border-' + containerId + '" style="position: absolute; border: 2px solid red; z-index: 99; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
             html += '<div id="vowel-border-' + containerId + '" style="position: absolute; border: 2px solid blue; z-index: 99; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
             html += '<div id="final-border-' + containerId + '" style="position: absolute; border: 2px solid green; z-index: 99; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
+            html += '<div id="closed-border-' + containerId + '" style="position: absolute; border: 2px solid orange; z-index: 99; opacity: var(--debug-dots-opacity); pointer-events: none;"></div>';
 
             // Text box dimension labels
             html += '<div id="foundation-dimensions-' + containerId + '" style="position: absolute; color: red; font-size: 10px; font-weight: bold; z-index: 100; opacity: var(--debug-dots-opacity); pointer-events: none; background: rgba(255,255,255,0.8); padding: 1px 2px;"></div>';
@@ -2284,6 +2278,18 @@
             document.documentElement.style.setProperty('--arrow-stroke-width', arrowStrokeValue);
         }
 
+        function updateLabelFontSize() {
+            const labelFontSizeValue = document.getElementById('labelFontSizeSlider').value;
+            document.getElementById('labelFontSizeDisplay').textContent = labelFontSizeValue + 'px';
+            document.documentElement.style.setProperty('--label-font-size', labelFontSizeValue + 'px');
+
+            // Force immediate reflow to ensure label font changes are applied (same as applyFontSettings)
+            document.body.offsetHeight;
+
+            // Reposition all interpretations to account for label size changes
+            recalculateTextDimensionsAndTriangles();
+        }
+
         function resetTweaksToDefaults() {
             // Reset all sliders to default values
             document.getElementById('triangleHeightSlider').value = '40';
@@ -2291,12 +2297,14 @@
             document.getElementById('arrowWidthSlider').value = '8';
             document.getElementById('arrowHeightSlider').value = '6';
             document.getElementById('arrowStrokeSlider').value = '2';
+            document.getElementById('labelFontSizeSlider').value = '12';
 
             // Update displays and apply changes
             updateTriangleHeight();
             updateBaseAngle();
             updateArrowheadSize();
             updateArrowStroke();
+            updateLabelFontSize();
         }
 
         function initializeTweaksDefaults() {
@@ -2308,6 +2316,7 @@
             document.documentElement.style.setProperty('--arrowhead-refx', '7');
             document.documentElement.style.setProperty('--arrowhead-refy', '3');
             document.documentElement.style.setProperty('--arrow-stroke-width', '2');
+            document.documentElement.style.setProperty('--label-font-size', '12px');
 
             // Set initial arrow colors to black (normal mode)
             document.documentElement.style.setProperty('--arrow-color-red', '#000000');
