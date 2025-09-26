@@ -129,18 +129,35 @@ class ThaiDatabaseInitializer:
             )
         """)
 
-        # Interpretations table
+        # Interpretations table - MODIFIED: added validity_status and synonymous_with_id
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS interpretations (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 word_id INTEGER REFERENCES words(id) ON DELETE CASCADE,
                 interpretation_json JSON NOT NULL,
+                validity_status TEXT DEFAULT 'unlabeled',  -- valid, invalid, synonymous, unlabeled
+                synonymous_with_id INTEGER REFERENCES interpretations(id),
                 algorithm_version TEXT,
-                generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                CHECK (validity_status IN ('valid', 'invalid', 'synonymous', 'unlabeled'))
             )
         """)
 
-        # Labels table
+        # NEW TABLE: Invalid components tracking
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS invalid_components (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                interpretation_id INTEGER REFERENCES interpretations(id) ON DELETE CASCADE,
+                component_type TEXT NOT NULL,  -- foundation, vowel, final, pattern, cluster
+                component_value TEXT NOT NULL,  -- the actual character(s)
+                invalid_reason TEXT,  -- invalid_cluster, cannot_be_final, wrong_vowel_pattern, etc.
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                CHECK (component_type IN ('foundation', 'vowel', 'final', 'pattern', 'cluster'))
+            )
+        """)
+
+        # Labels table - MODIFIED: Now tracks batch labeling sessions
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS labels (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -179,8 +196,11 @@ class ThaiDatabaseInitializer:
             )
         """)
 
-        # Create indexes
+        # Create indexes - ADDED: indexes for new tables
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_interpretations_word ON interpretations(word_id)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_interpretations_validity ON interpretations(validity_status)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_invalid_components_interp ON invalid_components(interpretation_id)")
+        cursor.execute("CREATE INDEX IF NOT EXISTS idx_invalid_components_type ON invalid_components(component_type)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_labels_word ON labels(word_id)")
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_labels_session ON labels(session_id)")
 

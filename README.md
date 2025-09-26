@@ -1,123 +1,160 @@
 # Thai Algorithm Development
 
-Currently, this project is an attempt to formally label every grapheme in thai with properties like 'long vowel' and 'closed ending' for vowels or 'high class' for consonants. These tags will be used to
-read thai characters in the correct order, which will aid in evaluating AI inference in the thai language. This logic can be used both in determining the tone of an arbitrary (though orthographically correct) set of thai characters, and 
-also in the novel inference evaluation algorithm I intend to create.
+A research project developing deterministic algorithms for Thai syllable segmentation and vowel detection based on linguistic conjectures. The project aims to create explainable, non-ML approaches to Thai language processing that respect Thai orthographic principles.
 
+## Core Innovation: Conjecture-Based Approach
 
-## Thai Grapheme Classification
+This project is built on two fundamental linguistic axioms:
 
-Classifies Thai characters into four main categories:
-- **ฐาน (tan)** - Foundation consonants that serve as bases
-- **สระ (sara)** - Vowel patterns that attach to foundations
-- **ยุกต์ (yuk)** - Dependent marks (tone marks, diacritics)
-- **ข้อยกเว้น (exceptions)** - Special case characters. Currently, อ and ว.
+### 1. Voraritskul Conjecture for Thai Segmentation
+**"Every Thai syllable contains exactly one vowel pattern that serves as an anchor for segmentation."**
 
-### Pattern Examples
+- Uses vowels as fixed reference points for syllable boundaries
+- Enables deterministic segmentation without exhaustive search
+- Provides explainable results based on orthographic rules
 
-**Simple vowel patterns:**
-- `xา` - long a vowel (e.g., ยา)
-- `เxอ` - e vowel with foundation in middle (e.g., เยอ)
-- `โxะ` - o vowel (e.g., โยะ)
+### 2. Two-Character Proximity Conjecture
+**"For any consonant in Thai text, a vowel component (explicit or hidden) exists within 2 characters distance."**
 
-**Complex multi-part vowels:**
-- `เxียะ` - short open diphthong ia (e.g., เปียะ)
-- `เxือะ` - short open diphthong uea (e.g., เนือะ)
+- Enables systematic detection of hidden vowels (คน → ค[โ-ะ]น)
+- Provides search space optimization for pattern matching
+- Creates definitive rules for vowel presence
 
-**Foundation consonants:**
-- All 44 Thai consonants including อ and ว (now properly handled)
+## Current Algorithms
 
-**Dependent marks (yuk):**
-- Tone marks: ◌่ ◌้ ◌๊ ◌๋
-- Diacritics: ◌็ ◌์ ◌ํ ◌๎
+### Conjecture-Based Vowel Detector
+**Status: Production Ready**
+- **File**: `conjecture_based_vowel_detector.py`
+- **Purpose**: Complete vowel detection including hidden vowels
+- **Features**:
+  - Modular rule engine for extensibility
+  - 1-based indexing for linguistic intuition
+  - Evidence tracking for explainable results
+  - Handles explicit, hidden, and ambiguous vowels
 
-**Exceptions**
-- ว and อ, because they appear both as a foundation (ฐาน / tan) and a vowel (สระ / sara)
+### Thai Reading Order Algorithm v0.2
+**Status: Complete Analysis**
+- **File**: `thai_reading_order.py`
+- **Purpose**: Foundation container model for syllable analysis
+- **Coverage**: 100% accuracy on test cases
+- **Limitation**: Single syllable only (by design)
 
-## Thai Reading Order Algorithm
+## Thai Grapheme Classification System
 
-The `findThaiGraphemeOrderDomain` algorithm determines all possible canonical reading orders for Thai text by treating consonants as **foundation containers** that can hold:
-- One or more consonants (clusters like กร, คล)
-- Tone marks (่ ้ ๊ ๋) attached to specific consonants
-- Position information for accurate text reconstruction
+Characters are classified into four main categories:
 
-### How It Works
+1. **ฐาน (tan)** - Foundation consonants (44 total): All Thai consonants that serve as syllable bases
+2. **สระ (sara)** - Vowel patterns (72+ patterns): Complete orthographic vowel combinations
+3. **ยุกต์ (yuk)** - Dependent marks: Tone marks and diacritics
+4. **ข้อยกเว้น (kho yok waen)** - Exceptions: Characters **อ** and **ว** with dual roles
 
-1. **Pattern Matching**: Uses 72+ vowel patterns (e.g., `xา`, `เxียf`) where:
-   - `x` = foundation container (initial consonant(s) + optional tone)
-   - `f` = final consonant (optional)
-   - Other characters = exact vowel marks
+## Pattern Database
 
-2. **Foundation Containers**: When matching `x`, the algorithm builds a complete foundation object including all consonants and any attached tone marks. For example, "อย่า" matches as:
-   - Foundation: {consonants: ['อ','ย'], tone: '่', tone_owner: 1}
-   - Pattern: `xา`
-   - Reading order: อย่ า
+### Vowel Patterns with Dual ID System
+Each of the 72+ vowel patterns has:
+- **Abbreviated ID**: `a_l_o` (a-long-open)
+- **Long ID**: `a_long_open`
+- **Pattern Template**: `xา` (x=foundation, vowel marks)
+- **Linguistic Tags**: Sound, length, openness, glides
 
-3. **Ambiguity Detection**: Generates multiple interpretations when characters like ว could be:
-   - Part of a consonant cluster (ลว)
-   - A final consonant (pattern `เxf`)
-   - Part of a vowel pattern (pattern `เxว`)
+**Examples:**
+- `xา` → `a_l_o` / `a_long_open` (simple long vowel)
+- `เx็f` → `e_s_c` / `e_short_closed` (complex pattern with final)
+- `ไxย` → `ai_s_c_jg_3` / `ai_short_closed_jglide_3` (with glide)
 
-4. **Output Domain**: Returns all possible readings as a structured domain that can be reduced later with linguistic rules (e.g., valid cluster rules, tone constraints).
+## Quick Start
 
-### Usage
-
+### Basic Vowel Detection
 ```python
-from thai_reading_order import ThaiReadingOrderAnalyzer
+from conjecture_based_vowel_detector import ConjectureBasedVowelDetector
 
-analyzer = ThaiReadingOrderAnalyzer(foundation_file, patterns_file)
-result = analyzer.findThaiGraphemeOrderDomain("เลว")
+detector = ConjectureBasedVowelDetector("thai_vowels_tagged_9-21-2025-2-31-pm.json")
+vowels = detector.find_vowels("ประเทศไทย")
 
-# Returns all possible interpretations:
-# 1. ลว + เx (cluster interpretation)
-# 2. ล + เxf (ว as final consonant)
-# 3. ล + เxว (ว as part of vowel)
+# Access results (1-based indexing)
+for i in sorted(vowels.keys()):
+    vowel_data = vowels[i]
+    print(f"Vowel {i}: {vowel_data.best_candidate.pattern}")
 ```
 
-## Features
+### Environment Setup
+```bash
+# Windows
+.venv\Scripts\activate
 
-### Interactive Web Tool
-- Drag-and-drop pattern organization with customizable grid layout
-- Advanced tag filtering with logical operators (NOT, AND, OR)
-- Pattern deletion with automatic backup creation
-- Font customization for optimal Thai text display
-- Session persistence and automatic restoration through server restarts
-- 24-hour time file naming for chronological organization
-- JSON export and source file updating capabilities
+# Unix/Mac
+source .venv/bin/activate
 
-### Data Processing Pipeline
-- Convert plain text vowel mappings to structured JSON
-- Process foundation consonants and vowel combinations
-- Extract unique character patterns and starting sequences
-- Analyze and remove duplicate patterns
-
-## Research Focus
-
-The project explores creating algorithms and labelling data needed for handling Thai's complex orthography:
-- **Nonlinear reading order** - vowels that appear before but read after consonants
-- **Consonant clusters** - multiple foundations acting as single units
-- **Multi-part vowels** - complex patterns spanning multiple character positions
-- **Special cases** - dual-role characters and exceptions
-
-## Technical Details
-
-- **Language**: Python 3.13+
-- **Web Interface**: HTML/CSS/JavaScript with Flask backend
-- **Data Format**: UTF-8 encoded JSON with template patterns
-- **Pattern Matching**: Template-based using x/f placeholders for consonants
-
-## Requirements
-
-- Python 3.13+ (for scripts and server)
-- Modern web browser with JavaScript enabled
-- UTF-8 support for Thai character display
-
-## How to Use
-
-Launch the interactive pattern classifier:
-
+# Install dependencies (if needed)
+pip install flask
 ```
+
+### Run Labeling System
+```bash
+# Windows
 launcher/flask_classifier.bat
+
+# Python
+python launcher/flask_server.py
 ```
 
-This will start a Flask server and open the classification tool in your browser. The tool allows you to drag and drop Thai patterns into different categories and save your classifications.
+## Documentation Structure
+
+- **`docs/algorithms/`** - Core algorithm documentation
+  - `voraritskul_conjecture_thai_segmentation.md` - Foundational theory
+  - `conjecture_based_vowel_detector_documentation.md` - Usage guide
+  - `thai_order_algorithm_v_0.2.md` - Algorithm analysis
+- **`docs/systems/`** - System documentation
+  - `LABELING_SYSTEM_DOCS.md` - Web labeling interface
+- **`docs/archive/`** - Historical documents
+- **`CLAUDE.md`** - Claude Code integration guidance
+
+## Key Features
+
+### Non-ML Approach
+- **Deterministic**: Every decision traceable to linguistic rules
+- **Explainable**: Evidence tracking for all detections
+- **Extensible**: Modular rule engine for adding domain knowledge
+- **Fast**: Linear time complexity with smart indexing
+
+### Hidden Vowel Detection
+Systematic detection of implicit vowels:
+- **คน** → ค[โ-ะ]น (detect missing short o)
+- **สตรี** → ส[ะ]ตรี (detect hidden vowel after ส)
+- **กรม** → ก[ะ]รม or กร[โ-ะ]ม (context-dependent)
+
+### Linguistic Fidelity
+- Respects Thai orthographic principles
+- Handles tone marks, consonant clusters, ambiguous characters
+- Maintains Thai phonological structure throughout processing
+
+## Research Applications
+
+1. **Thai NLP**: Syllable segmentation for text-to-speech, spell checkers
+2. **Linguistic Analysis**: Corpus analysis, orthographic pattern discovery
+3. **Educational Tools**: Thai language learning applications
+4. **AI Evaluation**: Novel inference evaluation for Thai language models
+
+## Future Directions
+
+1. **Multi-syllable Segmentation**: Extend vowel anchors to full word segmentation
+2. **Tone Analysis**: Integrate tone mark placement rules
+3. **Dictionary Validation**: Cross-reference with lexical databases
+4. **Performance Optimization**: Advanced indexing and caching
+
+## Contributing
+
+The project uses a conjecture-driven development approach:
+1. Formulate linguistic hypotheses as testable conjectures
+2. Implement algorithms treating conjectures as axioms
+3. Validate against Thai text corpora
+4. Refine rules based on edge cases
+
+## License
+
+This research project explores deterministic approaches to Thai language processing. When using or citing this work, please reference the underlying conjectures and methodologies.
+
+---
+
+*Project Focus: Explainable Thai language processing through linguistic conjectures*
+*Last Updated: September 26, 2025*

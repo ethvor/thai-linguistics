@@ -171,8 +171,13 @@ def generate_interpretations():
 
             interpretations.append(interp)
 
-        # Store word and interpretations in database
-        word_id = store_word_and_interpretations(word, interpretations)
+        # Store word and interpretations in database - MODIFIED: now returns interpretation IDs
+        word_id, interpretation_ids = store_word_and_interpretations(word, interpretations)
+
+        # Add database IDs to interpretations for frontend tracking
+        for i, interp in enumerate(interpretations):
+            interp['db_id'] = interpretation_ids[i]
+            interp['validity_status'] = 'unlabeled'  # Add status to response
 
         return jsonify({
             'word': word,
@@ -196,6 +201,85 @@ def generate_interpretations():
         print(f"  Error message: {str(e)}")
         print(f"  Full traceback:\n{traceback.format_exc()}")
         return jsonify(error_details), 500
+
+@app.route('/api/save-interpretation-validations', methods=['POST'])
+def save_interpretation_validations():
+    """Save batch validation labels for all interpretations of a word"""
+    data = request.json
+
+    try:
+        conn = sqlite3.connect(LABELS_DB)
+        cursor = conn.cursor()
+
+        # Get or create session
+        session_id = data.get('session_id')
+        if not session_id:
+            cursor.execute("""
+                INSERT INTO labeling_sessions (session_name, description)
+                VALUES (?, ?)
+            """, (f"Session {datetime.now().strftime('%Y-%m-%d %H:%M')}", "Batch validation session"))
+            session_id = cursor.lastrowid
+
+        word_id = data.get('word_id')
+        validations = data.get('validations', [])
+
+        # Process each interpretation validation
+        for validation in validations:
+            interp_id = validation.get('interpretation_id')
+            validity_status = validation.get('validity_status')
+            synonymous_with = validation.get('synonymous_with_id')
+
+            # Update interpretation validity status
+            cursor.execute("""
+                UPDATE interpretations
+                SET validity_status = ?, synonymous_with_id = ?
+                WHERE id = ?
+            """, (validity_status, synonymous_with, interp_id))
+
+            # If invalid, store the invalid components
+            if validity_status == 'invalid':
+                invalid_components = validation.get('invalid_components', [])
+                for component in invalid_components:
+                    cursor.execute("""
+                        INSERT INTO invalid_components (
+                            interpretation_id, component_type, component_value,
+                            invalid_reason, notes
+                        ) VALUES (?, ?, ?, ?, ?)
+                    """, (
+                        interp_id,
+                        component.get('type'),
+                        component.get('value'),
+                        component.get('reason'),
+                        component.get('notes', '')
+                    ))
+
+        # Create a label entry for this batch validation session
+        cursor.execute("""
+            INSERT INTO labels (
+                word_id, session_id, notes, labeler
+            ) VALUES (?, ?, ?, ?)
+        """, (
+            word_id,
+            session_id,
+            f"Batch validation: {len(validations)} interpretations labeled",
+            data.get('labeler', 'user')
+        ))
+
+        conn.commit()
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'session_id': session_id,
+            'validations_saved': len(validations)
+        })
+
+    except Exception as e:
+        import traceback
+        return jsonify({
+            'error': str(e),
+            'traceback': traceback.format_exc()
+        }), 500
 
 @app.route('/api/save-label', methods=['POST'])
 def save_label():
@@ -426,22 +510,25 @@ def store_word_and_interpretations(word, interpretations):
         cursor.execute("INSERT INTO words (word) VALUES (?)", (word,))
         word_id = cursor.lastrowid
 
-    # Store interpretations
+    # Store interpretations with new validity_status field
+    interpretation_ids = []
     for interp in interpretations:
         cursor.execute("""
             INSERT INTO interpretations (
-                word_id, interpretation_json, algorithm_version
-            ) VALUES (?, ?, ?)
+                word_id, interpretation_json, validity_status, algorithm_version
+            ) VALUES (?, ?, ?, ?)
         """, (
             word_id,
             json.dumps(interp),
+            "unlabeled",  # All new interpretations start as unlabeled
             "v1.0"  # Version tracking
         ))
+        interpretation_ids.append(cursor.lastrowid)
 
     conn.commit()
     conn.close()
 
-    return word_id
+    return word_id, interpretation_ids
 
 def find_free_port(start_port=5001):
     """Find a free port starting from start_port"""

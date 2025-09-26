@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+git <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -277,25 +277,94 @@
             gap: 20px;
         }
 
-        .interpretation-card {
+        /* MODIFIED: New styles for validation cards instead of selection cards */
+        .interpretation-validation-card {
             border: 2px solid var(--card-border);
             border-radius: 12px;
             padding: 20px;
-            cursor: pointer;
             transition: all 0.3s;
             position: relative;
             background: var(--card-bg-debug);
         }
 
-        .interpretation-card:hover {
-            border-color: var(--button-bg);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px var(--shadow-color);
+        .validity-dropdown {
+            padding: 5px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--input-text);
+            font-size: 14px;
         }
 
-        .interpretation-card.selected {
-            border-color: var(--card-selected-border);
-            background: var(--card-selected-bg);
+        .validity-dropdown option[value="valid"] {
+            color: #4CAF50;
+        }
+
+        .validity-dropdown option[value="invalid"] {
+            color: #f44336;
+        }
+
+        .validity-dropdown option[value="synonymous"] {
+            color: #2196F3;
+        }
+
+        .invalid-components {
+            margin-top: 15px;
+            padding: 15px;
+            background: var(--panel-bg);
+            border-radius: 8px;
+        }
+
+        .invalid-components h4 {
+            margin-bottom: 10px;
+            color: var(--panel-text);
+        }
+
+        .component-checkboxes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .component-checkboxes label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--panel-text);
+        }
+
+        .invalid-reason {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--input-text);
+        }
+
+        .synonymous-selector {
+            margin-top: 15px;
+            padding: 10px;
+            background: var(--panel-bg);
+            border-radius: 8px;
+        }
+
+        .validation-progress {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--panel-bg);
+            border-radius: 8px;
+        }
+
+        .validation-progress h3 {
+            color: var(--panel-text);
+            margin: 0;
+        }
+
+        .validation-progress span {
+            color: var(--button-bg);
+            font-weight: bold;
         }
 
         .interpretation-header {
@@ -861,6 +930,7 @@
             }
         }
 
+        // MODIFIED: Render interpretations as a validation grid instead of selectable cards
         function renderInterpretations(interpretations) {
             const container = document.getElementById('interpretationsContainer');
             container.innerHTML = '';
@@ -871,37 +941,56 @@
                 return;
             }
 
+            // Add progress indicator
+            const progressDiv = document.createElement('div');
+            progressDiv.className = 'validation-progress';
+            progressDiv.innerHTML = `
+                <h3>Validation Progress: <span id="validationProgress">0/${interpretations.length}</span> interpretations labeled</h3>
+            `;
+            container.appendChild(progressDiv);
+
             interpretations.forEach((interp, index) => {
                 const card = document.createElement('div');
-                card.className = 'interpretation-card';
-                card.onclick = () => selectInterpretation(index);
+                card.className = 'interpretation-validation-card';
+                card.dataset.interpId = interp.db_id;
+                card.dataset.index = index;
 
                 const syllable = interp.syllables[0]; // Single syllable focus
-
-                // Validation status
-                const isValid = !interp.validation || interp.validation.is_valid;
-                let validationBadge;
-
-                if (isValid) {
-                    validationBadge = '<span class="validation-badge validation-valid">Valid</span>';
-                } else {
-                    const issues = interp.validation.issues || ['Unknown validation error'];
-                    const issueText = issues.join('; ');
-                    validationBadge = `<span class="validation-badge validation-invalid">
-                        Has Issues
-                        <div class="validation-tooltip">${issueText}</div>
-                    </span>`;
-                }
 
                 card.innerHTML = `
                     <div class="interpretation-header">
                         <span class="interpretation-id">Interpretation ${index + 1}</span>
-                        ${validationBadge}
+                        <select class="validity-dropdown" id="validity-${index}" onchange="onValidityChange(${index})">
+                            <option value="unlabeled">-- Select Status --</option>
+                            <option value="valid">Valid</option>
+                            <option value="invalid">Invalid</option>
+                            <option value="synonymous">Synonymous</option>
+                        </select>
                     </div>
                     <div class="syllable-display">
                         <div class="reading-order">
                             ${renderReadingOrder(syllable)}
                         </div>
+                    </div>
+                    <div class="invalid-components" id="invalid-components-${index}" style="display: none;">
+                        <h4>Mark Invalid Components:</h4>
+                        <div class="component-checkboxes">
+                            <label><input type="checkbox" value="foundation" data-value="${syllable.foundation}"> Foundation${syllable.foundation ? ` (${syllable.foundation})` : ''}</label>
+                            <label><input type="checkbox" value="vowel" data-value="${syllable.vowel}"> Vowel${syllable.vowel ? ` (${syllable.vowel})` : ''}</label>
+                            <label><input type="checkbox" value="final" data-value="${syllable.final}"> Final${syllable.final ? ` (${syllable.final})` : ''}</label>
+                            <label><input type="checkbox" value="pattern" data-value="${syllable.pattern}"> Pattern${syllable.pattern ? ` (${syllable.pattern})` : ''}</label>
+                        </div>
+                        <input type="text" placeholder="Reason (optional)" class="invalid-reason" id="invalid-reason-${index}">
+                    </div>
+                    <div class="synonymous-selector" id="synonymous-${index}" style="display: none;">
+                        <label>Synonymous with:
+                            <select id="synonymous-with-${index}">
+                                <option value="">-- Select --</option>
+                                ${interpretations.map((other, i) =>
+                                    i !== index ? `<option value="${other.db_id}">Interpretation ${i + 1}</option>` : ''
+                                ).join('')}
+                            </select>
+                        </label>
                     </div>
                     <div class="tags-section" id="tags-${index}">
                         <small style="color: #999;">Loading tags...</small>
@@ -1928,52 +2017,108 @@
             }
         }
 
-        function selectInterpretation(index) {
-            // Clear previous selection
-            document.querySelectorAll('.interpretation-card').forEach(card => {
-                card.classList.remove('selected');
-            });
+        // REMOVED: Old selection function - replaced with validation tracking
+        // function selectInterpretation(index) { ... }
 
-            // Select new interpretation
-            const cards = document.querySelectorAll('.interpretation-card');
-            cards[index].classList.add('selected');
-            selectedInterpretation = currentInterpretations[index];
+        // NEW: Track validation status changes
+        function onValidityChange(index) {
+            const dropdown = document.getElementById(`validity-${index}`);
+            const status = dropdown.value;
+
+            // Show/hide relevant sections based on status
+            const invalidComponents = document.getElementById(`invalid-components-${index}`);
+            const synonymousSelector = document.getElementById(`synonymous-${index}`);
+
+            if (status === 'invalid') {
+                invalidComponents.style.display = 'block';
+                synonymousSelector.style.display = 'none';
+            } else if (status === 'synonymous') {
+                invalidComponents.style.display = 'none';
+                synonymousSelector.style.display = 'block';
+            } else {
+                invalidComponents.style.display = 'none';
+                synonymousSelector.style.display = 'none';
+            }
+
+            updateValidationProgress();
         }
 
-        async function saveLabel() {
-            let labelData = {
-                word_id: currentWordId,
-                session_id: sessionId,
-                labeler: 'user',
-                notes: document.getElementById('labelNotes').value
-            };
+        // NEW: Update progress counter
+        function updateValidationProgress() {
+            const dropdowns = document.querySelectorAll('.validity-dropdown');
+            let labeled = 0;
 
-            // Check if custom interpretation is provided
-            const customFoundation = document.getElementById('customFoundation').value.trim();
-            const customVowel = document.getElementById('customVowel').value.trim();
-            const customPattern = document.getElementById('customPattern').value.trim();
+            dropdowns.forEach(dropdown => {
+                if (dropdown.value !== 'unlabeled') {
+                    labeled++;
+                }
+            });
 
-            if (customFoundation || customVowel || customPattern) {
-                // Custom interpretation
-                labelData.is_custom = true;
-                labelData.custom_interpretation = {
-                    foundation: customFoundation ? customFoundation.split('') : [],
-                    vowel: customVowel,
-                    final: document.getElementById('customFinal').value.trim(),
-                    pattern: customPattern
+            const progressSpan = document.getElementById('validationProgress');
+            if (progressSpan) {
+                progressSpan.textContent = `${labeled}/${dropdowns.length}`;
+            }
+        }
+
+        // NEW: Collect all validation data for saving
+        function collectValidationData() {
+            const validations = [];
+
+            currentInterpretations.forEach((interp, index) => {
+                const dropdown = document.getElementById(`validity-${index}`);
+                const status = dropdown.value;
+
+                if (status === 'unlabeled') {
+                    return; // Skip unlabeled interpretations
+                }
+
+                const validation = {
+                    interpretation_id: interp.db_id,
+                    validity_status: status
                 };
-                stats.custom++;
-            } else if (selectedInterpretation) {
-                // Selected existing interpretation
-                labelData.interpretation_id = selectedInterpretation.id;
-                labelData.is_custom = false;
-            } else {
-                alert('Please select an interpretation or provide a custom one');
+
+                if (status === 'invalid') {
+                    // Collect invalid components
+                    const checkboxes = document.querySelectorAll(`#invalid-components-${index} input[type="checkbox"]:checked`);
+                    const reason = document.getElementById(`invalid-reason-${index}`).value;
+
+                    validation.invalid_components = Array.from(checkboxes).map(cb => ({
+                        type: cb.value,
+                        value: cb.dataset.value,
+                        reason: reason || 'marked_invalid_by_user'
+                    }));
+                } else if (status === 'synonymous') {
+                    const synonymousWith = document.getElementById(`synonymous-with-${index}`).value;
+                    if (synonymousWith) {
+                        validation.synonymous_with_id = parseInt(synonymousWith);
+                    }
+                }
+
+                validations.push(validation);
+            });
+
+            return validations;
+        }
+
+        // MODIFIED: Save batch validation labels instead of single selection
+        async function saveLabel() {
+            const validations = collectValidationData();
+
+            if (validations.length === 0) {
+                alert('Please label at least one interpretation before saving');
                 return;
             }
 
+            const labelData = {
+                word_id: currentWordId,
+                session_id: sessionId,
+                labeler: 'user',
+                validations: validations
+            };
+
             try {
-                const response = await fetch('http://localhost:5001/api/save-label', {
+                // Use new batch validation endpoint
+                const response = await fetch('http://localhost:5001/api/save-interpretation-validations', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(labelData)
@@ -1981,11 +2126,11 @@
 
                 const result = await response.json();
                 if (result.success) {
-                    stats.labels++;
+                    stats.labels += validations.length;
                     stats.words.add(currentWord);
                     updateStats();
 
-                    showSuccessModal(labelData.is_custom);
+                    showSuccessModal(false, `Saved ${result.validations_saved} validations`);
 
                     // Mark queue item as labeled
                     if (currentQueueIndex >= 0) {
@@ -1999,8 +2144,8 @@
                     }
                 }
             } catch (error) {
-                console.error('Error saving label:', error);
-                alert('Error saving label');
+                console.error('Error saving validations:', error);
+                alert('Error saving validations');
             }
         }
 
