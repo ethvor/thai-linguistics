@@ -1,0 +1,924 @@
+{
+  "dataType": "vowels",
+  "patterns": {
+    "xว": {
+      "tags": [
+        "sound_ua",
+        "rare",
+        "length_short",
+        "diphthong",
+        "vowel_open"
+      ],
+      "metadata": {
+        "added": "2025-09-21T08:20:11.481Z",
+        "source": "json"
+      },
+      "abbrev_id": "ua_s_o_wg",
+      "long_id": "ua_short_open_wglide"
+    },
+    "xวf": {
+      "tags": [
+        "sound_ua",
+        "diphthong",
+        "length_long",
+        "vowel_closed"
+      ],
+      "metadata": {
+        "added": "2025-09-21T08:20:32.376Z",
+        "source": "json"
+      },
+      "abbrev_id": "ua_l_c",
+      "long_id": "ua_long_closed"
+    },
+    "xวย": {
+      "tags": [
+        "sound_uay",
+        "glide_j",
+        "length_short",
+        "vowel_closed",
+        "syllable_live"
+      ],
+      "metadata": {
+        "added": "2025-09-21T09:08:49.814Z",
+        "source": "json"
+      },
+      "abbrev_id": "uay_s_c_jg",
+      "long_id": "uay_short_closed_jglide"
+    },
+    "xวาย": {
+      "tags": [
+        "sound_uay",
+        "glide_j",
+        "length_long",
+        "vowel_closed"
+      ],
+      "metadata": {
+        "added": "2025-09-21T09:08:28.844Z",
+        "source": "json"
+      },
+      "abbrev_id": "uay_l_c_jg",
+      "long_id": "uay_long_closed_jglide"
+    },
+    "xอ": {
+      "tags": [
+        "sound_aw",
+        "length_long",
+        "monophthong",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "aw_l_o",
+      "long_id": "aw_long_open"
+    },
+    "xอf": {
+      "tags": [
+        "sound_aw",
+        "length_long",
+        "monophthong",
+        "vowel_closed"
+      ],
+      "metadata": {},
+      "abbrev_id": "aw_l_c",
+      "long_id": "aw_long_closed"
+    },
+    "xอย": {
+      "tags": [
+        "sound_awy",
+        "length_long",
+        "glide_j",
+        "vowel_closed"
+      ],
+      "metadata": {
+        "added": "2025-09-21T08:41:39.379Z",
+        "source": "json"
+      },
+      "abbrev_id": "awy_l_c_jg",
+      "long_id": "awy_long_closed_jglide"
+    },
+    "xะ": {
+      "tags": [
+        "sound_a",
+        "length_short",
+        "monophthong",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "a_s_o",
+      "long_id": "a_short_open"
+    },
+    "xัf": {
+      "tags": [
+        "sound_a",
+        "length_short",
+        "monophthong",
+        "vowel_closed"
+      ],
+      "metadata": {},
+      "abbrev_id": "a_s_c",
+      "long_id": "a_short_closed"
+    },
+    "xัย": {
+      "tags": [
+        "sound_ai",
+        "length_short",
+        "vowel_closed",
+        "glide_j",
+        "syllable_live"
+      ],
+      "metadata": {
+        "added": "2025-09-21T08:36:03.925Z",
+        "source": "json"
+      },
+      "abbrev_id": "ai_s_c_jg",
+      "long_id": "ai_short_closed_jglide"
+    },
+    "xัว": {
+      "tags": [
+        "sound_ua",
+        "diphthong",
+        "length_long",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "ua_l_o_wg",
+      "long_id": "ua_long_open_wglide"
+    },
+    "xัวะ": {
+      "tags": [
+        "sound_ua",
+        "rare",
+        "length_short",
+        "diphthong",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "ua_s_o",
+      "long_id": "ua_short_open"
+    },
+    "xา": {
+      "tags": [
+        "sound_a",
+        "length_long",
+        "monophthong",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "a_l_o",
+      "long_id": "a_long_open"
+    },
+    "xาf": {
+      "tags": [
+        "sound_a",
+        "length_long",
+        "monophthong",
+        "vowel_closed"
+      ],
+      "metadata": {},
+      "abbrev_id": "a_l_c",
+      "long_id": "a_long_closed"
+    },
+    "xาย": {
+      "tags": [
+        "sound_ai",
+        "length_long",
+        "vowel_closed",
+        "glide_j"
+      ],
+      "metadata": {
+        "added": "2025-09-21T08:37:17.252Z",
+        "source": "json"
+      },
+      "abbrev_id": "ai_l_c_jg",
+      "long_id": "ai_long_closed_jglide"
+    },
+    "xาว": {
+      "tags": [
+        "sound_aow",
+        "length_long",
+        "glide_w",
+        "vowel_closed"
+      ],
+      "metadata": {
+        "added": "2025-09-21T09:15:05.288Z",
+        "source": "json"
+      },
+      "abbrev_id": "aow_l_c_wg",
+      "long_id": "aow_long_closed_wglide"
+    },
+    "xิ": {
+      "tags": [
+        "sound_i",
+        "length_short",
+        "monophthong",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "i_s_o",
+      "long_id": "i_short_open"
+    },
+    "xิf": {
+      "tags": [
+        "sound_i",
+        "length_short",
+        "monophthong",
+        "vowel_closed"
+      ],
+      "metadata": {
+        "added": "2025-09-21T07:24:08.322Z",
+        "source": "json"
+      },
+      "abbrev_id": "i_s_c",
+      "long_id": "i_short_closed"
+    },
+    "xิว": {
+      "tags": [
+        "sound_iw",
+        "glide_w",
+        "vowel_closed",
+        "length_short",
+        "syllable_live"
+      ],
+      "metadata": {
+        "added": "2025-09-21T09:35:55.616Z",
+        "source": "json"
+      },
+      "abbrev_id": "iw_s_c_wg",
+      "long_id": "iw_short_closed_wglide"
+    },
+    "xี": {
+      "tags": [
+        "sound_i",
+        "length_long",
+        "monophthong",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "i_l_o",
+      "long_id": "i_long_open"
+    },
+    "xีf": {
+      "tags": [
+        "sound_i",
+        "length_long",
+        "monophthong",
+        "vowel_closed"
+      ],
+      "metadata": {},
+      "abbrev_id": "i_l_c",
+      "long_id": "i_long_closed"
+    },
+    "xึ": {
+      "tags": [
+        "sound_eu",
+        "monophthong",
+        "length_short",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "eu_s_o",
+      "long_id": "eu_short_open"
+    },
+    "xึf": {
+      "tags": [
+        "sound_eu",
+        "monophthong",
+        "length_short",
+        "vowel_closed"
+      ],
+      "metadata": {},
+      "abbrev_id": "eu_s_c",
+      "long_id": "eu_short_closed"
+    },
+    "xืf": {
+      "tags": [
+        "sound_eu",
+        "monophthong",
+        "length_long",
+        "vowel_closed"
+      ],
+      "metadata": {},
+      "abbrev_id": "eu_l_c",
+      "long_id": "eu_long_closed"
+    },
+    "xือ": {
+      "tags": [
+        "sound_eu",
+        "monophthong",
+        "length_long",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "eu_l_o",
+      "long_id": "eu_long_open"
+    },
+    "xุ": {
+      "tags": [
+        "sound_oo",
+        "length_short",
+        "monophthong",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "oo_s_o",
+      "long_id": "oo_short_open"
+    },
+    "xุf": {
+      "tags": [
+        "sound_oo",
+        "length_short",
+        "monophthong",
+        "vowel_closed"
+      ],
+      "metadata": {},
+      "abbrev_id": "oo_s_c",
+      "long_id": "oo_short_closed"
+    },
+    "xุย": {
+      "tags": [
+        "sound_ooy",
+        "length_short",
+        "vowel_closed",
+        "glide_j",
+        "syllable_live"
+      ],
+      "metadata": {
+        "added": "2025-09-21T09:06:36.849Z",
+        "source": "json"
+      },
+      "abbrev_id": "ooy_s_c_jg",
+      "long_id": "ooy_short_closed_jglide"
+    },
+    "xู": {
+      "tags": [
+        "sound_oo",
+        "length_long",
+        "monophthong",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "oo_l_o",
+      "long_id": "oo_long_open"
+    },
+    "xูf": {
+      "tags": [
+        "sound_oo",
+        "length_long",
+        "monophthong",
+        "vowel_closed"
+      ],
+      "metadata": {},
+      "abbrev_id": "oo_l_c",
+      "long_id": "oo_long_closed"
+    },
+    "x็": {
+      "tags": [
+        "sound_aw",
+        "length_short",
+        "monophthong",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "aw_s_o",
+      "long_id": "aw_short_open"
+    },
+    "x็อf": {
+      "tags": [
+        "sound_aw",
+        "length_short",
+        "monophthong",
+        "vowel_closed"
+      ],
+      "metadata": {},
+      "abbrev_id": "aw_s_c",
+      "long_id": "aw_short_closed"
+    },
+    "x็อย": {
+      "tags": [
+        "sound_awy",
+        "rare",
+        "syllable_live",
+        "length_short",
+        "glide_j",
+        "vowel_closed"
+      ],
+      "metadata": {
+        "added": "2025-09-21T08:41:20.589Z",
+        "source": "json"
+      },
+      "abbrev_id": "awy_s_c_jg",
+      "long_id": "awy_short_closed_jglide"
+    },
+    "xํา": {
+      "tags": [
+        "sound_am",
+        "special",
+        "length_ambiguous",
+        "vowel_closed",
+        "syllable_live"
+      ],
+      "metadata": {},
+      "abbrev_id": "am_a_c",
+      "long_id": "am_ambiguous_closed"
+    },
+    "ฤ": {
+      "tags": [
+        "sound_rue",
+        "special",
+        "sound_ambiguous",
+        "length_ambiguous"
+      ],
+      "metadata": {},
+      "abbrev_id": "rue_a_X",
+      "long_id": "rue_ambiguous_X"
+    },
+    "ฤๅ": {
+      "tags": [
+        "sound_rue",
+        "special",
+        "sound_ambiguous",
+        "length_long"
+      ],
+      "metadata": {},
+      "abbrev_id": "rue_l_X",
+      "long_id": "rue_long_X"
+    },
+    "เx": {
+      "tags": [
+        "length_ambiguous",
+        "sound_e",
+        "monophthong",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "e_a_o",
+      "long_id": "e_ambiguous_open"
+    },
+    "เxf": {
+      "tags": [
+        "length_ambiguous",
+        "sound_e",
+        "monophthong",
+        "vowel_closed"
+      ],
+      "metadata": {},
+      "abbrev_id": "e_a_c",
+      "long_id": "e_ambiguous_closed"
+    },
+    "เxย": {
+      "tags": [
+        "sound_uhy",
+        "glide_j",
+        "length_long",
+        "vowel_closed"
+      ],
+      "metadata": {
+        "added": "2025-09-21T08:59:06.795Z",
+        "source": "json"
+      },
+      "abbrev_id": "uhy_l_c_jg",
+      "long_id": "uhy_long_closed_jglide"
+    },
+    "เxว": {
+      "tags": [
+        "sound_ew",
+        "length_long",
+        "glide_w",
+        "vowel_closed"
+      ],
+      "metadata": {
+        "added": "2025-09-21T09:33:30.405Z",
+        "source": "json"
+      },
+      "abbrev_id": "ew_l_c_wg",
+      "long_id": "ew_long_closed_wglide"
+    },
+    "เxอ": {
+      "tags": [
+        "sound_uh",
+        "length_long",
+        "monophthong",
+        "vowel_closure_ambiguous"
+      ],
+      "metadata": {},
+      "abbrev_id": "uh_l_c",
+      "long_id": "uh_long_closure_ambiguous"
+    },
+    "เxอว": {
+      "tags": [
+        "sound_aww",
+        "glide_w",
+        "rare",
+        "length_long",
+        "vowel_closed"
+      ],
+      "metadata": {
+        "added": "2025-09-21T09:23:50.058Z",
+        "source": "json"
+      },
+      "abbrev_id": "aww_l_c_wg",
+      "long_id": "aww_long_closed_wglide"
+    },
+    "เxอะ": {
+      "tags": [
+        "sound_uh",
+        "length_short",
+        "monophthong",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "uh_s_o",
+      "long_id": "uh_short_open"
+    },
+    "เxะ": {
+      "tags": [
+        "sound_e",
+        "monophthong",
+        "length_short",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "e_s_o",
+      "long_id": "e_short_open"
+    },
+    "เxา": {
+      "tags": [
+        "sound_aow",
+        "length_short",
+        "glide_w",
+        "vowel_closed",
+        "syllable_live"
+      ],
+      "metadata": {},
+      "abbrev_id": "aow_s_c_wg",
+      "long_id": "aow_short_closed_wglide"
+    },
+    "เxาะ": {
+      "tags": [
+        "sound_aw",
+        "length_short",
+        "monophthong",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "aw_s_o_2",
+      "long_id": "aw_short_open_2"
+    },
+    "เxิf": {
+      "tags": [
+        "sound_uh",
+        "length_ambiguous",
+        "monophthong",
+        "vowel_closed"
+      ],
+      "metadata": {},
+      "abbrev_id": "uh_a_c",
+      "long_id": "uh_ambiguous_closed"
+    },
+    "เxีย": {
+      "tags": [
+        "sound_ia",
+        "diphthong",
+        "length_long",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "ia_l_o_jg",
+      "long_id": "ia_long_open_jglide"
+    },
+    "เxียf": {
+      "tags": [
+        "sound_ia",
+        "diphthong",
+        "length_long",
+        "vowel_closed"
+      ],
+      "metadata": {},
+      "abbrev_id": "ia_l_c",
+      "long_id": "ia_long_closed"
+    },
+    "เxียว": {
+      "tags": [
+        "sound_iaw",
+        "vowel_closed",
+        "glide_w",
+        "length_long"
+      ],
+      "metadata": {
+        "added": "2025-09-21T09:36:55.544Z",
+        "source": "json"
+      },
+      "abbrev_id": "iaw_l_c_wg",
+      "long_id": "iaw_long_closed_wglide"
+    },
+    "เxียะ": {
+      "tags": [
+        "sound_ia",
+        "diphthong",
+        "length_short",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "ia_s_o",
+      "long_id": "ia_short_open"
+    },
+    "เxือ": {
+      "tags": [
+        "sound_eua",
+        "diphthong",
+        "length_long",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "eua_l_o",
+      "long_id": "eua_long_open"
+    },
+    "เxือf": {
+      "tags": [
+        "sound_eua",
+        "diphthong",
+        "length_long",
+        "vowel_closed"
+      ],
+      "metadata": {},
+      "abbrev_id": "eua_l_c",
+      "long_id": "eua_long_closed"
+    },
+    "เxือย": {
+      "tags": [
+        "sound_euay",
+        "vowel_closed",
+        "glide_j",
+        "length_long"
+      ],
+      "metadata": {
+        "added": "2025-09-21T09:03:45.744Z",
+        "source": "json"
+      },
+      "abbrev_id": "euay_l_c_jg",
+      "long_id": "euay_long_closed_jglide"
+    },
+    "เxือะ": {
+      "tags": [
+        "sound_eua",
+        "diphthong",
+        "length_short",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "eua_s_o",
+      "long_id": "eua_short_open"
+    },
+    "เx็f": {
+      "tags": [
+        "sound_e",
+        "monophthong",
+        "length_short",
+        "vowel_closed"
+      ],
+      "metadata": {},
+      "abbrev_id": "e_s_c",
+      "long_id": "e_short_closed"
+    },
+    "เx็ว": {
+      "tags": [
+        "sound_ew",
+        "length_short",
+        "glide_w",
+        "vowel_closed",
+        "syllable_live"
+      ],
+      "metadata": {
+        "added": "2025-09-21T09:34:10.876Z",
+        "source": "json"
+      },
+      "abbrev_id": "ew_s_c_wg",
+      "long_id": "ew_short_closed_wglide"
+    },
+    "แxf": {
+      "tags": [
+        "sound_ae",
+        "length_ambiguous",
+        "monophthong",
+        "vowel_closed"
+      ],
+      "metadata": {},
+      "abbrev_id": "ae_a_c",
+      "long_id": "ae_ambiguous_closed"
+    },
+    "แxว": {
+      "tags": [
+        "sound_aew",
+        "length_long",
+        "glide_w",
+        "vowel_closed"
+      ],
+      "metadata": {
+        "added": "2025-09-21T09:22:39.275Z",
+        "source": "json"
+      },
+      "abbrev_id": "aew_l_c_wg",
+      "long_id": "aew_long_closed_wglide"
+    },
+    "แxะ": {
+      "tags": [
+        "sound_ae",
+        "length_short",
+        "monophthong",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "ae_s_o",
+      "long_id": "ae_short_open"
+    },
+    "แx็f": {
+      "tags": [
+        "sound_ae",
+        "length_short",
+        "monophthong",
+        "vowel_closed"
+      ],
+      "metadata": {},
+      "abbrev_id": "ae_s_c",
+      "long_id": "ae_short_closed"
+    },
+    "แx็ว": {
+      "tags": [
+        "sound_aew",
+        "length_short",
+        "glide_w",
+        "vowel_closed"
+      ],
+      "metadata": {
+        "added": "2025-09-21T09:22:06.548Z",
+        "source": "json"
+      },
+      "abbrev_id": "aew_s_c_wg",
+      "long_id": "aew_short_closed_wglide"
+    },
+    "โx": {
+      "tags": [
+        "sound_o",
+        "length_long",
+        "monophthong",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "o_l_o",
+      "long_id": "o_long_open"
+    },
+    "โxf": {
+      "tags": [
+        "sound_o",
+        "length_long",
+        "monophthong",
+        "vowel_closed"
+      ],
+      "metadata": {},
+      "abbrev_id": "o_l_c",
+      "long_id": "o_long_closed"
+    },
+    "โxย": {
+      "tags": [
+        "sound_oy",
+        "glide_j",
+        "length_long",
+        "vowel_closed"
+      ],
+      "metadata": {
+        "added": "2025-09-21T09:01:42.912Z",
+        "source": "json"
+      },
+      "abbrev_id": "oy_l_c_jg",
+      "long_id": "oy_long_closed_jglide"
+    },
+    "โxะ": {
+      "tags": [
+        "sound_o",
+        "length_short",
+        "monophthong",
+        "vowel_open"
+      ],
+      "metadata": {},
+      "abbrev_id": "o_s_o",
+      "long_id": "o_short_open"
+    },
+    "ใx": {
+      "tags": [
+        "sound_ai",
+        "length_short",
+        "vowel_closed",
+        "glide_j",
+        "syllable_live"
+      ],
+      "metadata": {},
+      "abbrev_id": "ai_s_c_jg_2",
+      "long_id": "ai_short_closed_jglide_2"
+    },
+    "ไx": {
+      "tags": [
+        "sound_ai",
+        "length_ambiguous",
+        "vowel_closed",
+        "glide_j",
+        "syllable_life_ambiguous"
+      ],
+      "metadata": {},
+      "abbrev_id": "ai_a_c_jg",
+      "long_id": "ai_ambiguous_closed_jglide"
+    },
+    "ไxย": {
+      "tags": [
+        "sound_ai",
+        "length_short",
+        "vowel_closed",
+        "glide_j",
+        "syllable_live"
+      ],
+      "metadata": {
+        "added": "2025-09-21T08:36:22.954Z",
+        "source": "json"
+      },
+      "abbrev_id": "ai_s_c_jg_3",
+      "long_id": "ai_short_closed_jglide_3"
+    },
+    "xรรf": {
+      "tags": [
+        "length_short",
+        "sound_a",
+        "monophthong",
+        "vowel_closed"
+      ],
+      "metadata": {
+        "source": "json",
+        "added": "2025-09-21T09:55:10.982Z"
+      },
+      "abbrev_id": "a_s_c_2",
+      "long_id": "a_short_closed_2"
+    },
+    "แx": {
+      "tags": [
+        "sound_ae",
+        "length_long",
+        "vowel_open",
+        "monophthong"
+      ],
+      "metadata": {
+        "source": "json",
+        "added": "2025-09-21T19:27:59.848Z"
+      },
+      "abbrev_id": "ae_l_o",
+      "long_id": "ae_long_open"
+    }
+  },
+  "availableTags": [
+    "sound_a",
+    "sound_ae",
+    "length_short",
+    "length_long",
+    "length_ambiguous",
+    "monophthong",
+    "diphthong",
+    "special",
+    "sound_aw",
+    "sound_e",
+    "sound_uh",
+    "sound_o",
+    "sound_i",
+    "sound_eu",
+    "sound_oo",
+    "sound_ia",
+    "sound_eua",
+    "sound_ua",
+    "rare",
+    "sound_ai",
+    "sound_awy",
+    "hidden_vowel",
+    "vowel_closure_ambiguous",
+    "vowel_closed",
+    "vowel_open",
+    "syllable_live",
+    "syllable_dead",
+    "glide_j",
+    "sound_uhy",
+    "sound_oy",
+    "sound_euay",
+    "sound_ooy",
+    "sound_uay",
+    "glide_w",
+    "sound_aow",
+    "sound_aew",
+    "sound_aww",
+    "sound_ew",
+    "sound_iw",
+    "sound_iaw",
+    "sound_am",
+    "sound_rue",
+    "sound_ambiguous",
+    "syllable_life_ambiguous"
+  ],
+  "gridLayout": {
+    "rows": 13,
+    "cols": 4
+  },
+  "exportTimestamp": "2025-09-21T19:31:13.270Z"
+}

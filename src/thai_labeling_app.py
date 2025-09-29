@@ -28,9 +28,9 @@ except ImportError:
         sys.exit(1)
 
 # Add parent directory to path for imports
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from thai_reading_order import ThaiReadingOrderAnalyzer
+from src.thai_reading_order import ThaiReadingOrderAnalyzer
 from database.query_utilities import ThaiGraphemeQuery
 
 app = Flask(__name__)
@@ -40,7 +40,7 @@ CORS(app)
 import os
 from pathlib import Path
 
-script_dir = Path(__file__).parent
+script_dir = Path(__file__).parent.parent  # Go up to project root since we're in src/
 GRAPHEMES_DB = script_dir / "database" / "thai_voraritskul_graphemes.db"
 LABELS_DB = script_dir / "database" / "thai_syllable_labels.db"
 
@@ -51,7 +51,7 @@ print(f"DB exists: {GRAPHEMES_DB.exists()}")
 try:
     analyzer = ThaiReadingOrderAnalyzer(
         str(script_dir / "res" / "foundation" / "foundation.json"),
-        str(script_dir / "thai_vowels_tagged_9-21-2025-2-31-pm.json")
+        str(script_dir / "data" / "thai_vowels_tagged_9-21-2025-2-31-pm.json")
     )
     print("✓ Analyzer initialized successfully")
 except Exception as e:
@@ -75,7 +75,7 @@ def index():
 def serve_labeler():
     """Serve the labeling interface with dynamic port injection"""
     try:
-        with open('thai_syllable_labeler.html', 'r', encoding='utf-8') as f:
+        with open(script_dir / 'thai_syllable_labeler.html', 'r', encoding='utf-8') as f:
             html_content = f.read()
 
         # Get the current port from request host

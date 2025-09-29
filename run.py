@@ -3,7 +3,7 @@
 
 import sys
 import io
-from thai_reading_order import ThaiReadingOrderAnalyzer
+from src.thai_reading_order import ThaiReadingOrderAnalyzer
 
 # Set UTF-8 encoding for output
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
@@ -11,7 +11,7 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 # Initialize the analyzer
 analyzer = ThaiReadingOrderAnalyzer(
     "res/foundation/foundation.json",
-    "thai_vowels_tagged_9-21-2025-2-31-pm.json"
+    "data/thai_vowels_tagged_9-21-2025-2-31-pm.json"
 )
 
 # Test cases
