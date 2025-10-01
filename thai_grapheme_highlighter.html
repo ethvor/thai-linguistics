@@ -72,6 +72,38 @@
             border-radius: 8px;
         }
 
+        .glow-controls {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        .glow-control {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .glow-control label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .glow-control input[type="range"] {
+            width: 100%;
+        }
+
+        .glow-control-value {
+            font-size: 11px;
+            color: #888;
+            text-align: right;
+        }
+
         .toggle-group {
             display: flex;
             align-items: center;
@@ -98,6 +130,22 @@
             border: 1px solid #ccc;
         }
 
+        .color-indicator.tan {
+            background-color: rgba(255, 150, 150, 0.9);
+        }
+
+        .color-indicator.sara {
+            background-color: rgba(150, 200, 255, 0.9);
+        }
+
+        .color-indicator.yuk {
+            background-color: rgba(255, 200, 130, 0.9);
+        }
+
+        .color-indicator.kho_yok_waen {
+            background-color: rgba(200, 150, 255, 0.9);
+        }
+
         .output-section {
             padding: 20px;
             background: #f8f9fa;
@@ -117,61 +165,60 @@
             display: inline-block;
         }
 
-        /* Highlight using colored circles/boxes positioned appropriately */
-        .char::before {
-            content: '';
+        /* Wrapper for character groups with stacking */
+        .char-group {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Combining characters positioned absolutely over base */
+        .char-combining {
             position: absolute;
-            border-radius: 50%;
-            z-index: -1;
-            transition: all 0.3s;
+            left: 0;
+            top: 0;
+            pointer-events: none;
         }
 
-        /* Base consonants - circle behind */
-        .tan::before {
-            width: 1.2em;
-            height: 1.2em;
-            background-color: rgba(255, 200, 200, 0.6);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        /* Use text-shadow for glow effect instead of background */
+        /* This works with stacked characters */
+
+        /* Base consonants - red glow */
+        .tan {
+            text-shadow:
+                0 0 8px rgba(255, 100, 100, 0.8),
+                0 0 12px rgba(255, 150, 150, 0.6),
+                0 0 16px rgba(255, 200, 200, 0.4);
         }
 
-        /* Vowels (above/below marks) - smaller circle */
-        .sara::before {
-            width: 1em;
-            height: 1em;
-            background-color: rgba(200, 230, 255, 0.7);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        /* Vowels - blue glow */
+        .sara {
+            text-shadow:
+                0 0 8px rgba(100, 180, 255, 0.8),
+                0 0 12px rgba(150, 200, 255, 0.6),
+                0 0 16px rgba(200, 230, 255, 0.4);
         }
 
-        /* Tone marks (above marks) - small circle */
-        .yuk::before {
-            width: 0.9em;
-            height: 0.9em;
-            background-color: rgba(255, 220, 180, 0.7);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        /* Tone marks - orange glow */
+        .yuk {
+            text-shadow:
+                0 0 8px rgba(255, 180, 100, 0.9),
+                0 0 12px rgba(255, 200, 130, 0.7),
+                0 0 16px rgba(255, 220, 180, 0.5);
         }
 
-        .kho_yok_waen::before {
-            width: 1.2em;
-            height: 1.2em;
-            background-color: rgba(220, 200, 255, 0.6);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        /* Exceptions - purple glow */
+        .kho_yok_waen {
+            text-shadow:
+                0 0 8px rgba(180, 100, 255, 0.8),
+                0 0 12px rgba(200, 150, 255, 0.6),
+                0 0 16px rgba(220, 200, 255, 0.4);
         }
 
-        .unsure::before {
-            width: 1.2em;
-            height: 1.2em;
-            background-color: rgba(200, 200, 200, 0.3);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+        /* Unsure - gray glow */
+        .unsure {
+            text-shadow:
+                0 0 6px rgba(150, 150, 150, 0.5),
+                0 0 10px rgba(180, 180, 180, 0.3);
         }
 
         /* AVP marker */
@@ -272,6 +319,24 @@
                 <label for="toggleException">ข้อยกเว้น - Exception (อ/ว)</label>
             </div>
             <button class="restart-button" id="restartButton">🔄 Restart Server</button>
+
+            <div class="glow-controls">
+                <div class="glow-control">
+                    <label for="glowIntensity">Glow Intensity</label>
+                    <input type="range" id="glowIntensity" min="0" max="200" value="120">
+                    <span class="glow-control-value" id="glowIntensityValue">120%</span>
+                </div>
+                <div class="glow-control">
+                    <label for="glowRadius">Glow Radius</label>
+                    <input type="range" id="glowRadius" min="0" max="200" value="20">
+                    <span class="glow-control-value" id="glowRadiusValue">20%</span>
+                </div>
+                <div class="glow-control">
+                    <label for="glowLayers">Glow Layers</label>
+                    <input type="range" id="glowLayers" min="1" max="5" value="4">
+                    <span class="glow-control-value" id="glowLayersValue">4</span>
+                </div>
+            </div>
         </div>
 
         <div class="output-section">
@@ -316,6 +381,14 @@
             kho_yok_waen: document.getElementById('toggleException')
         };
 
+        // Glow controls
+        const glowIntensity = document.getElementById('glowIntensity');
+        const glowRadius = document.getElementById('glowRadius');
+        const glowLayers = document.getElementById('glowLayers');
+        const glowIntensityValue = document.getElementById('glowIntensityValue');
+        const glowRadiusValue = document.getElementById('glowRadiusValue');
+        const glowLayersValue = document.getElementById('glowLayersValue');
+
         let debounceTimer;
         let currentClassifications = null;
 
@@ -329,6 +402,57 @@
         Object.values(toggles).forEach(toggle => {
             toggle.addEventListener('change', renderOutput);
         });
+
+        // Glow control handlers
+        glowIntensity.addEventListener('input', () => {
+            glowIntensityValue.textContent = glowIntensity.value + '%';
+            updateGlowStyles();
+        });
+
+        glowRadius.addEventListener('input', () => {
+            glowRadiusValue.textContent = glowRadius.value + '%';
+            updateGlowStyles();
+        });
+
+        glowLayers.addEventListener('input', () => {
+            glowLayersValue.textContent = glowLayers.value;
+            updateGlowStyles();
+        });
+
+        function updateGlowStyles() {
+            const intensity = glowIntensity.value / 100;
+            const radius = glowRadius.value / 100;
+            const layers = parseInt(glowLayers.value);
+
+            // Generate text-shadow for each class
+            const glowConfigs = {
+                tan: { r: 255, g: 100, b: 100 },
+                sara: { r: 100, g: 180, b: 255 },
+                yuk: { r: 255, g: 180, b: 100 },
+                kho_yok_waen: { r: 180, g: 100, b: 255 },
+                unsure: { r: 150, g: 150, b: 150 }
+            };
+
+            let styleContent = '';
+            for (const [className, color] of Object.entries(glowConfigs)) {
+                const shadows = [];
+                for (let i = 1; i <= layers; i++) {
+                    const layerRadius = (8 + i * 4) * radius;
+                    const layerOpacity = (0.9 - i * 0.15) * intensity;
+                    shadows.push(`0 0 ${layerRadius}px rgba(${color.r}, ${color.g}, ${color.b}, ${layerOpacity})`);
+                }
+                styleContent += `.${className} { text-shadow: ${shadows.join(', ')}; }\n`;
+            }
+
+            // Update or create dynamic style element
+            let styleEl = document.getElementById('dynamic-glow-styles');
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'dynamic-glow-styles';
+                document.head.appendChild(styleEl);
+            }
+            styleEl.textContent = styleContent;
+        }
 
         async function classifyText() {
             const text = input.value.trim();
@@ -371,12 +495,54 @@
             const { classifications } = currentClassifications;
 
             let html = '';
-            classifications.forEach(item => {
+            let i = 0;
+
+            while (i < classifications.length) {
+                const item = classifications[i];
+                const charCode = item.char.charCodeAt(0);
+                const isCombining = (charCode >= 0x0E31 && charCode <= 0x0E3A) ||
+                                   (charCode >= 0x0E47 && charCode <= 0x0E4E);
+
+                // If this is a combining character, it shouldn't start a new group
+                if (isCombining) {
+                    // Orphaned combining mark - render with dotted circle
+                    const showHighlight = toggles[item.class]?.checked ?? false;
+                    const cssClass = showHighlight ? item.class : '';
+                    html += `<span class="char ${cssClass}">\u25CC${item.char}</span>`;
+                    i++;
+                    continue;
+                }
+
+                // Start a new character group
+                html += '<span class="char-group">';
+
+                // Render base character
                 const showHighlight = toggles[item.class]?.checked ?? false;
                 const cssClass = showHighlight ? item.class : '';
-
                 html += `<span class="char ${cssClass}">${item.char}</span>`;
-            });
+
+                // Look ahead for combining characters
+                let j = i + 1;
+                while (j < classifications.length) {
+                    const nextItem = classifications[j];
+                    const nextCode = nextItem.char.charCodeAt(0);
+                    const nextIsCombining = (nextCode >= 0x0E31 && nextCode <= 0x0E3A) ||
+                                           (nextCode >= 0x0E47 && nextCode <= 0x0E4E);
+
+                    if (nextIsCombining) {
+                        // Render combining character with absolute positioning
+                        const nextShowHighlight = toggles[nextItem.class]?.checked ?? false;
+                        const nextCssClass = nextShowHighlight ? nextItem.class : '';
+                        html += `<span class="char char-combining ${nextCssClass}">${nextItem.char}</span>`;
+                        j++;
+                    } else {
+                        break;
+                    }
+                }
+
+                html += '</span>'; // Close char-group
+                i = j;
+            }
 
             output.innerHTML = html;
         }
@@ -409,6 +575,9 @@
 
         // Initial classification
         classifyText();
+
+        // Initialize glow styles with default values
+        updateGlowStyles();
     </script>
 </body>
 </html>

@@ -18,11 +18,11 @@ try:
     from conjecture_based_vowel_detector import ConjectureBasedVowelDetector
     VOWEL_JSON_PATH = "thai_vowels_tagged_9-21-2025-2-31-pm.json"
     detector = ConjectureBasedVowelDetector(VOWEL_JSON_PATH)
-    print(f"✓ Loaded vowel detector from {VOWEL_JSON_PATH}")
+    print(f"[OK] Loaded vowel detector from {VOWEL_JSON_PATH}")
 except ImportError:
-    print(f"⚠ Warning: conjecture_based_vowel_detector not found - AVP detection disabled")
+    print(f"[WARNING] conjecture_based_vowel_detector not found - AVP detection disabled")
 except Exception as e:
-    print(f"⚠ Warning: Could not load vowel detector: {e}")
+    print(f"[WARNING] Could not load vowel detector: {e}")
 
 app = Flask(__name__)
 CORS(app)
@@ -179,7 +179,7 @@ if __name__ == '__main__':
     print("Thai Grapheme Highlighting Tool - Flask Server")
     print("="*60)
     print("\nServer starting...")
-    print(f"Vowel detector: {'✓ Loaded' if detector else '✗ Not loaded'}")
+    print(f"Vowel detector: {'[OK] Loaded' if detector else '[X] Not loaded'}")
     print("\n" + "="*60)
     print("Open in browser: http://127.0.0.1:5001")
     print("="*60 + "\n")
