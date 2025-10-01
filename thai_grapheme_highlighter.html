@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thai Grapheme Highlighter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 15px;
+            font-size: 24px;
+            font-family: 'Leelawadee UI', 'Tahoma', sans-serif;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toggle-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .toggle-group label {
+            cursor: pointer;
+            font-size: 14px;
+            user-select: none;
+        }
+
+        .color-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            display: inline-block;
+            border: 1px solid #ccc;
+        }
+
+        .output-section {
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            min-height: 200px;
+        }
+
+        .output-text {
+            font-size: 32px;
+            font-family: 'Leelawadee UI', 'Tahoma', sans-serif;
+            line-height: 1.8;
+            word-wrap: break-word;
+        }
+
+        .char {
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Highlight using colored circles/boxes positioned appropriately */
+        .char::before {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            z-index: -1;
+            transition: all 0.3s;
+        }
+
+        /* Base consonants - circle behind */
+        .tan::before {
+            width: 1.2em;
+            height: 1.2em;
+            background-color: rgba(255, 200, 200, 0.6);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Vowels (above/below marks) - smaller circle */
+        .sara::before {
+            width: 1em;
+            height: 1em;
+            background-color: rgba(200, 230, 255, 0.7);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Tone marks (above marks) - small circle */
+        .yuk::before {
+            width: 0.9em;
+            height: 0.9em;
+            background-color: rgba(255, 220, 180, 0.7);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .kho_yok_waen::before {
+            width: 1.2em;
+            height: 1.2em;
+            background-color: rgba(220, 200, 255, 0.6);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .unsure::before {
+            width: 1.2em;
+            height: 1.2em;
+            background-color: rgba(200, 200, 200, 0.3);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* AVP marker */
+        .avp-marker::after {
+            content: '▼';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ff0000;
+            font-size: 12px;
+        }
+
+        .legend {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .status {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .restart-button {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .restart-button:hover {
+            background: #ee5a5a;
+        }
+
+        .restart-button:active {
+            background: #dd4949;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Thai Grapheme Highlighter</h1>
+        <div class="subtitle">Real-time grapheme classification and AVP detection</div>
+
+        <div class="input-section">
+            <textarea
+                id="thaiInput"
+                placeholder="พิมพ์ภาษาไทยที่นี่... (Type Thai text here...)"
+            >ประเทศไทย</textarea>
+        </div>
+
+        <div class="controls">
+            <div class="toggle-group">
+                <input type="checkbox" id="toggleTan" checked>
+                <span class="color-indicator tan"></span>
+                <label for="toggleTan">ฐาน (tan) - Foundation</label>
+            </div>
+            <div class="toggle-group">
+                <input type="checkbox" id="toggleSara" checked>
+                <span class="color-indicator sara"></span>
+                <label for="toggleSara">สระ (sara) - Vowel</label>
+            </div>
+            <div class="toggle-group">
+                <input type="checkbox" id="toggleYuk" checked>
+                <span class="color-indicator yuk"></span>
+                <label for="toggleYuk">ยุกต์ (yuk) - Dependent</label>
+            </div>
+            <div class="toggle-group">
+                <input type="checkbox" id="toggleException" checked>
+                <span class="color-indicator kho_yok_waen"></span>
+                <label for="toggleException">ข้อยกเว้น - Exception (อ/ว)</label>
+            </div>
+            <button class="restart-button" id="restartButton">🔄 Restart Server</button>
+        </div>
+
+        <div class="output-section">
+            <div class="output-text" id="outputText"></div>
+            <div class="status" id="status">Ready</div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <span class="color-indicator tan"></span>
+                <span><strong>ฐาน (tan)</strong>: Foundation consonants</span>
+            </div>
+            <div class="legend-item">
+                <span class="color-indicator sara"></span>
+                <span><strong>สระ (sara)</strong>: Vowel characters</span>
+            </div>
+            <div class="legend-item">
+                <span class="color-indicator yuk"></span>
+                <span><strong>ยุกต์ (yuk)</strong>: Tone marks & diacritics</span>
+            </div>
+            <div class="legend-item">
+                <span class="color-indicator kho_yok_waen"></span>
+                <span><strong>ข้อยกเว้น</strong>: Exceptions (อ/ว as vowel)</span>
+            </div>
+            <div class="legend-item">
+                <span>🔻</span>
+                <span><strong>AVP</strong>: Absolute Vowel Position (coming soon)</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const input = document.getElementById('thaiInput');
+        const output = document.getElementById('outputText');
+        const status = document.getElementById('status');
+        const restartButton = document.getElementById('restartButton');
+
+        const toggles = {
+            tan: document.getElementById('toggleTan'),
+            sara: document.getElementById('toggleSara'),
+            yuk: document.getElementById('toggleYuk'),
+            kho_yok_waen: document.getElementById('toggleException')
+        };
+
+        let debounceTimer;
+        let currentClassifications = null;
+
+        // Debounced input handler
+        input.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => classifyText(), 300);
+        });
+
+        // Toggle handlers
+        Object.values(toggles).forEach(toggle => {
+            toggle.addEventListener('change', renderOutput);
+        });
+
+        async function classifyText() {
+            const text = input.value.trim();
+
+            if (!text) {
+                output.innerHTML = '<em style="color: #999;">Text will appear here with highlighting...</em>';
+                status.textContent = 'Ready';
+                return;
+            }
+
+            status.textContent = 'Classifying...';
+
+            try {
+                const response = await fetch('http://127.0.0.1:5001/api/classify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server error: ${response.status}`);
+                }
+
+                const data = await response.json();
+                currentClassifications = data;
+                renderOutput();
+                status.textContent = `Classified ${data.classifications.length} characters`;
+            } catch (error) {
+                console.error('Classification error:', error);
+                output.innerHTML = `<div class="error">Error: ${error.message}<br>Make sure Flask server is running on port 5001</div>`;
+                status.textContent = 'Error';
+            }
+        }
+
+        function renderOutput() {
+            if (!currentClassifications) return;
+
+            const { classifications } = currentClassifications;
+
+            let html = '';
+            classifications.forEach(item => {
+                const showHighlight = toggles[item.class]?.checked ?? false;
+                const cssClass = showHighlight ? item.class : '';
+
+                html += `<span class="char ${cssClass}">${item.char}</span>`;
+            });
+
+            output.innerHTML = html;
+        }
+
+        // Restart button handler
+        restartButton.addEventListener('click', async () => {
+            restartButton.disabled = true;
+            restartButton.textContent = '🔄 Restarting...';
+            status.textContent = 'Restarting server...';
+
+            try {
+                // Send restart request to server
+                await fetch('http://127.0.0.1:5001/api/restart', {
+                    method: 'POST',
+                });
+
+                // Wait a moment for server to restart
+                setTimeout(() => {
+                    // Refresh the page
+                    window.location.reload();
+                }, 2000);
+            } catch (error) {
+                // Server is restarting, so error is expected
+                // Just refresh after a delay
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            }
+        });
+
+        // Initial classification
+        classifyText();
+    </script>
+</body>
+</html>

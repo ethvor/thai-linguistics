@@ -35,7 +35,7 @@ echo.
 :restart
 REM Run the Flask server
 set LAUNCHER_TYPE=batch
-python launcher\flask_server.py
+python launcher\flask_classifier.py
 
 REM Check the exit code
 if %errorlevel% equ 0 (

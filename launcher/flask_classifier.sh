@@ -35,7 +35,7 @@ echo
 # Run the Flask server with restart capability
 while true; do
     export LAUNCHER_TYPE=shell
-    python3 launcher/flask_server.py
+    python3 launcher/flask_classifier.py
     exit_code=$?
 
     if [ $exit_code -eq 0 ]; then
