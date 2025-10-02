@@ -160,18 +160,18 @@
             word-wrap: break-word;
         }
 
-        .char {
-            position: relative;
-            display: inline-block;
-        }
-
-        /* Wrapper for character groups with stacking */
+        /* Group base + combining characters together */
         .char-group {
             position: relative;
             display: inline-block;
+            isolation: isolate;
         }
 
-        /* Combining characters positioned absolutely over base */
+        .char-base {
+            position: relative;
+            display: inline-block;
+        }
+
         .char-combining {
             position: absolute;
             left: 0;
@@ -179,46 +179,40 @@
             pointer-events: none;
         }
 
-        /* Use text-shadow for glow effect instead of background */
-        /* This works with stacked characters */
+        /* Use filter drop-shadow for glow - each character gets independent glow */
 
         /* Base consonants - red glow */
         .tan {
-            text-shadow:
-                0 0 8px rgba(255, 100, 100, 0.8),
-                0 0 12px rgba(255, 150, 150, 0.6),
-                0 0 16px rgba(255, 200, 200, 0.4);
+            filter: drop-shadow(0 0 3px rgba(255, 100, 100, 0.9))
+                    drop-shadow(0 0 6px rgba(255, 150, 150, 0.7))
+                    drop-shadow(0 0 9px rgba(255, 200, 200, 0.5));
         }
 
         /* Vowels - blue glow */
         .sara {
-            text-shadow:
-                0 0 8px rgba(100, 180, 255, 0.8),
-                0 0 12px rgba(150, 200, 255, 0.6),
-                0 0 16px rgba(200, 230, 255, 0.4);
+            filter: drop-shadow(0 0 3px rgba(100, 180, 255, 0.9))
+                    drop-shadow(0 0 6px rgba(150, 200, 255, 0.7))
+                    drop-shadow(0 0 9px rgba(200, 230, 255, 0.5));
         }
 
         /* Tone marks - orange glow */
         .yuk {
-            text-shadow:
-                0 0 8px rgba(255, 180, 100, 0.9),
-                0 0 12px rgba(255, 200, 130, 0.7),
-                0 0 16px rgba(255, 220, 180, 0.5);
+            filter: drop-shadow(0 0 3px rgba(255, 180, 100, 1.0))
+                    drop-shadow(0 0 6px rgba(255, 200, 130, 0.8))
+                    drop-shadow(0 0 9px rgba(255, 220, 180, 0.6));
         }
 
         /* Exceptions - purple glow */
         .kho_yok_waen {
-            text-shadow:
-                0 0 8px rgba(180, 100, 255, 0.8),
-                0 0 12px rgba(200, 150, 255, 0.6),
-                0 0 16px rgba(220, 200, 255, 0.4);
+            filter: drop-shadow(0 0 3px rgba(180, 100, 255, 0.9))
+                    drop-shadow(0 0 6px rgba(200, 150, 255, 0.7))
+                    drop-shadow(0 0 9px rgba(220, 200, 255, 0.5));
         }
 
         /* Unsure - gray glow */
         .unsure {
-            text-shadow:
-                0 0 6px rgba(150, 150, 150, 0.5),
-                0 0 10px rgba(180, 180, 180, 0.3);
+            filter: drop-shadow(0 0 3px rgba(150, 150, 150, 0.6))
+                    drop-shadow(0 0 6px rgba(180, 180, 180, 0.4));
         }
 
         /* AVP marker */
@@ -424,7 +418,7 @@
             const radius = glowRadius.value / 100;
             const layers = parseInt(glowLayers.value);
 
-            // Generate text-shadow for each class
+            // Generate drop-shadow filters for each class
             const glowConfigs = {
                 tan: { r: 255, g: 100, b: 100 },
                 sara: { r: 100, g: 180, b: 255 },
@@ -437,11 +431,11 @@
             for (const [className, color] of Object.entries(glowConfigs)) {
                 const shadows = [];
                 for (let i = 1; i <= layers; i++) {
-                    const layerRadius = (8 + i * 4) * radius;
-                    const layerOpacity = (0.9 - i * 0.15) * intensity;
-                    shadows.push(`0 0 ${layerRadius}px rgba(${color.r}, ${color.g}, ${color.b}, ${layerOpacity})`);
+                    const layerRadius = (2 + i * 2) * radius;
+                    const layerOpacity = (1.0 - i * 0.15) * intensity;
+                    shadows.push(`drop-shadow(0 0 ${layerRadius}px rgba(${color.r}, ${color.g}, ${color.b}, ${layerOpacity}))`);
                 }
-                styleContent += `.${className} { text-shadow: ${shadows.join(', ')}; }\n`;
+                styleContent += `.${className} { filter: ${shadows.join(' ')}; }\n`;
             }
 
             // Update or create dynamic style element
@@ -503,12 +497,11 @@
                 const isCombining = (charCode >= 0x0E31 && charCode <= 0x0E3A) ||
                                    (charCode >= 0x0E47 && charCode <= 0x0E4E);
 
-                // If this is a combining character, it shouldn't start a new group
                 if (isCombining) {
                     // Orphaned combining mark - render with dotted circle
                     const showHighlight = toggles[item.class]?.checked ?? false;
                     const cssClass = showHighlight ? item.class : '';
-                    html += `<span class="char ${cssClass}">\u25CC${item.char}</span>`;
+                    html += `<span class="char-group"><span class="char-base ${cssClass}">\u25CC${item.char}</span></span>`;
                     i++;
                     continue;
                 }
@@ -519,7 +512,7 @@
                 // Render base character
                 const showHighlight = toggles[item.class]?.checked ?? false;
                 const cssClass = showHighlight ? item.class : '';
-                html += `<span class="char ${cssClass}">${item.char}</span>`;
+                html += `<span class="char-base ${cssClass}">${item.char}</span>`;
 
                 // Look ahead for combining characters
                 let j = i + 1;
@@ -530,10 +523,10 @@
                                            (nextCode >= 0x0E47 && nextCode <= 0x0E4E);
 
                     if (nextIsCombining) {
-                        // Render combining character with absolute positioning
+                        // Render combining character with its own class
                         const nextShowHighlight = toggles[nextItem.class]?.checked ?? false;
                         const nextCssClass = nextShowHighlight ? nextItem.class : '';
-                        html += `<span class="char char-combining ${nextCssClass}">${nextItem.char}</span>`;
+                        html += `<span class="char-combining ${nextCssClass}">${nextItem.char}</span>`;
                         j++;
                     } else {
                         break;
