@@ -20,10 +20,10 @@ if errorlevel 1 (
 )
 
 REM Check if the main Python file exists
-if not exist "thai_labeling_app.py" (
+if not exist "src\thai_labeling_app.py" (
     echo ERROR: thai_labeling_app.py not found!
-    echo Expected location: %CD%\
-    echo Please make sure the file exists in the project root.
+    echo Expected location: %CD%\src\
+    echo Please make sure the file exists in the project src directory.
     echo.
     pause
     exit /b 1
@@ -32,7 +32,7 @@ if not exist "thai_labeling_app.py" (
 :restart
 REM Run the Flask server
 set LAUNCHER_TYPE=batch
-python thai_labeling_app.py
+python src\thai_labeling_app.py
 
 REM Check the exit code
 if %errorlevel% equ 0 (

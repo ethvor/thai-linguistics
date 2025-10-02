@@ -287,6 +287,189 @@
         .restart-button:active {
             background: #dd4949;
         }
+
+        /* Thai Kedmanee Keyboard Styles */
+        .keyboard-section {
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .keyboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .keyboard-header h3 {
+            margin: 0;
+            color: #333;
+            font-size: 1.2em;
+        }
+
+        .keyboard-toggle-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .keyboard-toggle-btn:hover {
+            background: #5568d3;
+        }
+
+        .keyboard {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .keyboard.hidden {
+            display: none;
+        }
+
+        .keyboard-row {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 4px;
+            justify-content: center;
+        }
+
+        .key {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 8px 6px;
+            min-width: 48px;
+            height: 52px;
+            cursor: pointer;
+            font-size: 13px;
+            font-family: 'Leelawadee UI', 'Tahoma', sans-serif;
+            transition: all 0.1s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            user-select: none;
+        }
+
+        .key:hover {
+            background: #f0f0f0;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .key:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            background: #e0e0e0;
+        }
+
+        .key.active {
+            background: #667eea;
+            color: white;
+            border-color: #5568d3;
+        }
+
+        /* Special keys */
+        .key-backspace {
+            min-width: 100px;
+            background: #f8f9fa;
+        }
+
+        .key-tab {
+            min-width: 60px;
+            background: #f8f9fa;
+        }
+
+        .key-caps {
+            min-width: 85px;
+            background: #f8f9fa;
+        }
+
+        .key-enter {
+            min-width: 85px;
+            background: #f8f9fa;
+        }
+
+        .key-shift {
+            min-width: 70px;
+            background: #f8f9fa;
+        }
+
+        .key-shift.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .key-space {
+            min-width: 300px;
+            background: #f8f9fa;
+        }
+
+        .key-modifier {
+            font-weight: bold;
+        }
+
+        /* Thai key display */
+        .key-main {
+            display: block;
+            font-size: 20px;
+            font-weight: bold;
+            line-height: 1.2;
+            font-family: 'Leelawadee UI', 'Tahoma', sans-serif;
+        }
+
+        .key-shift {
+            display: block;
+            font-size: 11px;
+            color: #999;
+            margin-top: 2px;
+            font-family: 'Leelawadee UI', 'Tahoma', sans-serif;
+        }
+
+        .key.shift-active .key-main {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .key.shift-active .key-shift {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .key {
+                min-width: 32px;
+                height: 42px;
+                padding: 4px 2px;
+            }
+
+            .key-main {
+                font-size: 16px;
+            }
+
+            .key-shift {
+                font-size: 9px;
+            }
+
+            .key-backspace { min-width: 70px; }
+            .key-tab { min-width: 45px; }
+            .key-caps { min-width: 60px; }
+            .key-enter { min-width: 60px; }
+            .key-shift { min-width: 50px; }
+            .key-space { min-width: 180px; }
+        }
     </style>
 </head>
 <body>
@@ -299,6 +482,85 @@
                 id="thaiInput"
                 placeholder="พิมพ์ภาษาไทยที่นี่... (Type Thai text here...)"
             >ประเทศไทย</textarea>
+        </div>
+
+        <!-- Thai Kedmanee Keyboard -->
+        <div class="keyboard-section">
+            <div class="keyboard-header">
+                <h3>Thai Kedmanee Keyboard</h3>
+                <button class="keyboard-toggle-btn" id="keyboardToggle">Hide Keyboard</button>
+            </div>
+            <div class="keyboard" id="keyboard">
+                <!-- Row 1 - Number row -->
+                <div class="keyboard-row">
+                    <button class="key" data-key="`" data-thai="_" data-thai-shift="%"><span class="key-main">_</span><span class="key-shift">%</span></button>
+                    <button class="key" data-key="1" data-thai="ๅ" data-thai-shift="+"><span class="key-main">ๅ</span><span class="key-shift">+</span></button>
+                    <button class="key" data-key="2" data-thai="/" data-thai-shift="๑"><span class="key-main">/</span><span class="key-shift">๑</span></button>
+                    <button class="key" data-key="3" data-thai="-" data-thai-shift="๒"><span class="key-main">-</span><span class="key-shift">๒</span></button>
+                    <button class="key" data-key="4" data-thai="ภ" data-thai-shift="๓"><span class="key-main">ภ</span><span class="key-shift">๓</span></button>
+                    <button class="key" data-key="5" data-thai="ถ" data-thai-shift="๔"><span class="key-main">ถ</span><span class="key-shift">๔</span></button>
+                    <button class="key" data-key="6" data-thai="ุ" data-thai-shift="ู"><span class="key-main">ุ</span><span class="key-shift">ู</span></button>
+                    <button class="key" data-key="7" data-thai="ึ" data-thai-shift="฿"><span class="key-main">ึ</span><span class="key-shift">฿</span></button>
+                    <button class="key" data-key="8" data-thai="ค" data-thai-shift="๕"><span class="key-main">ค</span><span class="key-shift">๕</span></button>
+                    <button class="key" data-key="9" data-thai="ต" data-thai-shift="๖"><span class="key-main">ต</span><span class="key-shift">๖</span></button>
+                    <button class="key" data-key="0" data-thai="จ" data-thai-shift="๗"><span class="key-main">จ</span><span class="key-shift">๗</span></button>
+                    <button class="key" data-key="-" data-thai="ข" data-thai-shift="๘"><span class="key-main">ข</span><span class="key-shift">๘</span></button>
+                    <button class="key" data-key="=" data-thai="ช" data-thai-shift="๙"><span class="key-main">ช</span><span class="key-shift">๙</span></button>
+                    <button class="key key-backspace">← Backspace</button>
+                </div>
+                <!-- Row 2 - QWERTY row -->
+                <div class="keyboard-row">
+                    <button class="key key-tab">Tab</button>
+                    <button class="key" data-key="q" data-thai="ๆ" data-thai-shift="๐"><span class="key-main">ๆ</span><span class="key-shift">๐</span></button>
+                    <button class="key" data-key="w" data-thai="ไ" data-thai-shift="&quot;"><span class="key-main">ไ</span><span class="key-shift">"</span></button>
+                    <button class="key" data-key="e" data-thai="ำ" data-thai-shift="ฎ"><span class="key-main">ำ</span><span class="key-shift">ฎ</span></button>
+                    <button class="key" data-key="r" data-thai="พ" data-thai-shift="ฑ"><span class="key-main">พ</span><span class="key-shift">ฑ</span></button>
+                    <button class="key" data-key="t" data-thai="ะ" data-thai-shift="ธ"><span class="key-main">ะ</span><span class="key-shift">ธ</span></button>
+                    <button class="key" data-key="y" data-thai="ั" data-thai-shift="ํ"><span class="key-main">ั</span><span class="key-shift">ํ</span></button>
+                    <button class="key" data-key="u" data-thai="ี" data-thai-shift="๊"><span class="key-main">ี</span><span class="key-shift">๊</span></button>
+                    <button class="key" data-key="i" data-thai="ร" data-thai-shift="ณ"><span class="key-main">ร</span><span class="key-shift">ณ</span></button>
+                    <button class="key" data-key="o" data-thai="น" data-thai-shift="ฯ"><span class="key-main">น</span><span class="key-shift">ฯ</span></button>
+                    <button class="key" data-key="p" data-thai="ย" data-thai-shift="ญ"><span class="key-main">ย</span><span class="key-shift">ญ</span></button>
+                    <button class="key" data-key="[" data-thai="บ" data-thai-shift="ฐ"><span class="key-main">บ</span><span class="key-shift">ฐ</span></button>
+                    <button class="key" data-key="]" data-thai="ล" data-thai-shift=","><span class="key-main">ล</span><span class="key-shift">,</span></button>
+                    <button class="key" data-key="\\" data-thai="ฃ" data-thai-shift="ฅ"><span class="key-main">ฃ</span><span class="key-shift">ฅ</span></button>
+                </div>
+                <!-- Row 3 - ASDF row -->
+                <div class="keyboard-row">
+                    <button class="key key-caps">Caps Lock</button>
+                    <button class="key" data-key="a" data-thai="ฟ" data-thai-shift="ฤ"><span class="key-main">ฟ</span><span class="key-shift">ฤ</span></button>
+                    <button class="key" data-key="s" data-thai="ห" data-thai-shift="ฆ"><span class="key-main">ห</span><span class="key-shift">ฆ</span></button>
+                    <button class="key" data-key="d" data-thai="ก" data-thai-shift="ฏ"><span class="key-main">ก</span><span class="key-shift">ฏ</span></button>
+                    <button class="key" data-key="f" data-thai="ด" data-thai-shift="โ"><span class="key-main">ด</span><span class="key-shift">โ</span></button>
+                    <button class="key" data-key="g" data-thai="เ" data-thai-shift="ฌ"><span class="key-main">เ</span><span class="key-shift">ฌ</span></button>
+                    <button class="key" data-key="h" data-thai="้" data-thai-shift="็"><span class="key-main">้</span><span class="key-shift">็</span></button>
+                    <button class="key" data-key="j" data-thai="่" data-thai-shift="๋"><span class="key-main">่</span><span class="key-shift">๋</span></button>
+                    <button class="key" data-key="k" data-thai="า" data-thai-shift="ษ"><span class="key-main">า</span><span class="key-shift">ษ</span></button>
+                    <button class="key" data-key="l" data-thai="ส" data-thai-shift="ศ"><span class="key-main">ส</span><span class="key-shift">ศ</span></button>
+                    <button class="key" data-key=";" data-thai="ว" data-thai-shift="ซ"><span class="key-main">ว</span><span class="key-shift">ซ</span></button>
+                    <button class="key" data-key="'" data-thai="ง" data-thai-shift="."><span class="key-main">ง</span><span class="key-shift">.</span></button>
+                    <button class="key key-enter">↵ Enter</button>
+                </div>
+                <!-- Row 4 - ZXCV row -->
+                <div class="keyboard-row">
+                    <button class="key key-shift key-modifier">⇧ Shift</button>
+                    <button class="key" data-key="z" data-thai="ผ" data-thai-shift="("><span class="key-main">ผ</span><span class="key-shift">(</span></button>
+                    <button class="key" data-key="x" data-thai="ป" data-thai-shift=")"><span class="key-main">ป</span><span class="key-shift">)</span></button>
+                    <button class="key" data-key="c" data-thai="แ" data-thai-shift="ฉ"><span class="key-main">แ</span><span class="key-shift">ฉ</span></button>
+                    <button class="key" data-key="v" data-thai="อ" data-thai-shift="ฮ"><span class="key-main">อ</span><span class="key-shift">ฮ</span></button>
+                    <button class="key" data-key="b" data-thai="ิ" data-thai-shift="ฺ"><span class="key-main">ิ</span><span class="key-shift">ฺ</span></button>
+                    <button class="key" data-key="n" data-thai="ื" data-thai-shift="์"><span class="key-main">ื</span><span class="key-shift">์</span></button>
+                    <button class="key" data-key="m" data-thai="ท" data-thai-shift="?"><span class="key-main">ท</span><span class="key-shift">?</span></button>
+                    <button class="key" data-key="," data-thai="ม" data-thai-shift="ฒ"><span class="key-main">ม</span><span class="key-shift">ฒ</span></button>
+                    <button class="key" data-key="." data-thai="ใ" data-thai-shift="ฬ"><span class="key-main">ใ</span><span class="key-shift">ฬ</span></button>
+                    <button class="key" data-key="/" data-thai="ฝ" data-thai-shift="ฦ"><span class="key-main">ฝ</span><span class="key-shift">ฦ</span></button>
+                    <button class="key key-shift key-modifier">⇧ Shift</button>
+                </div>
+                <!-- Row 5 - Space bar -->
+                <div class="keyboard-row">
+                    <button class="key key-space">Space</button>
+                </div>
+            </div>
         </div>
 
         <div class="controls">
@@ -395,6 +657,130 @@
 
         let debounceTimer;
         let currentClassifications = null;
+
+        // Thai Kedmanee Keyboard functionality
+        const keyboard = document.getElementById('keyboard');
+        const keyboardToggle = document.getElementById('keyboardToggle');
+        let isShiftPressed = false;
+        let isCapsLocked = false;
+
+        // Toggle keyboard visibility
+        keyboardToggle.addEventListener('click', () => {
+            keyboard.classList.toggle('hidden');
+            keyboardToggle.textContent = keyboard.classList.contains('hidden') ? 'Show Keyboard' : 'Hide Keyboard';
+        });
+
+        // Handle keyboard key clicks
+        document.querySelectorAll('.key').forEach(key => {
+            key.addEventListener('click', (e) => {
+                e.preventDefault();
+                handleKeyPress(key);
+            });
+        });
+
+        function handleKeyPress(keyElement) {
+            const cursorPos = input.selectionStart;
+            const cursorEnd = input.selectionEnd;
+            const currentValue = input.value;
+
+            if (keyElement.classList.contains('key-backspace')) {
+                // Handle backspace
+                if (cursorPos !== cursorEnd) {
+                    // Delete selection
+                    input.value = currentValue.substring(0, cursorPos) + currentValue.substring(cursorEnd);
+                    input.setSelectionRange(cursorPos, cursorPos);
+                } else if (cursorPos > 0) {
+                    // Delete one character before cursor
+                    input.value = currentValue.substring(0, cursorPos - 1) + currentValue.substring(cursorPos);
+                    input.setSelectionRange(cursorPos - 1, cursorPos - 1);
+                }
+            } else if (keyElement.classList.contains('key-tab')) {
+                // Insert tab character
+                const tabChar = '\t';
+                input.value = currentValue.substring(0, cursorPos) + tabChar + currentValue.substring(cursorEnd);
+                input.setSelectionRange(cursorPos + 1, cursorPos + 1);
+            } else if (keyElement.classList.contains('key-enter')) {
+                // Insert newline
+                const newline = '\n';
+                input.value = currentValue.substring(0, cursorPos) + newline + currentValue.substring(cursorEnd);
+                input.setSelectionRange(cursorPos + 1, cursorPos + 1);
+            } else if (keyElement.classList.contains('key-space')) {
+                // Insert space
+                const space = ' ';
+                input.value = currentValue.substring(0, cursorPos) + space + currentValue.substring(cursorEnd);
+                input.setSelectionRange(cursorPos + 1, cursorPos + 1);
+            } else if (keyElement.classList.contains('key-shift')) {
+                // Toggle shift
+                isShiftPressed = !isShiftPressed;
+                updateShiftState();
+            } else if (keyElement.classList.contains('key-caps')) {
+                // Toggle caps lock
+                isCapsLocked = !isCapsLocked;
+                keyElement.classList.toggle('active', isCapsLocked);
+            } else {
+                // Regular key press
+                let char;
+                if (isShiftPressed) {
+                    char = keyElement.getAttribute('data-thai-shift');
+                } else {
+                    char = keyElement.getAttribute('data-thai');
+                }
+
+                if (char) {
+                    // Handle HTML entities
+                    if (char === '&quot;') {
+                        char = '"';
+                    }
+
+                    input.value = currentValue.substring(0, cursorPos) + char + currentValue.substring(cursorEnd);
+                    input.setSelectionRange(cursorPos + char.length, cursorPos + char.length);
+
+                    // Reset shift after character input (unless caps lock is on)
+                    if (isShiftPressed && !keyElement.classList.contains('key-shift')) {
+                        isShiftPressed = false;
+                        updateShiftState();
+                    }
+                }
+            }
+
+            // Focus back to input and trigger input event
+            input.focus();
+            input.dispatchEvent(new Event('input'));
+        }
+
+        function updateShiftState() {
+            document.querySelectorAll('.key-shift').forEach(shiftKey => {
+                shiftKey.classList.toggle('active', isShiftPressed);
+            });
+
+            // Toggle shift-active class on all regular keys
+            document.querySelectorAll('.key[data-thai-shift]').forEach(key => {
+                key.classList.toggle('shift-active', isShiftPressed);
+            });
+        }
+
+        // Physical keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (input !== document.activeElement) return;
+
+            // Handle shift key press
+            if (e.key === 'Shift') {
+                e.preventDefault();
+                isShiftPressed = true;
+                updateShiftState();
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (input !== document.activeElement) return;
+
+            // Handle shift key release
+            if (e.key === 'Shift') {
+                e.preventDefault();
+                isShiftPressed = false;
+                updateShiftState();
+            }
+        });
 
         // Debounced input handler
         input.addEventListener('input', () => {
