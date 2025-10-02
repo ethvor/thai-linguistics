@@ -175,9 +175,19 @@
         .char-combining {
             position: absolute;
             left: 0;
-            top: 0;
             pointer-events: none;
         }
+
+        /* Stack level positioning - each level gets vertical offset */
+        .char-above-0 { top: 0; }
+        .char-above-1 { top: -0.25em; }
+        .char-above-2 { top: -0.5em; }
+        .char-above-3 { top: -0.75em; }
+
+        .char-below-0 { top: 0; }
+        .char-below-1 { top: 0.25em; }
+        .char-below-2 { top: 0.5em; }
+        .char-below-3 { top: 0.75em; }
 
         /* Use filter drop-shadow for glow - each character gets independent glow */
 
@@ -514,8 +524,11 @@
                 const cssClass = showHighlight ? item.class : '';
                 html += `<span class="char-base ${cssClass}">${item.char}</span>`;
 
-                // Look ahead for combining characters
+                // Look ahead for combining characters and track stack levels
                 let j = i + 1;
+                let aboveCount = 0;
+                let belowCount = 0;
+
                 while (j < classifications.length) {
                     const nextItem = classifications[j];
                     const nextCode = nextItem.char.charCodeAt(0);
@@ -523,10 +536,20 @@
                                            (nextCode >= 0x0E47 && nextCode <= 0x0E4E);
 
                     if (nextIsCombining) {
-                        // Render combining character with its own class
+                        // Determine if this combining mark is above or below baseline
+                        const isBelow = (nextCode >= 0x0E38 && nextCode <= 0x0E3A);
+
+                        // Render combining character with its own class and stack level
                         const nextShowHighlight = toggles[nextItem.class]?.checked ?? false;
                         const nextCssClass = nextShowHighlight ? nextItem.class : '';
-                        html += `<span class="char-combining ${nextCssClass}">${nextItem.char}</span>`;
+
+                        if (isBelow) {
+                            html += `<span class="char-combining char-below-${belowCount} ${nextCssClass}">${nextItem.char}</span>`;
+                            belowCount++;
+                        } else {
+                            html += `<span class="char-combining char-above-${aboveCount} ${nextCssClass}">${nextItem.char}</span>`;
+                            aboveCount++;
+                        }
                         j++;
                     } else {
                         break;
