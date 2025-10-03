@@ -5,7 +5,10 @@
       "Bash(dir:*)",
       "Bash(mkdir:*)",
       "Bash(git mv:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(find:*)",
+      "Bash(cat:*)",
+      "Bash(move:*)"
     ],
     "deny": [],
     "ask": []

@@ -6,7 +6,7 @@ A web-based labeling interface for creating training data to improve Thai readin
 ## System Architecture
 
 ### Databases
-- **`database/thai_voraritskul_graphemes.db`**: Stores Thai characters, patterns, tags, and valid clusters
+- **`database/thai_avp_graphemes.db`**: Stores Thai characters, patterns, tags, and valid clusters
 - **`database/thai_syllable_labels.db`**: Stores labeling decisions, sessions, and extracted patterns
 
 ### Core Components

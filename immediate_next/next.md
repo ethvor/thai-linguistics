@@ -36,7 +36,7 @@ Develop a novel algorithm that identifies Thai grapheme classes through visual h
 - **Later**: Add disambiguation logic
 
 ### Phase 6: AVP Markers
-- **Target**: Absolute Vowel Positions (from Voraritskul Conjecture)
+- **Target**: Absolute Vowel Positions (from Absolute Vowel Position Conjecture)
 - **Method**: Mark AVPs with character/pointer overlay
 - **Marker**: [TBD - choose symbol/indicator]
 
@@ -76,7 +76,7 @@ Develop a novel algorithm that identifies Thai grapheme classes through visual h
 1. **Start Conservative**: Only highlight what we're absolutely certain about
 2. **Iterative Refinement**: Add classification rules progressively
 3. **Visual Feedback**: Use UI to validate algorithm accuracy
-4. **Phonetic Grounding**: Base on Voraritskul Conjecture principles
+4. **Phonetic Grounding**: Base on Absolute Vowel Position Conjecture principles
 
 ---
 

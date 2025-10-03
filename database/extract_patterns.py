@@ -20,7 +20,7 @@ from database.query_utilities import ThaiGraphemeQuery
 
 class PatternExtractor:
     def __init__(self, labels_db="database/thai_syllable_labels.db",
-                 graphemes_db="database/thai_voraritskul_graphemes.db"):
+                 graphemes_db="database/thai_avp_graphemes.db"):
         self.labels_db_path = Path(labels_db)
         self.graphemes_db_path = Path(graphemes_db)
         self.query_util = ThaiGraphemeQuery(graphemes_db)

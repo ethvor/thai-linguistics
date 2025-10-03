@@ -5,9 +5,9 @@
 
 ---
 
-## 1. The Voraritskul Conjecture (Revised)
+## 1. The Absolute Vowel Position Conjecture
 
-**File**: [voraritskul_conjecture_revised.md](./voraritskul_conjecture_revised.md)
+**File**: [absolute_vowel_position_conjecture.md](./absolute_vowel_position_conjecture.md)
 
 **Core Statement**: For any Thai syllable, there is exactly one Absolute Vowel Position (AVP).
 
@@ -31,13 +31,13 @@
 
 ## Relationship Between Conjectures
 
-1. **Voraritskul Conjecture** establishes the concept of Absolute Vowel Positions
+1. **Absolute Vowel Position Conjecture** establishes the concept of Absolute Vowel Positions
 2. **Proximity Conjecture** uses AVPs to ensure complete consonant-vowel coverage
 3. Together they provide a framework for comprehensive Thai text analysis
 
 ## Implementation Status
 
-- **Voraritskul Conjecture**: Conceptual framework established, implementation pending
+- **Absolute Vowel Position Conjecture**: Conceptual framework established, implementation pending
 - **Proximity Conjecture**: Ready for implementation as final-pass algorithm
 
 ---

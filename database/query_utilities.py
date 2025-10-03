@@ -14,7 +14,7 @@ from typing import Dict, List, Optional, Set
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 class ThaiGraphemeQuery:
-    def __init__(self, db_path="database/thai_voraritskul_graphemes.db"):
+    def __init__(self, db_path="database/thai_avp_graphemes.db"):
         self.db_path = Path(db_path)
         if not self.db_path.exists():
             raise FileNotFoundError(f"Database not found at {self.db_path}")

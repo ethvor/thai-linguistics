@@ -1,4 +1,4 @@
-# The Voraritskul Conjecture (Revised)
+# The Absolute Vowel Position Conjecture
 **Based on Absolute Vowel Position (AVP)**
 
 **Date Created:** September 28, 2025
@@ -58,4 +58,4 @@ The AVP serves as the definitive anchor point for syllable identification.
 
 ---
 
-*Revision of the original Voraritskul Conjecture with simplified, phonetically-grounded foundation.*
+*A phonetically-grounded foundation for Thai language processing.*

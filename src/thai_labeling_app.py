@@ -41,7 +41,7 @@ import os
 from pathlib import Path
 
 script_dir = Path(__file__).parent.parent  # Go up to project root since we're in src/
-GRAPHEMES_DB = script_dir / "database" / "thai_voraritskul_graphemes.db"
+GRAPHEMES_DB = script_dir / "database" / "thai_avp_graphemes.db"
 LABELS_DB = script_dir / "database" / "thai_syllable_labels.db"
 
 print(f"Looking for graphemes DB at: {GRAPHEMES_DB}")

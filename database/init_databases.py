@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Initialize Thai Voraritskul Graphemes and Thai Syllable Labels databases
+Initialize Thai AVP Graphemes and Thai Syllable Labels databases
 """
 
 import sqlite3
@@ -13,11 +13,11 @@ class ThaiDatabaseInitializer:
         self.db_dir = Path(db_directory)
         self.db_dir.mkdir(exist_ok=True)
 
-        self.graphemes_db_path = self.db_dir / "thai_voraritskul_graphemes.db"
+        self.graphemes_db_path = self.db_dir / "thai_avp_graphemes.db"
         self.labels_db_path = self.db_dir / "thai_syllable_labels.db"
 
     def init_graphemes_database(self):
-        """Initialize the Thai Voraritskul Graphemes database"""
+        """Initialize the Thai AVP Graphemes database"""
         print(f"Initializing {self.graphemes_db_path}...")
 
         conn = sqlite3.connect(self.graphemes_db_path)

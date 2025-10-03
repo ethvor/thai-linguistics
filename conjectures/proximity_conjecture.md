@@ -22,11 +22,11 @@ The conjecture helps ensure complete vowel coverage but requires careful applica
 - **Timing**: Final-pass analysis only
 - **Purpose**: Hidden vowel position identification
 - **Constraint**: Distance < 2 characters (noninclusive)
-- **Reference**: Absolute vowel positions as defined in Voraritskul Conjecture
+- **Reference**: Absolute vowel positions as defined in Absolute Vowel Position Conjecture
 
 ## Related Work
 
-- **Companion Conjecture**: [Voraritskul Conjecture](./voraritskul_conjecture_revised.md)
+- **Companion Conjecture**: [Absolute Vowel Position Conjecture](./absolute_vowel_position_conjecture.md)
 - **Dependency**: Requires absolute vowel position identification first
 
 ---

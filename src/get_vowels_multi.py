@@ -338,7 +338,7 @@ def try_literal_pattern(text: str, pattern_data: Dict, pos: int) -> Optional[Dic
 
 def group_interpretations_by_vowel(all_matches: List[Dict]) -> Dict[int, List[Dict]]:
     """
-    Group pattern matches by actual vowel mark positions, respecting the Voraritskul Conjecture.
+    Group pattern matches by actual vowel mark positions, respecting the Absolute Vowel Position Conjecture.
     Each vowel mark in the text gets its own group. Patterns are only grouped if they
     contain the same vowel mark (same vowel character at the same position).
     Returns dict: {vowel_number: [interpretations]}

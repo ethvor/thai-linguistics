@@ -4,7 +4,7 @@
 
 The Conjecture-Based Vowel Detector is a modular, rule-based algorithm for detecting all vowels in Thai text, including hidden (implicit) vowels. It uses two fundamental linguistic axioms:
 
-1. **Voraritskul Conjecture**: Every Thai syllable contains exactly one vowel pattern
+1. **Absolute Vowel Position Conjecture**: Every Thai syllable contains exactly one vowel pattern
 2. **Two-Character Proximity Conjecture**: Every consonant has a vowel within 2 characters distance
 
 By treating these conjectures as axioms, the algorithm achieves complete vowel coverage without machine learning or statistical models.
@@ -329,7 +329,7 @@ def segment_syllables(text):
         next_vowel = vowels.get(i + 1)
 
         # Apply boundary rules based on vowel positions
-        # Implementation of Voraritskul Conjecture
+        # Implementation of Absolute Vowel Position Conjecture
 
         syllables.append(syllable)
 
@@ -366,10 +366,10 @@ for v_data in vowels.values():
 
 ## License and Citation
 
-This algorithm is based on the Voraritskul Conjecture for Thai Segmentation and the Two-Character Proximity Conjecture. When using this algorithm in research or applications, please cite:
+This algorithm is based on the Absolute Vowel Position Conjecture for Thai Segmentation and the Two-Character Proximity Conjecture. When using this algorithm in research or applications, please cite:
 
 ```
-Voraritskul Conjecture for Thai Segmentation (2025)
+Absolute Vowel Position Conjecture for Thai Segmentation (2025)
 Two-Character Proximity Conjecture for Hidden Vowel Detection (2025)
 ```
 

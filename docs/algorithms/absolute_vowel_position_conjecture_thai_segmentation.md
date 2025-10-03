@@ -1,4 +1,4 @@
-# Voraritskul Conjecture for Thai Segmentation
+# Absolute Vowel Position Conjecture for Thai Segmentation
 ## A Non-ML Approach to Multi-Syllable Thai Word Analysis
 
 ### Date: September 26, 2025
@@ -242,7 +242,7 @@ If no explicit vowel mark is found within 2 characters of a consonant, a hidden 
 
 ## Conclusion
 
-The Voraritskul Conjecture, enhanced by the Two-Character Proximity Conjecture, presents a deterministic, linguistically-grounded approach to Thai syllable segmentation. By recognizing that **vowels are mandatory syllable components** and using them as anchors, combined with the proximity rule for detecting hidden vowels, we can achieve complete vowel coverage and dramatically reduce the complexity of multi-syllable segmentation while maintaining high accuracy.
+The Absolute Vowel Position Conjecture, enhanced by the Two-Character Proximity Conjecture, presents a deterministic, linguistically-grounded approach to Thai syllable segmentation. By recognizing that **vowels are mandatory syllable components** and using them as anchors, combined with the proximity rule for detecting hidden vowels, we can achieve complete vowel coverage and dramatically reduce the complexity of multi-syllable segmentation while maintaining high accuracy.
 
 This approach:
 - Leverages Thai phonological structure
@@ -255,4 +255,4 @@ The conjecture awaits formal implementation and validation against large Thai co
 ---
 
 *"The structure is in the language; we need only observe it carefully."*
-*- Voraritskul Conjecture, 2025*
+*- Absolute Vowel Position Conjecture, 2025*
