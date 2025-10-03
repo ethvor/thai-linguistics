@@ -2,9 +2,9 @@
 
 A research project developing deterministic algorithms for Thai syllable segmentation and vowel detection based on linguistic conjectures. The project aims to create explainable, non-ML approaches to Thai language processing that respect Thai orthographic principles.
 
-## Core Innovation: Conjecture-Based Approach
+## Conjecture-Based Approach
 
-This project is built on two fundamental linguistic axioms:
+This project is built on several fundamental linguistic conjectures
 
 ### 1. Absolute Vowel Position (AVP) Conjecture
 **"For any Thai syllable, there is exactly one Absolute Vowel Position (AVP)."**
