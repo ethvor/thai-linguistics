@@ -155,30 +155,32 @@
 
         .output-text {
             font-size: 32px;
-            font-family: 'Leelawadee UI', 'Tahoma', sans-serif;
+            font-family: 'Microsoft Sans Serif', 'Leelawadee UI', 'Tahoma', sans-serif;
             line-height: 1.8;
             word-wrap: break-word;
         }
 
         /* Group base + combining characters together */
         .char-group {
-            position: relative;
             display: inline-block;
+            position: relative;  /* This is the ONLY positioning context */
             isolation: isolate;
         }
 
         .char-base {
-            position: relative;
             display: inline-block;
+            /* NO position: relative - let parent be the positioning context */
+            z-index: 1;
         }
 
         .char-combining {
-            position: absolute;
-            left: 0;
+            position: relative;  /* Keep in flow, just shift vertically */
             pointer-events: none;
+            display: inline-block;
         }
 
-        /* Stack level positioning - each level gets vertical offset */
+        /* Stack level positioning - use relative positioning, not absolute */
+        /* This shifts them vertically while keeping horizontal position natural */
         .char-above-0 { top: 0; }
         .char-above-1 { top: -0.25em; }
         .char-above-2 { top: -0.5em; }
@@ -582,7 +584,7 @@
             <div class="toggle-group">
                 <input type="checkbox" id="toggleException" checked>
                 <span class="color-indicator kho_yok_waen"></span>
-                <label for="toggleException">ข้อยกเว้น - Exception (อ/ว)</label>
+                <label for="toggleException">ข้อยกเว้น - Exception (อ/ว/ย)</label>
             </div>
             <button class="restart-button" id="restartButton">🔄 Restart Server</button>
 
@@ -605,9 +607,23 @@
             </div>
         </div>
 
+        <!-- Classification Step -->
         <div class="output-section">
+            <h3 style="margin-bottom: 10px; color: #333;">Classification Step</h3>
             <div class="output-text" id="outputText"></div>
             <div class="status" id="status">Ready</div>
+        </div>
+
+        <!-- Intermediate Step -->
+        <div class="output-section" style="margin-top: 30px;">
+            <h3 style="margin-bottom: 10px; color: #333;">Intermediate Step</h3>
+            <div class="output-text" id="intermediateText" style="font-family: 'Microsoft Sans Serif', 'Segoe UI', Tahoma, sans-serif; font-size: 32px;"></div>
+            <div class="status" id="intermediateStatus">Waiting for input...</div>
+            <div style="margin-top: 10px; padding: 10px; background: white; border-radius: 6px; font-size: 13px; color: #555;">
+                <strong>Legend:</strong>
+                <span style="margin-left: 10px;"><code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-family: 'Microsoft Sans Serif', monospace;">a</code> = ambiguous position consonant</span>
+                <span style="margin-left: 15px;"><code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-family: 'Microsoft Sans Serif', monospace;">x</code> = terminal initial-foundation consonant</span>
+            </div>
         </div>
 
         <div class="legend">
@@ -625,7 +641,7 @@
             </div>
             <div class="legend-item">
                 <span class="color-indicator kho_yok_waen"></span>
-                <span><strong>ข้อยกเว้น</strong>: Exceptions (อ/ว as vowel)</span>
+                <span><strong>ข้อยกเว้น</strong>: Exceptions (อ/ว/ย)</span>
             </div>
             <div class="legend-item">
                 <span>🔻</span>
@@ -638,6 +654,8 @@
         const input = document.getElementById('thaiInput');
         const output = document.getElementById('outputText');
         const status = document.getElementById('status');
+        const intermediateText = document.getElementById('intermediateText');
+        const intermediateStatus = document.getElementById('intermediateStatus');
         const restartButton = document.getElementById('restartButton');
 
         const toggles = {
@@ -784,13 +802,19 @@
 
         // Debounced input handler
         input.addEventListener('input', () => {
+            // Save to localStorage on every input
+            localStorage.setItem('thaiInputText', input.value);
+
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => classifyText(), 300);
         });
 
-        // Toggle handlers
+        // Toggle handlers - apply to all boxes
         Object.values(toggles).forEach(toggle => {
-            toggle.addEventListener('change', renderOutput);
+            toggle.addEventListener('change', () => {
+                renderOutput();
+                renderIntermediate();
+            });
         });
 
         // Glow control handlers
@@ -871,7 +895,13 @@
                 const data = await response.json();
                 currentClassifications = data;
                 renderOutput();
+                renderIntermediate();
                 status.textContent = `Classified ${data.classifications.length} characters`;
+                // Count actual characters in intermediate (strip HTML tags for count)
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = data.intermediate_html;
+                const charCount = tempDiv.textContent.length;
+                intermediateStatus.textContent = `Transformed: ${charCount} characters`;
             } catch (error) {
                 console.error('Classification error:', error);
                 output.innerHTML = `<div class="error">Error: ${error.message}<br>Make sure Flask server is running on port 5001</div>`;
@@ -880,73 +910,77 @@
         }
 
         function renderOutput() {
-            if (!currentClassifications) return;
-
-            const { classifications } = currentClassifications;
-
-            let html = '';
-            let i = 0;
-
-            while (i < classifications.length) {
-                const item = classifications[i];
-                const charCode = item.char.charCodeAt(0);
-                const isCombining = (charCode >= 0x0E31 && charCode <= 0x0E3A) ||
-                                   (charCode >= 0x0E47 && charCode <= 0x0E4E);
-
-                if (isCombining) {
-                    // Orphaned combining mark - render with dotted circle
-                    const showHighlight = toggles[item.class]?.checked ?? false;
-                    const cssClass = showHighlight ? item.class : '';
-                    html += `<span class="char-group"><span class="char-base ${cssClass}">\u25CC${item.char}</span></span>`;
-                    i++;
-                    continue;
-                }
-
-                // Start a new character group
-                html += '<span class="char-group">';
-
-                // Render base character
-                const showHighlight = toggles[item.class]?.checked ?? false;
-                const cssClass = showHighlight ? item.class : '';
-                html += `<span class="char-base ${cssClass}">${item.char}</span>`;
-
-                // Look ahead for combining characters and track stack levels
-                let j = i + 1;
-                let aboveCount = 0;
-                let belowCount = 0;
-
-                while (j < classifications.length) {
-                    const nextItem = classifications[j];
-                    const nextCode = nextItem.char.charCodeAt(0);
-                    const nextIsCombining = (nextCode >= 0x0E31 && nextCode <= 0x0E3A) ||
-                                           (nextCode >= 0x0E47 && nextCode <= 0x0E4E);
-
-                    if (nextIsCombining) {
-                        // Determine if this combining mark is above or below baseline
-                        const isBelow = (nextCode >= 0x0E38 && nextCode <= 0x0E3A);
-
-                        // Render combining character with its own class and stack level
-                        const nextShowHighlight = toggles[nextItem.class]?.checked ?? false;
-                        const nextCssClass = nextShowHighlight ? nextItem.class : '';
-
-                        if (isBelow) {
-                            html += `<span class="char-combining char-below-${belowCount} ${nextCssClass}">${nextItem.char}</span>`;
-                            belowCount++;
-                        } else {
-                            html += `<span class="char-combining char-above-${aboveCount} ${nextCssClass}">${nextItem.char}</span>`;
-                            aboveCount++;
-                        }
-                        j++;
-                    } else {
-                        break;
-                    }
-                }
-
-                html += '</span>'; // Close char-group
-                i = j;
+            console.log('=== renderOutput() called ===');
+            if (!currentClassifications) {
+                console.log('No classifications yet');
+                return;
             }
 
+            // Use pre-rendered HTML from server
+            let html = currentClassifications.html || '';
+            console.log('Received HTML from server:', html.substring(0, 200) + '...');
+
             output.innerHTML = html;
+
+            // DEBUG: Show ALL combining marks in each group
+            const groups = output.querySelectorAll('.char-group');
+            console.log('Found', groups.length, 'char groups');
+            groups.forEach((group, groupIdx) => {
+                const base = group.querySelector('.char-base');
+                const baseChar = base ? base.textContent.trim() : '?';
+
+                const allCombining = group.querySelectorAll('.char-combining');
+                if (allCombining.length > 0) {
+                    console.log(`\nGroup ${groupIdx} - Base: "${baseChar}"`);
+                    allCombining.forEach((mark, markIdx) => {
+                        const classes = mark.className;
+                        const char = mark.textContent;
+                        console.log(`  Mark ${markIdx}: "${char}" | classes: "${classes}"`);
+                    });
+                }
+            });
+
+            // Reapply toggles after setting innerHTML
+            Object.keys(toggles).forEach(className => {
+                const isEnabled = toggles[className].checked;
+                if (!isEnabled) {
+                    const elements = output.querySelectorAll(`.${className}`);
+                    elements.forEach(el => {
+                        el.style.filter = 'none';
+                    });
+                }
+            });
+        }
+
+        function renderIntermediate() {
+            console.log('=== renderIntermediate() called ===');
+            if (!currentClassifications) {
+                console.log('No classifications yet for intermediate');
+                intermediateText.innerHTML = '<em style="color: #999;">Transformed text will appear here...</em>';
+                return;
+            }
+
+            // Use the same rendering as Classification Step (Box 1)
+            const transformedHtml = currentClassifications.intermediate_html || '';
+            console.log('Intermediate HTML:', transformedHtml);
+            intermediateText.innerHTML = transformedHtml;
+
+            // Apply toggle filters (same as Classification Step)
+            Object.keys(toggles).forEach(className => {
+                const isEnabled = toggles[className].checked;
+                if (!isEnabled) {
+                    const elements = intermediateText.querySelectorAll(`.${className}`);
+                    elements.forEach(el => {
+                        el.style.filter = 'none';
+                    });
+                } else {
+                    // Re-enable filter if toggled back on
+                    const elements = intermediateText.querySelectorAll(`.${className}`);
+                    elements.forEach(el => {
+                        el.style.filter = '';
+                    });
+                }
+            });
         }
 
         // Restart button handler
@@ -975,8 +1009,17 @@
             }
         });
 
+        // Restore text from localStorage
+        const savedText = localStorage.getItem('thaiInputText');
+        if (savedText) {
+            input.value = savedText;
+        }
+
         // Initial classification
         classifyText();
+
+        // Initialize intermediate box
+        intermediateText.innerHTML = '<em style="color: #999;">Transformed text will appear here...</em>';
 
         // Initialize glow styles with default values
         updateGlowStyles();

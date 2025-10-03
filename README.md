@@ -23,6 +23,15 @@ This project is built on two fundamental linguistic axioms:
 - Final-pass validation rule for complete vowel coverage
 - Reference: Uses AVPs defined in the Absolute Vowel Position Conjecture
 
+### 3. Initial Foundation Terminal Conjecture (IFTC)
+**"If any consonant c has any tone mark, then c is the last character in an initial foundation for that syllable."**
+
+- Tone marks signal the boundary/terminus of initial consonant clusters
+- Enables syllable boundary detection through tone mark positioning
+- Helps identify foundation container boundaries
+- Example: `ปร้าว` → `ร` has tone mark `้` → `ร` is last in initial foundation `ปร`
+- See: [`conjectures/initial_foundation_terminal_conjecture.md`](conjectures/initial_foundation_terminal_conjecture.md)
+
 ## Web Applications
 
 ### 1. Thai Pattern Classifier
@@ -47,7 +56,7 @@ Real-time visual classification of Thai characters:
   - **ฐาน (tan)** - Foundation consonants
   - **สระ (sara)** - Vowel patterns
   - **ยุกต์ (yuk)** - Dependent marks (tone marks, diacritics)
-  - **ข้อยกเว้น (kho yok waen)** - Exception characters (อ, ว)
+  - **ข้อยกเว้น (kho yok waen)** - Exception characters (อ, ว, ย)
 - AVP (Absolute Vowel Position) markers
 - Toggle visibility per class
 - Real-time text input processing
@@ -70,7 +79,7 @@ Characters are classified into four main categories:
 1. **ฐาน (tan)** - Foundation consonants (44 total): All Thai consonants that serve as syllable bases
 2. **สระ (sara)** - Vowel patterns (72+ patterns): Complete orthographic vowel combinations
 3. **ยุกต์ (yuk)** - Dependent marks: Tone marks and diacritics that cannot exist without a foundation
-4. **ข้อยกเว้น (kho yok waen)** - Exceptions: Characters **อ** and **ว** which function both as foundation consonants and as parts of vowel patterns
+4. **ข้อยกเว้น (kho yok waen)** - Exceptions: Characters **อ**, **ว**, and **ย** which function both as foundation consonants and as parts of vowel patterns
 
 ## Pattern Database
 
@@ -92,7 +101,7 @@ Each of the 72+ vowel patterns has:
 
 ### Foundation Consonants
 **File**: `res/foundation/foundation.json` (44 consonants)
-- All Thai consonants including exceptions (อ, ว)
+- All Thai consonants including exceptions (อ, ว, ย)
 - Simple JSON array format
 
 ## Quick Start

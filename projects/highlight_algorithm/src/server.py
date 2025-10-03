@@ -9,8 +9,11 @@ from flask_cors import CORS
 import os
 import sys
 
-# Add parent directory to path for imports
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add src directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+# Import Thai renderer
+from renderer import render_thai_text, transform_intermediate_classifications
 
 # Try to import vowel detector (optional for now)
 detector = None
@@ -30,14 +33,14 @@ CORS(app)
 @app.route('/')
 def index():
     """Serve the main HTML file"""
-    # HTML file is in the parent directory (project root)
-    parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    return send_from_directory(parent_dir, 'thai_grapheme_highlighter.html')
+    # HTML file is in the web directory
+    web_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'web')
+    return send_from_directory(web_dir, 'thai_grapheme_highlighter.html')
 
 @app.route('/api/classify', methods=['POST'])
 def classify_text():
     """
-    Classify Thai text into grapheme categories
+    Classify Thai text into grapheme categories and generate HTML markup
 
     Request JSON:
     {
@@ -52,7 +55,9 @@ def classify_text():
             {"index": 1, "char": "ร", "class": "tan", "avp": false},
             ...
         ],
-        "avps": [3, 7, 10]  // AVP positions
+        "avps": [3, 7, 10],  // AVP positions
+        "html": "<span class='char-group'>...</span>",  // Pre-rendered HTML markup
+        "intermediate": "<span class='tan'>a</span><span class='sara'>ะ</span>..."  // Transformed HTML (yuk removed, tan→a)
     }
     """
     try:
@@ -87,10 +92,28 @@ def classify_text():
             if classification["avp"]:
                 avps.append(i)
 
+        # Generate HTML markup using Python renderer
+        # Default toggles (all True - client can override with CSS display:none if needed)
+        toggles = {
+            'tan': True,
+            'sara': True,
+            'yuk': True,
+            'kho_yok_waen': True,
+            'unsure': True
+        }
+
+        html_markup = render_thai_text(classifications, toggles)
+
+        # Generate intermediate transformation
+        intermediate_classifications = transform_intermediate_classifications(classifications)
+        intermediate_html = render_thai_text(intermediate_classifications, toggles)
+
         return jsonify({
             "text": text,
             "classifications": classifications,
-            "avps": avps
+            "avps": avps,
+            "html": html_markup,
+            "intermediate_html": intermediate_html
         })
 
     except Exception as e:
@@ -114,8 +137,8 @@ def classify_character(char, index, text, vowel_data):
     # Vowels (excluding tone marks and diacritics which are checked first)
     THAI_VOWELS = "ะัาำิีึืุูเแโใไฯ"
 
-    # Exception characters (อ and ว)
-    EXCEPTIONS = "อว"
+    # Exception characters (อ, ว, and ย)
+    EXCEPTIONS = "อวย"
 
     classification = {
         "class": "unsure",
@@ -136,9 +159,9 @@ def classify_character(char, index, text, vowel_data):
 
     # 3. Check consonants (ฐาน/tan)
     if char in THAI_CONSONANTS:
-        # Check if it's an exception character - leave as unsure for now
+        # Check if it's an exception character (อ/ว can be consonant or vowel)
         if char in EXCEPTIONS:
-            classification["class"] = "unsure"
+            classification["class"] = "kho_yok_waen"
         else:
             classification["class"] = "tan"
         return classification

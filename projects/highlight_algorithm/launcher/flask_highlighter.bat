@@ -7,15 +7,15 @@ echo Thai Grapheme Highlighting Tool
 echo ===============================================
 echo.
 
-REM Change to project root directory
+REM Change to this project's directory
 cd /d "%~dp0.."
 
-REM Activate virtual environment
-if exist ".venv\Scripts\activate.bat" (
+REM Activate virtual environment (at repository root)
+if exist "..\..\..\.venv\Scripts\activate.bat" (
     echo Activating virtual environment...
-    call .venv\Scripts\activate.bat
+    call ..\..\..\.venv\Scripts\activate.bat
 ) else (
-    echo WARNING: Virtual environment not found at .venv\Scripts\
+    echo WARNING: Virtual environment not found at repository root
     echo Attempting to run with system Python...
     echo.
 )
@@ -25,7 +25,7 @@ echo Starting Flask server...
 echo.
 
 :restart
-python launcher\flask_highlighter.py
+python src\server.py
 
 REM Check the exit code
 if %errorlevel% equ 0 (

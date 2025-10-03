@@ -1,7 +1,7 @@
 # Thai Language Conjectures Summary
 
 **Date Created:** September 28, 2025
-**Total Conjectures:** 2
+**Total Conjectures:** 3
 
 ---
 
@@ -29,16 +29,30 @@
 
 ---
 
+## 3. The Initial Foundation Terminal Conjecture (IFTC)
+
+**File**: [initial_foundation_terminal_conjecture.md](./initial_foundation_terminal_conjecture.md)
+
+**Core Statement**: If any consonant c has any tone mark, then c is the last character in an initial foundation for that syllable.
+
+**Key Concept**: Tone marks on consonants signal the boundary/terminus of initial consonant clusters.
+
+**Purpose**: Enables syllable boundary detection and foundation container identification.
+
+---
+
 ## Relationship Between Conjectures
 
 1. **Absolute Vowel Position Conjecture** establishes the concept of Absolute Vowel Positions
 2. **Proximity Conjecture** uses AVPs to ensure complete consonant-vowel coverage
-3. Together they provide a framework for comprehensive Thai text analysis
+3. **Initial Foundation Terminal Conjecture** provides syllable boundary detection through tone mark positioning
+4. Together they provide a framework for comprehensive Thai text analysis
 
 ## Implementation Status
 
 - **Absolute Vowel Position Conjecture**: Conceptual framework established, implementation pending
 - **Proximity Conjecture**: Ready for implementation as final-pass algorithm
+- **Initial Foundation Terminal Conjecture**: Documented, needs empirical validation across Thai corpus
 
 ---
 

@@ -9,7 +9,7 @@ This is a Thai language processing project focused on developing algorithms for 
 1. **ฐาน (tan)** - Foundation class: All 44 Thai consonants that serve as bases for vowel patterns
 2. **สระ (sara)** - Vowel class: Vowel patterns (72+) that attach to foundation consonants
 3. **ยุกต์ (yuk)** - Dependent class: Tone marks and diacritics that cannot exist without a foundation consonant
-4. **ข้อยกเว้น (kho yok waen)** - Exception class: Characters **อ** and **ว** which function both as foundation consonants and as parts of vowel patterns
+4. **ข้อยกเว้น (kho yok waen)** - Exception class: Characters **อ**, **ว**, and **ย** which function both as foundation consonants and as parts of vowel patterns
 
 ## Environment Setup
 
@@ -33,7 +33,7 @@ The `script/` directory contains utilities for processing Thai language data:
 
 - **`make_foundation_json.py`** - Generates JSON file with Thai foundation consonants
   - Usage: `python script/make_foundation_json.py INPUT.txt OUTPUT.json`
-  - Contains all 44 Thai consonants (including อ and ว)
+  - Contains all 44 Thai consonants (including อ, ว, and ย)
 
 - **`flatten_sara_combos.py`** - Flattens vowel template dictionaries into single lists
   - Usage: `python script/flatten_sara_combos.py INPUT.json OUTPUT.json`
@@ -130,3 +130,4 @@ The `findThaiGraphemeOrderDomain` algorithm handles complex Thai text patterns i
 - Ambiguous cases: characters that could serve multiple roles (e.g., "เลว" where ว could be cluster/final/vowel)
 - always use descriptive variable names
 - always correct the user AND ask for confirmation if they make an error in their prompt (ie, using sin instead of tan when tan is appropriate).
+- never make commits unless directly asked by the user to do so.
