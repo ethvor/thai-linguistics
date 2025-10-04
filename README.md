@@ -23,14 +23,29 @@ This project is built on several fundamental linguistic conjectures
 - Final-pass validation rule for complete vowel coverage
 - Reference: Uses AVPs defined in the Absolute Vowel Position Conjecture
 
-### 3. Initial Foundation Terminal Conjecture (IFTC)
-**"If any consonant c has any tone mark, then c is the last character in an initial foundation for that syllable."**
+### 3. Extended Initial Foundation Terminal Conjecture (Extended IFTC)
+**"If any consonant c has a vowel part OR tone mark (yuk), then c is a terminal initial-foundation consonant."**
 
-- Tone marks signal the boundary/terminus of initial consonant clusters
-- Enables syllable boundary detection through tone mark positioning
+- **Confirmed**: 2025-10-03 - Extended version empirically validated as primary formulation
+- Both vowel parts and tone marks signal syllable boundaries
+- Enables comprehensive syllable boundary detection
 - Helps identify foundation container boundaries
-- Example: `ปร้าว` → `ร` has tone mark `้` → `ร` is last in initial foundation `ปร`
+- Example: `ปร้าว` → `ร` has tone mark `้` → `ร` is terminal in initial foundation `ปร`
+- Example: `เมือง` → `ม` has vowel part `เ` → `ม` is terminal
+- Implemented in `projects/highlight_algorithm/src/renderer.py`
 - See: [`conjectures/initial_foundation_terminal_conjecture.md`](conjectures/initial_foundation_terminal_conjecture.md)
+
+### 4. AVP Terminal Position Conjecture
+**"Absolute Vowel Positions (AVPs) are ALWAYS directly after terminal initial-foundation consonants."**
+
+- **Discovered**: 2025-10-04 - New conjecture requiring empirical validation
+- Provides deterministic AVP localization after terminal consonants
+- AVP follows the last consonant of initial foundation (single or clustered)
+- Enables precise vowel pattern boundary detection
+- Links foundation structure to vowel realization in Thai phonetics
+- Example: `มา` → Terminal `ม` → AVP directly after `ม`
+- Example: `ครู` → Terminal `ร` (in cluster `คร`) → AVP directly after `ร`
+- See: [`conjectures/avp_terminal_position_conjecture.md`](conjectures/avp_terminal_position_conjecture.md)
 
 ## Web Applications
 

@@ -46,7 +46,7 @@
 
 ---
 
-## 4. The AVP Terminal Position Conjecture - 🆕 Discovered
+## 4. The AVP Terminal Position Conjecture - Discovered
 
 **File**: [avp_terminal_position_conjecture.md](./avp_terminal_position_conjecture.md)
 
