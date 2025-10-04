@@ -142,6 +142,10 @@
             background-color: rgba(255, 200, 130, 0.9);
         }
 
+        .color-indicator.diacritic {
+            background-color: rgba(130, 255, 180, 0.9);
+        }
+
         .color-indicator.kho_yok_waen {
             background-color: rgba(200, 150, 255, 0.9);
         }
@@ -174,17 +178,33 @@
         }
 
         .char-combining {
-            position: relative;  /* Keep in flow, just shift vertically */
             pointer-events: none;
-            display: inline-block;
         }
 
-        /* Stack level positioning - use relative positioning, not absolute */
-        /* This shifts them vertically while keeping horizontal position natural */
-        .char-above-0 { top: 0; }
-        .char-above-1 { top: -0.25em; }
-        .char-above-2 { top: -0.5em; }
-        .char-above-3 { top: -0.75em; }
+        /* Above-baseline marks: absolute positioning to center over base */
+        .char-above-0,
+        .char-above-1,
+        .char-above-2,
+        .char-above-3 {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            text-align: center;
+        }
+
+        .char-above-0 { top: -0.1em; }
+        .char-above-1 { top: -0.35em; }
+        .char-above-2 { top: -0.6em; }
+        .char-above-3 { top: -0.85em; }
+
+        /* Below-baseline marks: relative positioning to stay in flow */
+        .char-below-0,
+        .char-below-1,
+        .char-below-2,
+        .char-below-3 {
+            position: relative;
+            display: inline-block;
+        }
 
         .char-below-0 { top: 0; }
         .char-below-1 { top: 0.25em; }
@@ -212,6 +232,13 @@
             filter: drop-shadow(0 0 3px rgba(255, 180, 100, 1.0))
                     drop-shadow(0 0 6px rgba(255, 200, 130, 0.8))
                     drop-shadow(0 0 9px rgba(255, 220, 180, 0.6));
+        }
+
+        /* Diacritics - green glow */
+        .diacritic {
+            filter: drop-shadow(0 0 3px rgba(100, 255, 150, 0.9))
+                    drop-shadow(0 0 6px rgba(130, 255, 180, 0.7))
+                    drop-shadow(0 0 9px rgba(180, 255, 210, 0.5));
         }
 
         /* Exceptions - purple glow */
@@ -579,7 +606,12 @@
             <div class="toggle-group">
                 <input type="checkbox" id="toggleYuk" checked>
                 <span class="color-indicator yuk"></span>
-                <label for="toggleYuk">ยุกต์ (yuk) - Dependent</label>
+                <label for="toggleYuk">ยุกต์ (yuk) - Tone Marks</label>
+            </div>
+            <div class="toggle-group">
+                <input type="checkbox" id="toggleDiacritic" checked>
+                <span class="color-indicator diacritic"></span>
+                <label for="toggleDiacritic">Diacritic - Marks (์ ็ ํ)</label>
             </div>
             <div class="toggle-group">
                 <input type="checkbox" id="toggleException" checked>
@@ -626,6 +658,12 @@
             </div>
         </div>
 
+        <!-- Vowel Patterns Section -->
+        <div class="output-section" style="margin-top: 30px;">
+            <h3 style="margin-bottom: 10px; color: #333;">Identified Vowel Patterns</h3>
+            <div id="vowelPatternsOutput" style="font-size: 14px; color: #555;"></div>
+        </div>
+
         <div class="legend">
             <div class="legend-item">
                 <span class="color-indicator tan"></span>
@@ -637,7 +675,11 @@
             </div>
             <div class="legend-item">
                 <span class="color-indicator yuk"></span>
-                <span><strong>ยุกต์ (yuk)</strong>: Tone marks & diacritics</span>
+                <span><strong>ยุกต์ (yuk)</strong>: Tone marks (่ ้ ๊ ๋)</span>
+            </div>
+            <div class="legend-item">
+                <span class="color-indicator diacritic"></span>
+                <span><strong>Diacritic</strong>: Other marks (์ ็ ํ)</span>
             </div>
             <div class="legend-item">
                 <span class="color-indicator kho_yok_waen"></span>
@@ -662,6 +704,7 @@
             tan: document.getElementById('toggleTan'),
             sara: document.getElementById('toggleSara'),
             yuk: document.getElementById('toggleYuk'),
+            diacritic: document.getElementById('toggleDiacritic'),
             kho_yok_waen: document.getElementById('toggleException')
         };
 
@@ -896,6 +939,7 @@
                 currentClassifications = data;
                 renderOutput();
                 renderIntermediate();
+                renderVowelPatterns();
                 status.textContent = `Classified ${data.classifications.length} characters`;
                 // Count actual characters in intermediate (strip HTML tags for count)
                 const tempDiv = document.createElement('div');
@@ -981,6 +1025,54 @@
                     });
                 }
             });
+        }
+
+        function renderVowelPatterns() {
+            const vowelPatternsOutput = document.getElementById('vowelPatternsOutput');
+
+            if (!currentClassifications || !currentClassifications.vowel_patterns) {
+                vowelPatternsOutput.innerHTML = '<em style="color: #999;">No vowel patterns detected yet...</em>';
+                return;
+            }
+
+            const patterns = currentClassifications.vowel_patterns;
+            const text = currentClassifications.text;
+
+            if (patterns.length === 0) {
+                vowelPatternsOutput.innerHTML = '<p>No vowel patterns found in the text.</p>';
+                return;
+            }
+
+            // Build pattern list
+            let html = `<p style="margin-bottom: 15px;"><strong>Found ${patterns.length} vowel pattern(s):</strong></p>`;
+            html += '<div style="display: grid; gap: 15px;">';
+
+            patterns.forEach((pattern, idx) => {
+                const textSegment = text.substring(pattern.start_index, pattern.end_index + 1);
+
+                html += '<div style="background: white; padding: 12px; border-radius: 6px; border-left: 4px solid #667eea;">';
+                html += `<div style="font-weight: bold; color: #667eea; margin-bottom: 5px;">Pattern ${idx + 1}</div>`;
+                html += `<div style="font-size: 24px; font-family: 'Microsoft Sans Serif', 'Leelawadee UI', sans-serif; margin-bottom: 8px;">${textSegment}</div>`;
+                html += `<div style="font-size: 13px; color: #666;">`;
+                html += `<div><strong>Pattern:</strong> <code style="background: #f0f0f0; padding: 2px 6px; border-radius: 3px;">${pattern.pattern_key}</code></div>`;
+                html += `<div><strong>Type:</strong> ${pattern.match_type}</div>`;
+                html += `<div><strong>Position:</strong> ${pattern.start_index}-${pattern.end_index} (base at ${pattern.base_index})</div>`;
+
+                if (pattern.abbrev_id) {
+                    html += `<div><strong>ID:</strong> ${pattern.abbrev_id}</div>`;
+                }
+
+                if (pattern.tags && pattern.tags.length > 0) {
+                    const tagList = pattern.tags.slice(0, 5).join(', ');
+                    const moreText = pattern.tags.length > 5 ? `, +${pattern.tags.length - 5} more` : '';
+                    html += `<div><strong>Tags:</strong> ${tagList}${moreText}</div>`;
+                }
+
+                html += '</div></div>';
+            });
+
+            html += '</div>';
+            vowelPatternsOutput.innerHTML = html;
         }
 
         // Restart button handler

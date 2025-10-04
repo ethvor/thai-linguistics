@@ -178,6 +178,7 @@ def render_thai_text(classifications, toggles=None):
             'tan': True,
             'sara': True,
             'yuk': True,
+            'diacritic': True,
             'kho_yok_waen': True,
             'unsure': True
         }
@@ -194,7 +195,7 @@ def render_thai_text(classifications, toggles=None):
 def transform_intermediate_classifications(classifications):
     """
     Transform classifications for intermediate step:
-    - Remove all yuk (tone marks/diacritics)
+    - Remove all yuk (tone marks) and diacritic marks
     - Replace tan with "x" if it has a yuk mark above (terminal), otherwise "a"
     - Keep sara (vowels) and exceptions as-is
 
@@ -211,8 +212,8 @@ def transform_intermediate_classifications(classifications):
     for group in groups:
         base = group['base']
 
-        # Skip if base is yuk (orphaned combining mark)
-        if base['class'] == 'yuk':
+        # Skip if base is yuk or diacritic (orphaned combining mark)
+        if base['class'] in ('yuk', 'diacritic'):
             continue
 
         # Copy the base item
@@ -227,13 +228,13 @@ def transform_intermediate_classifications(classifications):
 
         result.append(new_item)
 
-        # Add combining sara (above and below), but skip yuk
+        # Add combining sara (above and below), but skip yuk and diacritics
         for combining in group['combining_above']:
-            if combining['class'] != 'yuk':
+            if combining['class'] not in ('yuk', 'diacritic'):
                 result.append(combining.copy())
 
         for combining in group['combining_below']:
-            if combining['class'] != 'yuk':
+            if combining['class'] not in ('yuk', 'diacritic'):
                 result.append(combining.copy())
 
     return result

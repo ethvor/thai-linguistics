@@ -27,6 +27,17 @@ except ImportError:
 except Exception as e:
     print(f"[WARNING] Could not load vowel detector: {e}")
 
+# Try to import vowel pattern matcher
+pattern_matcher = None
+try:
+    from vowel_pattern_matcher import VowelPatternMatcher
+    pattern_matcher = VowelPatternMatcher()
+    print(f"[OK] Loaded vowel pattern matcher")
+except ImportError as e:
+    print(f"[WARNING] vowel_pattern_matcher not found - Pattern matching disabled: {e}")
+except Exception as e:
+    print(f"[WARNING] Could not load vowel pattern matcher: {e}")
+
 app = Flask(__name__)
 CORS(app)
 
@@ -98,6 +109,7 @@ def classify_text():
             'tan': True,
             'sara': True,
             'yuk': True,
+            'diacritic': True,
             'kho_yok_waen': True,
             'unsure': True
         }
@@ -108,12 +120,32 @@ def classify_text():
         intermediate_classifications = transform_intermediate_classifications(classifications)
         intermediate_html = render_thai_text(intermediate_classifications, toggles)
 
+        # Find vowel patterns if matcher is available
+        patterns = []
+        if pattern_matcher:
+            try:
+                patterns = pattern_matcher.find_patterns(classifications)
+                # Simplify pattern data for JSON serialization
+                patterns = [{
+                    'pattern_key': p['pattern_key'],
+                    'start_index': p['start_index'],
+                    'end_index': p['end_index'],
+                    'base_index': p['base_index'],
+                    'match_type': p['match_type'],
+                    'tags': p['pattern_data'].get('tags', []),
+                    'abbrev_id': p['pattern_data'].get('abbrev_id', ''),
+                    'long_id': p['pattern_data'].get('long_id', '')
+                } for p in patterns]
+            except Exception as e:
+                print(f"Pattern matching error: {e}")
+
         return jsonify({
             "text": text,
             "classifications": classifications,
             "avps": avps,
             "html": html_markup,
-            "intermediate_html": intermediate_html
+            "intermediate_html": intermediate_html,
+            "vowel_patterns": patterns
         })
 
     except Exception as e:
@@ -125,15 +157,15 @@ def classify_character(char, index, text, vowel_data):
 
     Returns:
     {
-        "class": "tan" | "sara" | "yuk" | "kho_yok_waen" | "unsure",
+        "class": "tan" | "sara" | "yuk" | "diacritic" | "kho_yok_waen" | "unsure",
         "avp": boolean
     }
     """
 
     # Thai character ranges
     THAI_CONSONANTS = "กขฃคฅฆงจฉชซฌญฎฏฐฑฒณดตถทธนบปผฝพฟภมยรลวศษสหฬอฮ"
-    THAI_TONE_MARKS = "่้๊๋"
-    THAI_DIACRITICS = "์็ํ"
+    THAI_TONE_MARKS = "่้๊๋"  # Tone marks only (yuk class)
+    THAI_DIACRITICS = "์็ํ"  # Non-tone-mark diacritics (diacritic class)
     # Vowels (excluding tone marks and diacritics which are checked first)
     THAI_VOWELS = "ะัาำิีึืุูเแโใไฯ"
 
@@ -145,19 +177,24 @@ def classify_character(char, index, text, vowel_data):
         "avp": False
     }
 
-    # 1. Check tone marks and diacritics first (ยุกต์/yuk)
-    if char in THAI_TONE_MARKS or char in THAI_DIACRITICS:
+    # 1. Check tone marks (ยุกต์/yuk)
+    if char in THAI_TONE_MARKS:
         classification["class"] = "yuk"
         return classification
 
-    # 2. Check vowels (สระ/sara)
+    # 2. Check diacritics (non-tone-mark diacritics)
+    if char in THAI_DIACRITICS:
+        classification["class"] = "diacritic"
+        return classification
+
+    # 3. Check vowels (สระ/sara)
     if char in THAI_VOWELS:
         classification["class"] = "sara"
         # AVP detection disabled for now
         classification["avp"] = False
         return classification
 
-    # 3. Check consonants (ฐาน/tan)
+    # 4. Check consonants (ฐาน/tan)
     if char in THAI_CONSONANTS:
         # Check if it's an exception character (อ/ว can be consonant or vowel)
         if char in EXCEPTIONS:
@@ -166,7 +203,7 @@ def classify_character(char, index, text, vowel_data):
             classification["class"] = "tan"
         return classification
 
-    # 4. Everything else is unsure
+    # 5. Everything else is unsure
     return classification
 
 @app.route('/api/health', methods=['GET'])
@@ -174,7 +211,8 @@ def health():
     """Health check endpoint"""
     return jsonify({
         "status": "ok",
-        "detector_loaded": detector is not None
+        "detector_loaded": detector is not None,
+        "pattern_matcher_loaded": pattern_matcher is not None
     })
 
 @app.route('/api/restart', methods=['POST'])
@@ -203,6 +241,7 @@ if __name__ == '__main__':
     print("="*60)
     print("\nServer starting...")
     print(f"Vowel detector: {'[OK] Loaded' if detector else '[X] Not loaded'}")
+    print(f"Pattern matcher: {'[OK] Loaded' if pattern_matcher else '[X] Not loaded'}")
     print("\n" + "="*60)
     print("Open in browser: http://127.0.0.1:5001")
     print("="*60 + "\n")
