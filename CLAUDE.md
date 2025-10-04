@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Thai language processing project focused on developing algorithms for classifying Thai graphemes. The main research is conducted in `notebook.ipynb`, which explores a Thai grapheme classification system that categorizes characters into four main classes:
 
+**📚 Important**: See `docs/thai_linguistics_reference.md` for authoritative Thai linguistic definitions and rules.
+
 1. **ฐาน (tan)** - Foundation class: All 44 Thai consonants that serve as bases for vowel patterns
 2. **สระ (sara)** - Vowel class: Vowel patterns (72+) that attach to foundation consonants
 3. **ยุกต์ (yuk)** - Dependent class: Tone marks and diacritics that cannot exist without a foundation consonant
@@ -119,6 +121,37 @@ The `thai_pattern_classifier.html` provides an interactive interface for:
 - `script/convertToJson.py` - Primary data processing utility for Thai text parsing
 - `res/foundation/foundation.json` - Contains all 44 Thai foundation consonants
 - `thai_vowels_tagged_9-21-2025-2-31-pm.json` - Contains 72+ tagged vowel patterns
+- `projects/highlight_algorithm/` - Thai grapheme highlighter subproject (vowel pattern detection)
+
+## Thai Linguistic Conjectures
+
+The project is built on empirically validated conjectures documented in `conjectures/`:
+
+### Extended Initial Foundation Terminal Conjecture (IFTC) - ✅ Confirmed 2025-10-03
+
+**Statement**: If any consonant `c` has a vowel part OR tone mark (yuk), then `c` is a terminal initial-foundation consonant.
+
+**Key Insight**: Both vowel parts and tone marks signal syllable boundaries in Thai text.
+
+**Implementation**:
+- `projects/highlight_algorithm/src/renderer.py` - Implements Extended IFTC in intermediate transformation
+- Consonants with vowel parts or tone marks are marked as `'x'` (terminal)
+- Consonants without markers are marked as `'a'` (ambiguous position)
+
+**Applications**:
+- Syllable boundary detection
+- Foundation container identification
+- Vowel pattern matching preparation
+- Thai text segmentation
+
+**Documentation**: See `conjectures/initial_foundation_terminal_conjecture.md` and `conjectures/extended_iftc_investigation.md`
+
+### Other Conjectures
+
+- **Absolute Vowel Position (AVP) Conjecture**: Each Thai syllable has exactly one AVP
+- **Two-Character Proximity Conjecture**: Every consonant has an AVP within 2 characters (noninclusive)
+
+See `conjectures/summary.md` for complete documentation.
 
 ## Thai Text Processing Notes
 

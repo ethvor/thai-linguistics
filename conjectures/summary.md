@@ -1,7 +1,8 @@
 # Thai Language Conjectures Summary
 
 **Date Created:** September 28, 2025
-**Total Conjectures:** 3
+**Last Updated:** October 4, 2025
+**Total Conjectures:** 4
 
 ---
 
@@ -29,15 +30,33 @@
 
 ---
 
-## 3. The Initial Foundation Terminal Conjecture (IFTC)
+## 3. The Initial Foundation Terminal Conjecture (IFTC) - ✅ Extended & Confirmed
 
 **File**: [initial_foundation_terminal_conjecture.md](./initial_foundation_terminal_conjecture.md)
 
-**Core Statement**: If any consonant c has any tone mark, then c is the last character in an initial foundation for that syllable.
+**Extended Statement (✅ Confirmed 2025-10-03)**: If any consonant c has a vowel part OR tone mark (yuk), then c is a terminal initial-foundation consonant.
 
-**Key Concept**: Tone marks on consonants signal the boundary/terminus of initial consonant clusters.
+**Original Statement**: If any consonant c has any tone mark, then c is the last character in an initial foundation for that syllable.
+
+**Key Concept**: Vowel parts and tone marks on consonants signal the boundary/terminus of initial consonant clusters.
 
 **Purpose**: Enables syllable boundary detection and foundation container identification.
+
+**Status**: Extended IFTC empirically validated and confirmed as primary formulation.
+
+---
+
+## 4. The AVP Terminal Position Conjecture - 🆕 Discovered
+
+**File**: [avp_terminal_position_conjecture.md](./avp_terminal_position_conjecture.md)
+
+**Core Statement**: Absolute Vowel Positions (AVPs) are ALWAYS directly after terminal initial-foundation consonants.
+
+**Key Insight**: The AVP location is deterministic - it always follows the last consonant of the initial foundation, whether single or clustered.
+
+**Purpose**: Provides precise AVP localization for vowel pattern detection and syllable segmentation.
+
+**Status**: New conjecture discovered 2025-10-04, requires empirical validation.
 
 ---
 
@@ -45,14 +64,15 @@
 
 1. **Absolute Vowel Position Conjecture** establishes the concept of Absolute Vowel Positions
 2. **Proximity Conjecture** uses AVPs to ensure complete consonant-vowel coverage
-3. **Initial Foundation Terminal Conjecture** provides syllable boundary detection through tone mark positioning
-4. Together they provide a framework for comprehensive Thai text analysis
+3. **Initial Foundation Terminal Conjecture (Extended)** provides syllable boundary detection through vowel part and tone mark positioning
+4. **AVP Terminal Position Conjecture** specifies exactly WHERE the AVP is located (directly after terminal)
+5. Together they provide a complete framework for deterministic Thai text analysis
 
 ## Implementation Status
 
 - **Absolute Vowel Position Conjecture**: Conceptual framework established, implementation pending
 - **Proximity Conjecture**: Ready for implementation as final-pass algorithm
-- **Initial Foundation Terminal Conjecture**: Documented, needs empirical validation across Thai corpus
+- **Initial Foundation Terminal Conjecture**: ✅ Extended version confirmed and implemented in `projects/highlight_algorithm/src/renderer.py`
 
 ---
 

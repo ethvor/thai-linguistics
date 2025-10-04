@@ -92,9 +92,37 @@ Counterexamples would include:
 3. Refine conjecture based on evidence
 
 ## Status
-**Investigation Status:** Not yet started
+**Investigation Status:** ✅ CONFIRMED (with minor exceptions)
+
+## Findings Summary
+
+### Investigation Completed: 2025-10-03
+
+The Extended IFTC has been **empirically validated** through corpus testing. The conjecture holds true with high accuracy:
+
+**✅ Confirmed:** If any consonant `c` has a vowel part OR tone mark (yuk), then `c` is a terminal initial-foundation consonant.
+
+### Validation Results
+- **Status**: Extended IFTC confirmed as valid rule
+- **Exceptions**: One small exception class identified (to be disregarded for algorithmic purposes)
+- **Application**: Extended IFTC is now the primary rule for syllable boundary detection
+
+### Implementation Impact
+The Extended IFTC provides significantly better syllable boundary detection than the original IFTC:
+- **Original IFTC**: Only tone marks indicate terminal consonants
+- **Extended IFTC**: Both vowel parts AND tone marks indicate terminal consonants
+- **Result**: More comprehensive and accurate foundation container identification
+
+### Next Steps
+1. ✅ Confirmed through testing
+2. ✅ Promote Extended IFTC to primary conjecture status
+3. Update implementation in `renderer.py` to check for vowel parts OR tone marks
+4. Update project documentation to reflect Extended IFTC as confirmed rule
 
 ## Date Created
+2025-10-03
+
+## Date Confirmed
 2025-10-03
 
 ## Related Documents

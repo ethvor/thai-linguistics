@@ -194,10 +194,13 @@ def render_thai_text(classifications, toggles=None):
 
 def transform_intermediate_classifications(classifications):
     """
-    Transform classifications for intermediate step:
+    Transform classifications for intermediate step (implements Extended IFTC):
     - Remove all yuk (tone marks) and diacritic marks
-    - Replace tan with "x" if it has a yuk mark above (terminal), otherwise "a"
+    - Replace tan with "x" if it has a yuk OR sara mark (terminal), otherwise "a"
     - Keep sara (vowels) and exceptions as-is
+
+    Extended IFTC: If any consonant has a vowel part OR tone mark, then it is
+    a terminal initial-foundation consonant.
 
     Args:
         classifications: List of character classifications
@@ -205,7 +208,7 @@ def transform_intermediate_classifications(classifications):
     Returns:
         Modified classifications list (same format as input)
     """
-    # First, group to see which tan have yuk above them
+    # First, group to see which tan have yuk or sara above/below them
     groups = group_characters(classifications)
 
     result = []
@@ -219,12 +222,13 @@ def transform_intermediate_classifications(classifications):
         # Copy the base item
         new_item = base.copy()
 
-        # If tan, check if it has yuk above
+        # If tan, check if it has yuk OR sara (Extended IFTC)
         if base['class'] == 'tan':
-            has_yuk_above = any(
-                c['class'] == 'yuk' for c in group['combining_above']
+            has_vowel_or_tone = any(
+                c['class'] in ('yuk', 'sara')
+                for c in group['combining_above'] + group['combining_below']
             )
-            new_item['char'] = 'x' if has_yuk_above else 'a'
+            new_item['char'] = 'x' if has_vowel_or_tone else 'a'
 
         result.append(new_item)
 
